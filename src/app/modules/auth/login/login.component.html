@@ -1,0 +1,95 @@
+<div class="min-h-screen flex items-center justify-center bg-[#f8f9fa] px-4 relative overflow-hidden font-sans">
+
+  <!-- Subtle topographic background lines overlay -->
+  <div class="fixed inset-0 pointer-events-none opacity-[0.03] z-0">
+    <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern height="200" id="topo" patternunits="userSpaceOnUse" width="200">
+          <path d="M0 100 C 50 80, 100 120, 150 100 S 250 80, 300 100" fill="none" stroke="currentColor"
+            stroke-width="1"></path>
+          <path d="M0 120 C 50 100, 100 140, 150 120 S 250 100, 300 120" fill="none" stroke="currentColor"
+            stroke-width="1"></path>
+        </pattern>
+      </defs>
+      <rect fill="url(#topo)" height="100%" width="100%"></rect>
+    </svg>
+  </div>
+
+  <!-- Login Card -->
+  <div class="w-full max-w-md bg-white border border-[#c5c6d2] p-8 rounded-xl shadow-xl relative z-10">
+    <div class="text-center mb-8">
+      <!-- Logo Container -->
+      <div class="inline-flex w-16 h-16 rounded-2xl mb-3  items-center justify-center p-2.5 overflow-hidden">
+        <img src="ConquisLogo.png" alt="Logo Conquistadores" class="w-full h-full object-contain">
+      </div>
+      <h2 class="text-2xl font-extrabold text-[#00113a] tracking-tight">Portal Conquistadores</h2>
+      <p class="text-[#444650] text-sm mt-1">Ingresa para gestionar las actividades y miembros del club.</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Email -->
+      <div>
+        <label for="email" class="block text-sm font-semibold text-[#191c1d] mb-2">Correo Electrónico</label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-[#757682]">
+            <span class="material-symbols-outlined text-[20px]">mail</span>
+          </span>
+          <input id="email" type="email" formControlName="email"
+            class="w-full pl-10 pr-4 py-3 rounded-lg border border-[#c5c6d2] bg-white text-[#191c1d] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition"
+            placeholder="director@club.com" />
+        </div>
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['required']) {
+        <p class="text-[#b7102a] text-xs mt-1">El correo electrónico es requerido.</p>
+        }
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['email']) {
+        <p class="text-[#b7102a] text-xs mt-1">Ingresa un correo electrónico válido.</p>
+        }
+      </div>
+
+      <!-- Password -->
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <label for="password" class="block text-sm font-semibold text-[#191c1d]">Contraseña</label>
+        </div>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-[#757682]">
+            <span class="material-symbols-outlined text-[20px]">lock</span>
+          </span>
+          <input id="password" type="password" formControlName="password"
+            class="w-full pl-10 pr-4 py-3 rounded-lg border border-[#c5c6d2] bg-white text-[#191c1d] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition"
+            placeholder="••••••••" />
+        </div>
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']) {
+        <p class="text-[#b7102a] text-xs mt-1">La contraseña es requerida.</p>
+        }
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['minlength']) {
+        <p class="text-[#b7102a] text-xs mt-1">Debe tener al menos 6 caracteres.</p>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" [disabled]="isLoading"
+        class="w-full py-3 px-4 bg-gradient-to-r from-[#00113a] to-[#002366] hover:brightness-110 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        @if (isLoading) {
+        <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg>
+        Iniciando Sesión...
+        } @else {
+        Ingresar al Portal
+        }
+      </button>
+
+      <div class="text-center mt-6">
+        <p class="text-sm text-[#444650]">
+          ¿No tienes una cuenta?
+          <a routerLink="/auth/register"
+            class="text-[#b7102a] hover:underline font-bold ml-1 cursor-pointer">Regístrate</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,223 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-[#00113a] tracking-tight">Gestión de Unidades</h2>
+      <p class="text-[#444650] text-sm mt-1">Administra las divisiones del club, consejeros y logros de unidad.</p>
+    </div>
+    @if (canEdit()) {
+      <button
+        (click)="openCreateModal()"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#00113a] text-white font-bold rounded-xl shadow-lg hover:bg-[#002366] transition-all text-sm cursor-pointer active:scale-95"
+      >
+        <span class="material-symbols-outlined text-[18px]">group_add</span>
+        Agregar Nueva Unidad
+      </button>
+    }
+  </div>
+
+  <!-- Stats Row -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4">
+      <div class="w-12 h-12 bg-[#dbe1ff] rounded-lg flex items-center justify-center text-[#00113a]">
+        <span class="material-symbols-outlined">diversity_3</span>
+      </div>
+      <div>
+        <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Total Unidades</p>
+        <p class="text-2xl font-bold text-[#00113a]">{{ unidades.length }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4">
+      <div class="w-12 h-12 bg-[#ffdad8] rounded-lg flex items-center justify-center text-[#b7102a]">
+        <span class="material-symbols-outlined">person</span>
+      </div>
+      <div>
+        <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Total Conquistadores</p>
+        <p class="text-2xl font-bold text-[#00113a]">—</p>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4">
+      <div class="w-12 h-12 bg-[#ffdea9] rounded-lg flex items-center justify-center text-[#5e4100]">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+      </div>
+      <div>
+        <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Record de Puntos</p>
+        <p class="text-2xl font-bold text-[#00113a]">2.4k</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="flex justify-center items-center py-20">
+      <svg class="animate-spin h-10 w-10 text-[#00113a]" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </div>
+  }
+
+  <!-- Units Grid -->
+  @if (!isLoading) {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      @for (unidad of unidades; track unidad.idUnidad; let i = $index) {
+        <div class="bg-white rounded-xl border border-[#c5c6d2] p-6 transition-all duration-300 flex flex-col hover:-translate-y-1 hover:shadow-md">
+          <div class="flex justify-between items-start mb-6">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" [class]="getColorClassForUnidad(i)">
+                <span class="material-symbols-outlined text-3xl">{{ unidad.icono || getIconForUnidad(unidad.nombre) }}</span>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-[#00113a]">{{ unidad.nombre }}</h3>
+                <span class="bg-[#dbe1ff] text-[#2a4386] text-xs px-3 py-0.5 rounded-full font-bold">Unidad Activa</span>
+              </div>
+            </div>
+            @if (canEdit()) {
+              <div class="relative">
+                <button class="text-[#c5c6d2] hover:text-[#00113a] transition-colors cursor-pointer">
+                  <span class="material-symbols-outlined">more_vert</span>
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="space-y-4 flex-grow">
+            <div class="flex justify-between items-center py-2 border-b border-[#e1e3e4]">
+              <span class="text-[#444650] flex items-center gap-2 text-sm">
+                <span class="material-symbols-outlined text-sm">badge</span> Consejero
+              </span>
+              <span class="font-bold text-[#00113a] text-sm">{{ unidad.consejeroNombre || 'Sin asignar' }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-[#e1e3e4]">
+              <span class="text-[#444650] flex items-center gap-2 text-sm">
+                <span class="material-symbols-outlined text-sm">groups</span> Miembros
+              </span>
+              <span class="font-bold text-[#00113a] text-sm">{{ unidad.miembrosCount || 0 }} Miembros</span>
+            </div>
+            <div class="flex justify-between items-center py-2">
+              <span class="text-[#444650] flex items-center gap-2 text-sm">
+                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span> Puntos
+              </span>
+              <span class="font-bold text-[#b7102a] text-sm">{{ unidad.puntos || 0 }} pts</span>
+            </div>
+          </div>
+
+          <div class="mt-6 flex gap-3">
+            <button
+              routerLink="/dashboard/miembros"
+              class="flex-grow py-2.5 rounded-lg border-2 border-[#00113a] text-[#00113a] font-bold hover:bg-[#00113a] hover:text-white transition-all text-sm cursor-pointer"
+            >
+              Ver Miembros
+            </button>
+            @if (canEdit()) {
+              <button
+                (click)="openEditModal(unidad)"
+                class="p-2.5 rounded-lg bg-[#e7e8e9] text-[#00113a] hover:bg-[#dbe1ff] transition-all cursor-pointer"
+                title="Editar unidad"
+              >
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+              </button>
+              <button
+                (click)="onDelete(unidad)"
+                class="p-2.5 rounded-lg bg-[#ffdad6] text-[#b7102a] hover:bg-red-100 transition-all cursor-pointer"
+                title="Eliminar unidad"
+              >
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Add Unit placeholder card -->
+      @if (canEdit()) {
+        <div
+          (click)="openCreateModal()"
+          class="cursor-pointer border-2 border-dashed border-[#c5c6d2] rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:border-[#00113a] hover:bg-[#dbe1ff]/20 transition-all duration-300 min-h-[320px] group"
+        >
+          <div class="w-16 h-16 rounded-full bg-[#edeeef] flex items-center justify-center text-[#757682] group-hover:bg-[#00113a] group-hover:text-white transition-all">
+            <span class="material-symbols-outlined text-3xl">add</span>
+          </div>
+          <div class="text-center">
+            <p class="text-lg font-bold text-[#757682] group-hover:text-[#00113a] transition-colors">Crear Nueva Unidad</p>
+            <p class="text-[#444650] text-sm mt-1">Crea un nuevo grupo con un consejero asignado.</p>
+          </div>
+        </div>
+      }
+
+      <!-- Empty state -->
+      @if (unidades.length === 0 && !isLoading) {
+        <div class="col-span-full text-center py-20 text-[#444650]">
+          <span class="material-symbols-outlined text-[64px] text-[#c5c6d2]">group_work</span>
+          <p class="text-lg font-bold text-[#191c1d] mt-4">No hay unidades registradas</p>
+          <p class="text-sm text-[#757682] mt-1">Crea la primera unidad del club haciendo clic en "Agregar Nueva Unidad".</p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Modal: Crear / Editar Unidad -->
+  @if (showModal) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div class="w-full max-w-lg bg-white border border-[#c5c6d2] rounded-xl shadow-2xl overflow-hidden">
+        <!-- Modal Header -->
+        <div class="p-6 border-b border-[#c5c6d2] flex justify-between items-center bg-[#f3f4f5]">
+          <h3 class="text-lg font-bold text-[#00113a]">
+            {{ isEditing ? 'Editar Unidad' : 'Crear Nueva Unidad' }}
+          </h3>
+          <button (click)="closeModal()" class="text-[#757682] hover:text-[#191c1d] cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Form -->
+        <form [formGroup]="unidadForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Nombre de la Unidad *</label>
+            <input
+              type="text"
+              formControlName="nombre"
+              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition"
+              placeholder="Ej. Halcones, Águilas, Estrellas..."
+            />
+            @if (unidadForm.get('nombre')?.touched && unidadForm.get('nombre')?.errors?.['required']) {
+              <p class="text-[#b7102a] text-xs mt-1">El nombre es requerido.</p>
+            }
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Descripción (opcional)</label>
+            <textarea
+              formControlName="descripcion"
+              rows="3"
+              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition resize-none"
+              placeholder="Descripción breve de la unidad..."
+            ></textarea>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2] mt-4">
+            <button
+              type="button"
+              (click)="closeModal()"
+              class="px-4 py-2.5 bg-[#f3f4f5] hover:bg-[#edeeef] text-[#444650] rounded-lg font-bold text-sm cursor-pointer transition"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              [disabled]="unidadForm.invalid || isLoading"
+              class="px-6 py-2.5 bg-[#00113a] text-white hover:bg-[#002366] font-bold rounded-lg text-sm cursor-pointer disabled:opacity-50 transition"
+            >
+              {{ isEditing ? 'Guardar Cambios' : 'Crear Unidad' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+</div>

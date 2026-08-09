@@ -1,0 +1,100 @@
+<div class="space-y-6">
+  
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2 text-[#00113a]">
+        <span class="material-symbols-outlined text-[22px]">workspace_premium</span>
+        <span class="text-xs font-bold tracking-wider uppercase text-[#757682]">Competencia Interna</span>
+      </div>
+      <h1 class="text-2xl font-black text-[#00113a]">Ranking de Unidades</h1>
+      <p class="text-sm text-[#444650]">Puntajes acumulados por inspección de uniforme, puntualidad, cuotas y especialidades.</p>
+    </div>
+  </div>
+
+  <!-- Podium Section -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
+    
+    <!-- 2nd Place (Silver) -->
+    <div class="bg-white border border-[#c5c6d2] rounded-2xl p-6 shadow-sm flex flex-col items-center text-center order-2 md:order-1 relative">
+      <div class="w-14 h-14 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-black text-xl mb-3 border-4 border-white shadow-md">
+        2
+      </div>
+      <h3 class="text-lg font-black text-[#00113a]">{{ ranking()[1].unidad }}</h3>
+      <p class="text-xs text-[#757682]">Consejero: {{ ranking()[1].consejero }}</p>
+      <div class="mt-4 px-4 py-1.5 bg-[#f8f9fa] rounded-full border border-[#c5c6d2]">
+        <span class="text-sm font-black text-[#00113a]">{{ ranking()[1].puntaje }} pts</span>
+      </div>
+    </div>
+
+    <!-- 1st Place (Gold) -->
+    <div class="bg-gradient-to-b from-amber-50 to-white border-2 border-[#ffba27] rounded-2xl p-6 shadow-lg flex flex-col items-center text-center order-1 md:order-2 relative -mt-4">
+      <div class="absolute -top-4 px-3 py-1 bg-[#ffba27] text-[#00113a] text-[10px] font-black uppercase rounded-full tracking-wider shadow-sm flex items-center gap-1">
+        <span class="material-symbols-outlined text-[14px]">emoji_events</span> Líder de Club
+      </div>
+      <div class="w-16 h-16 rounded-full bg-[#ffba27] text-[#00113a] flex items-center justify-center font-black text-2xl mb-3 border-4 border-white shadow-md mt-2">
+        1
+      </div>
+      <h3 class="text-xl font-black text-[#00113a]">{{ ranking()[0].unidad }}</h3>
+      <p class="text-xs text-[#757682]">Consejero: {{ ranking()[0].consejero }}</p>
+      <div class="mt-4 px-5 py-2 bg-[#ffba27]/20 rounded-full border border-[#ffba27]">
+        <span class="text-base font-black text-[#00113a]">{{ ranking()[0].puntaje }} pts</span>
+      </div>
+    </div>
+
+    <!-- 3rd Place (Bronze) -->
+    <div class="bg-white border border-[#c5c6d2] rounded-2xl p-6 shadow-sm flex flex-col items-center text-center order-3 relative">
+      <div class="w-14 h-14 rounded-full bg-amber-700/20 text-amber-800 flex items-center justify-center font-black text-xl mb-3 border-4 border-white shadow-md">
+        3
+      </div>
+      <h3 class="text-lg font-black text-[#00113a]">{{ ranking()[2].unidad }}</h3>
+      <p class="text-xs text-[#757682]">Consejero: {{ ranking()[2].consejero }}</p>
+      <div class="mt-4 px-4 py-1.5 bg-[#f8f9fa] rounded-full border border-[#c5c6d2]">
+        <span class="text-sm font-black text-[#00113a]">{{ ranking()[2].puntaje }} pts</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Detailed Table -->
+  <div class="bg-white rounded-xl border border-[#c5c6d2] overflow-hidden shadow-sm">
+    <div class="p-4 bg-[#f8f9fa] border-b border-[#c5c6d2]">
+      <h2 class="text-sm font-bold text-[#00113a]">Tabla General de Puntuaciones</h2>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[#c5c6d2] text-[#757682] text-xs font-bold uppercase tracking-wider">
+            <th class="py-3.5 px-4 text-center">Pos</th>
+            <th class="py-3.5 px-4">Unidad</th>
+            <th class="py-3.5 px-4 text-center">Asistencia</th>
+            <th class="py-3.5 px-4 text-center">Uniforme</th>
+            <th class="py-3.5 px-4 text-center">Cuotas</th>
+            <th class="py-3.5 px-4 text-center">Especialidades</th>
+            <th class="py-3.5 px-4 text-right">Total Acumulado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#c5c6d2] text-sm">
+          @for (pos of ranking(); track pos.unidad) {
+            <tr class="hover:bg-[#f8f9fa] transition">
+              <td class="py-3.5 px-4 text-center font-black text-[#00113a]">{{ pos.posicion }}°</td>
+              <td class="py-3.5 px-4 font-bold text-[#00113a]">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full" [style.backgroundColor]="pos.color"></span>
+                  <span>Unidad {{ pos.unidad }}</span>
+                </div>
+              </td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosAsistencia }}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosUniforme }}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosCuotas }}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosEspecialidades }}</td>
+              <td class="py-3.5 px-4 text-right font-black text-[#00113a]">{{ pos.puntaje }} pts</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

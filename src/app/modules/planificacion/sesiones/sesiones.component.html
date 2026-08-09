@@ -1,0 +1,181 @@
+<div class="space-y-6">
+  
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2 text-[#00113a]">
+        <span class="material-symbols-outlined text-[22px]">cast_for_education</span>
+        <span class="text-xs font-bold tracking-wider uppercase text-[#757682]">Instrucción de Clases</span>
+      </div>
+      <h1 class="text-2xl font-black text-[#00113a]">Sesiones de Aprendizaje</h1>
+      <p class="text-sm text-[#444650]">Planificación y seguimiento pedagógico de los requisitos del cuadernillo.</p>
+    </div>
+
+    <button (click)="showNuevaSesionModal = true"
+            class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+      <span class="material-symbols-outlined text-[18px]">add_circle</span>
+      Planificar Sesión
+    </button>
+  </div>
+
+  <!-- Class Filter Pills -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-2">
+    <button (click)="filtroClase.set('TODAS')"
+            class="px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0"
+            [class.bg-[#00113a]]="filtroClase() === 'TODAS'"
+            [class.text-white]="filtroClase() === 'TODAS'"
+            [class.bg-white]="filtroClase() !== 'TODAS'"
+            [class.text-[#444650]]="filtroClase() !== 'TODAS'"
+            [class.border]="filtroClase() !== 'TODAS'"
+            [class.border-[#c5c6d2]]="filtroClase() !== 'TODAS'">
+      Todas las Clases
+    </button>
+    @for (clase of clases; track clase.id) {
+      <button (click)="filtroClase.set(clase.id)"
+              class="px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5"
+              [class.bg-[#00113a]]="filtroClase() === clase.id"
+              [class.text-white]="filtroClase() === clase.id"
+              [class.bg-white]="filtroClase() !== clase.id"
+              [class.text-[#444650]]="filtroClase() !== clase.id"
+              [class.border]="filtroClase() !== clase.id"
+              [class.border-[#c5c6d2]]="filtroClase() !== clase.id">
+        <span class="w-2.5 h-2.5 rounded-full" [style.backgroundColor]="clase.color"></span>
+        {{ clase.nombre }}
+      </button>
+    }
+  </div>
+
+  <!-- Sessions Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    @for (sesion of filtrarSesiones(); track sesion.id) {
+      <div class="bg-white border border-[#c5c6d2] rounded-xl p-5 shadow-sm hover:shadow-md hover:border-[#00113a] transition-all flex flex-col justify-between">
+        
+        <div>
+          <!-- Card Header -->
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span class="text-xs font-black text-white px-2.5 py-1 rounded-full uppercase"
+                  [style.backgroundColor]="sesion.claseColor">
+              Clase {{ sesion.claseNombre }}
+            </span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                  [class.bg-emerald-100]="sesion.estado === 'COMPLETADA'"
+                  [class.text-emerald-800]="sesion.estado === 'COMPLETADA'"
+                  [class.bg-amber-100]="sesion.estado === 'PROGRAMADA'"
+                  [class.text-amber-800]="sesion.estado === 'PROGRAMADA'">
+              {{ sesion.estado }}
+            </span>
+          </div>
+
+          <!-- Title & Requirement Tag -->
+          <h3 class="text-base font-bold text-[#00113a] leading-tight mb-2">{{ sesion.titulo }}</h3>
+          
+          <div class="bg-[#f8f9fa] border border-[#c5c6d2] rounded-lg p-2.5 mb-3 text-xs">
+            <span class="font-bold text-[#00113a]">{{ sesion.requisitoCodigo }}:</span>
+            <span class="text-[#444650] ml-1">{{ sesion.requisitoNombre }}</span>
+          </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="pt-3 border-t border-[#c5c6d2] flex items-center justify-between text-xs text-[#757682]">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">person</span>
+            <span class="font-semibold text-[#00113a]">{{ sesion.instructor }}</span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+              {{ sesion.fecha }}
+            </span>
+
+            @if (sesion.estado === 'PROGRAMADA') {
+              <button (click)="completarSesion(sesion.id)"
+                      class="text-xs font-bold text-white bg-[#00113a] hover:bg-[#002366] px-3 py-1 rounded-md shadow-xs transition cursor-pointer">
+                Completar
+              </button>
+            }
+          </div>
+        </div>
+
+      </div>
+    }
+  </div>
+
+  <!-- Modal: Planificar Sesión -->
+  @if (showNuevaSesionModal) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
+          <h3 class="text-lg font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00113a]">add_circle</span>
+            Planificar Sesión de Clase
+          </h3>
+          <button (click)="showNuevaSesionModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form (ngSubmit)="crearSesion()" class="space-y-4 mt-4">
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Clase Asignada</label>
+            <select [(ngModel)]="nuevaSesion.claseId" name="claseId"
+                    class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white">
+              @for (clase of clases; track clase.id) {
+                <option [value]="clase.id">{{ clase.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Tema / Título de la Sesión</label>
+            <input [(ngModel)]="nuevaSesion.titulo" name="titulo" type="text"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                   placeholder="Ej. Taller de Nudos y Amarres" required />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Código Requisito</label>
+              <input [(ngModel)]="nuevaSesion.requisitoCodigo" name="requisitoCodigo" type="text"
+                     class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                     placeholder="Ej. AM-ESP-01" required />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Fecha Programada</label>
+              <input [(ngModel)]="nuevaSesion.fecha" name="fecha" type="date"
+                     class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none" required />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Detalle del Requisito a Enseñar</label>
+            <input [(ngModel)]="nuevaSesion.requisitoNombre" name="requisitoNombre" type="text"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                   placeholder="Ej. Memorizar y explicar el voto y la ley" required />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Instructor a Cargo</label>
+            <input [(ngModel)]="nuevaSesion.instructor" name="instructor" type="text"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                   placeholder="Ej. Juan Pérez" />
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2]">
+            <button type="button" (click)="showNuevaSesionModal = false"
+                    class="px-4 py-2 text-sm font-bold text-[#757682] hover:bg-[#edeeef] rounded-lg transition cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit"
+                    class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow transition cursor-pointer">
+              Guardar Sesión
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+</div>

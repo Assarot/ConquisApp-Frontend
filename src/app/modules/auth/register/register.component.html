@@ -1,0 +1,137 @@
+<div class="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-10 px-4 relative overflow-hidden font-sans">
+
+  <!-- Subtle topographic background lines overlay -->
+  <div class="fixed inset-0 pointer-events-none opacity-[0.03] z-0">
+    <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern height="200" id="topo" patternunits="userSpaceOnUse" width="200">
+          <path d="M0 100 C 50 80, 100 120, 150 100 S 250 80, 300 100" fill="none" stroke="currentColor"
+            stroke-width="1"></path>
+          <path d="M0 120 C 50 100, 100 140, 150 120 S 250 100, 300 120" fill="none" stroke="currentColor"
+            stroke-width="1"></path>
+        </pattern>
+      </defs>
+      <rect fill="url(#topo)" height="100%" width="100%"></rect>
+    </svg>
+  </div>
+
+  <!-- Register Card -->
+  <div class="w-full max-w-2xl bg-white border border-[#c5c6d2] p-8 rounded-xl shadow-xl relative z-10">
+    <div class="text-center mb-6">
+      <div class="inline-flex w-16 h-16 rounded-2xl mb-3 items-center justify-center p-2.5 overflow-hidden">
+        <img src="ConquisLogo.png" alt="Logo Conquistadores" class="w-full h-full object-contain">
+      </div>
+      <h2 class="text-2xl font-extrabold text-[#00113a] tracking-tight">Crear Cuenta de Líder</h2>
+      <p class="text-[#444650] text-sm mt-1">Únete a la gestión del Club de Conquistadores.</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Grid for Nombre & Apellido -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="nombre" class="block text-sm font-semibold text-[#191c1d] mb-2">Nombre</label>
+          <input id="nombre" type="text" formControlName="nombre"
+            class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] bg-white text-[#191c1d] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition"
+            placeholder="Esteban" />
+          @if (registerForm.get('nombre')?.touched && registerForm.get('nombre')?.errors?.['required']) {
+          <p class="text-[#b7102a] text-xs mt-1">El nombre es requerido.</p>
+          }
+        </div>
+
+        <div>
+          <label for="apellido" class="block text-sm font-semibold text-[#191c1d] mb-2">Apellido</label>
+          <input id="apellido" type="text" formControlName="apellido"
+            class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] bg-white text-[#191c1d] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition"
+            placeholder="Quito" />
+          @if (registerForm.get('apellido')?.touched && registerForm.get('apellido')?.errors?.['required']) {
+          <p class="text-[#b7102a] text-xs mt-1">El apellido es requerido.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Grid for Email & Password -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="email" class="block text-sm font-semibold text-[#191c1d] mb-2">Correo Electrónico</label>
+          <input id="email" type="email" formControlName="email"
+            class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] bg-white text-[#191c1d] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition"
+            placeholder="esteban.quito@club.com" />
+          @if (registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['required']) {
+          <p class="text-[#b7102a] text-xs mt-1">El correo electrónico es requerido.</p>
+          }
+          @if (registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['email']) {
+          <p class="text-[#b7102a] text-xs mt-1">Ingresa un correo válido.</p>
+          }
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-semibold text-[#191c1d] mb-2">Contraseña</label>
+          <input id="password" type="password" formControlName="password"
+            class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] bg-white text-[#191c1d] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition"
+            placeholder="••••••••" />
+          @if (registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['required']) {
+          <p class="text-[#b7102a] text-xs mt-1">La contraseña es requerida.</p>
+          }
+          @if (registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['minlength']) {
+          <p class="text-[#b7102a] text-xs mt-1">Debe tener al menos 6 caracteres.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Grid for Club & Rol Selection -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="idClub" class="block text-sm font-semibold text-[#191c1d] mb-2">Club</label>
+          <select id="idClub" formControlName="idClub"
+            class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] bg-white text-[#191c1d] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition">
+            <option value="" disabled selected>Selecciona tu Club</option>
+            @for (club of clubs; track club.id) {
+            <option [value]="club.id">{{ club.nombre }}</option>
+            }
+          </select>
+          @if (registerForm.get('idClub')?.touched && registerForm.get('idClub')?.errors?.['required']) {
+          <p class="text-[#b7102a] text-xs mt-1">El club es requerido.</p>
+          }
+        </div>
+
+        <div>
+          <label for="idRol" class="block text-sm font-semibold text-[#191c1d] mb-2">Rol en el Club</label>
+          <select id="idRol" formControlName="idRol"
+            class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] bg-white text-[#191c1d] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition">
+            <option value="" disabled selected>Selecciona tu Rol</option>
+            @for (rol of roles; track rol.id) {
+            <option [value]="rol.id">{{ rol.nombre }}</option>
+            }
+          </select>
+          @if (registerForm.get('idRol')?.touched && registerForm.get('idRol')?.errors?.['required']) {
+          <p class="text-[#b7102a] text-xs mt-1">El rol es requerido.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" [disabled]="isLoading"
+        class="w-full py-3 px-4 bg-gradient-to-r from-[#00113a] to-[#002366] hover:brightness-110 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        @if (isLoading) {
+        <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
+        </svg>
+        Registrando...
+        } @else {
+        Registrar Cuenta
+        }
+      </button>
+
+      <div class="text-center mt-4">
+        <p class="text-sm text-[#444650]">
+          ¿Ya tienes una cuenta?
+          <a routerLink="/auth/login" class="text-[#b7102a] hover:underline font-bold ml-1 cursor-pointer">Inicia
+            Sesión</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,100 @@
+<div class="space-y-6">
+  
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2 text-[#00113a]">
+        <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+        <span class="text-xs font-bold tracking-wider uppercase text-[#757682]">Estadísticas e Informes</span>
+      </div>
+      <h1 class="text-2xl font-black text-[#00113a]">Reportes del Club</h1>
+      <p class="text-sm text-[#444650]">Consolidado de asistencia, cuotas, avances académicos y puntajes de unidades.</p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button (click)="exportarReporte('PDF')"
+              class="flex items-center gap-2 bg-[#b7102a] hover:bg-red-800 text-white px-4 py-2 rounded-lg font-bold shadow-xs transition cursor-pointer text-xs">
+        <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+        Exportar PDF
+      </button>
+      <button (click)="exportarReporte('Excel')"
+              class="flex items-center gap-2 bg-[#2e7d32] hover:bg-green-800 text-white px-4 py-2 rounded-lg font-bold shadow-xs transition cursor-pointer text-xs">
+        <span class="material-symbols-outlined text-[16px]">table_view</span>
+        Exportar Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary KPI Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+    <div class="bg-white border border-[#c5c6d2] p-5 rounded-xl shadow-sm">
+      <p class="text-xs text-[#757682] font-semibold uppercase">Total Miembros</p>
+      <p class="text-2xl font-black text-[#00113a] mt-1">30</p>
+      <span class="text-xs text-emerald-600 font-bold flex items-center gap-1 mt-1">
+        <span class="material-symbols-outlined text-[14px]">trending_up</span> 4 Unidades Activas
+      </span>
+    </div>
+
+    <div class="bg-white border border-[#c5c6d2] p-5 rounded-xl shadow-sm">
+      <p class="text-xs text-[#757682] font-semibold uppercase">Asistencia Promedio</p>
+      <p class="text-2xl font-black text-[#00113a] mt-1">91%</p>
+      <span class="text-xs text-[#757682] mt-1 block">Meta del Club: 90%</span>
+    </div>
+
+    <div class="bg-white border border-[#c5c6d2] p-5 rounded-xl shadow-sm">
+      <p class="text-xs text-[#757682] font-semibold uppercase">Cuotas al Día</p>
+      <p class="text-2xl font-black text-[#00113a] mt-1">88%</p>
+      <span class="text-xs text-emerald-600 font-bold mt-1 block">Recaudación Saludable</span>
+    </div>
+
+    <div class="bg-white border border-[#c5c6d2] p-5 rounded-xl shadow-sm">
+      <p class="text-xs text-[#757682] font-semibold uppercase">Requisitos Validados</p>
+      <p class="text-2xl font-black text-[#00113a] mt-1">161</p>
+      <span class="text-xs text-amber-600 font-bold mt-1 block">Rumbo a Investidura</span>
+    </div>
+  </div>
+
+  <!-- Unit Performance Table -->
+  <div class="bg-white rounded-xl border border-[#c5c6d2] overflow-hidden shadow-sm">
+    <div class="p-4 bg-[#f8f9fa] border-b border-[#c5c6d2] flex items-center justify-between">
+      <h2 class="text-sm font-bold text-[#00113a]">Rendimiento Consolidado por Unidad</h2>
+      <span class="text-xs font-bold text-[#757682] bg-white px-3 py-1 rounded-full border border-[#c5c6d2]">
+        {{ periodoSeleccionado() }}
+      </span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[#c5c6d2] text-[#757682] text-xs font-bold uppercase tracking-wider">
+            <th class="py-3.5 px-4">Unidad</th>
+            <th class="py-3.5 px-4">Consejero</th>
+            <th class="py-3.5 px-4 text-center">Miembros</th>
+            <th class="py-3.5 px-4 text-center">Asistencia</th>
+            <th class="py-3.5 px-4 text-center">Cuotas</th>
+            <th class="py-3.5 px-4 text-center">Requisitos</th>
+            <th class="py-3.5 px-4 text-right">Puntaje</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#c5c6d2] text-sm">
+          @for (f of fichas(); track f.unidad) {
+            <tr class="hover:bg-[#f8f9fa] transition">
+              <td class="py-3.5 px-4 font-bold text-[#00113a]">Unidad {{ f.unidad }}</td>
+              <td class="py-3.5 px-4 text-xs text-[#444650]">{{ f.consejero }}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ f.conquistadoresCount }}</td>
+              <td class="py-3.5 px-4 text-center">
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                  {{ f.asistenciaPromedio }}%
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ f.cuotasAlDia }}%</td>
+              <td class="py-3.5 px-4 text-center font-bold text-[#00113a]">{{ f.requisitosCompletados }}</td>
+              <td class="py-3.5 px-4 text-right font-black text-[#00113a]">{{ f.puntajeTotal }} pts</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

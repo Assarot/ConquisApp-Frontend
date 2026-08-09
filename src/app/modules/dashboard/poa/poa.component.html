@@ -1,0 +1,288 @@
+<div class="space-y-6">
+  
+  <!-- 2. Top Bar & Breadcrumbs -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm">
+    <div class="space-y-1">
+      <h2 class="text-2xl font-bold tracking-tight text-[#00113a] flex items-center gap-3">
+        Plan Operativo Anual (POA)
+        @if (selectedPoa) {
+          <span
+            [class]="selectedPoa.estado === 'ACTIVO' ? 'bg-green-50 text-green-700 border border-green-300' : 'bg-[#f3f4f5] text-[#444650] border border-[#c5c6d2]'"
+            class="text-xs px-2.5 py-1 rounded-full font-bold"
+          >
+            {{ selectedPoa.estado }}
+          </span>
+        }
+      </h2>
+      <p class="text-[#444650] text-sm">Planificación anual y cronograma oficial de actividades del club.</p>
+    </div>
+
+    <div class="flex items-center gap-3 w-full md:w-auto">
+      <!-- POA Dropdown Selector -->
+      <select
+        [ngModel]="selectedPoa"
+        (ngModelChange)="selectPoa($event)"
+        class="bg-white border border-[#c5c6d2] text-[#191c1d] text-sm rounded-lg focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] p-2.5"
+      >
+        @for (poa of poas; track poa.idPoa) {
+          <option [ngValue]="poa">Año {{ poa.anio }}</option>
+        }
+      </select>
+
+      @if (canManagePoa()) {
+        <button
+          (click)="openNewPoaModal()"
+          class="flex items-center gap-2 px-4 py-2.5 bg-[#00113a] hover:bg-[#002366] text-white rounded-lg text-sm font-semibold transition cursor-pointer"
+        >
+          Inicializar POA
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- 4. Dashboard Resumen (Bento Grid Style) -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Card 1: Metas -->
+    <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
+      <div class="w-14 h-14 bg-[#dbe1ff] rounded-full flex items-center justify-center text-[#00113a]">
+        <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+      </div>
+      <div class="flex-grow">
+        <p class="text-xs font-bold text-[#757682] uppercase tracking-wider">Avance del Plan</p>
+        <h3 class="text-2xl font-extrabold text-[#00113a] mt-1">
+          {{ actividades.length > 0 ? (actividades.length * 0.6 | number:'1.0-0') : 0 }} / {{ actividades.length }}
+        </h3>
+        <div class="mt-2 w-full bg-[#edeeef] h-2 rounded-full overflow-hidden">
+          <div class="bg-[#00113a] h-full rounded-full" style="width: 60%"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Card 2: Pendientes -->
+    <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
+      <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center text-[#b7102a]">
+        <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-[#757682] uppercase tracking-wider">Actividades Registradas</p>
+        <h3 class="text-2xl font-extrabold text-[#00113a] mt-1">
+          {{ actividades.length | number:'2.0-0' }}
+        </h3>
+        <p class="text-[10px] text-[#b7102a] font-bold mt-1">Sincronizado con base de datos</p>
+      </div>
+    </div>
+    
+    <!-- Card 3: Presupuesto -->
+    <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
+      <div class="w-14 h-14 bg-yellow-50 rounded-full flex items-center justify-center text-[#ffba27]">
+        <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">payments</span>
+      </div>
+      <div>
+        <p class="text-xs font-bold text-[#757682] uppercase tracking-wider">Presupuesto Estimado</p>
+        <h3 class="text-2xl font-extrabold text-[#00113a] mt-1">75%</h3>
+        <p class="text-[10px] text-[#444650] font-semibold mt-1">Fondo general Club Orión</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 & 6. Filters & Table Section -->
+  <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm overflow-hidden">
+    <!-- Toolbar header -->
+    <div class="px-6 py-5 bg-[#f8f9fa] border-b border-[#c5c6d2] flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="text-lg font-extrabold text-[#00113a]">
+        Lista de Actividades
+      </div>
+
+      @if (selectedPoa && canManagePoa()) {
+        <!-- 7. Botón destacado Nueva Actividad -->
+        <button
+          (click)="openActivityModal()"
+          class="flex items-center gap-2 px-5 py-2.5 bg-[#ffba27] hover:brightness-105 text-[#00113a] font-bold rounded-lg text-sm transition duration-150 cursor-pointer shadow-md"
+        >
+          <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'wght' 600;">add_circle</span>
+          Nueva Actividad
+        </button>
+      }
+    </div>
+
+    <!-- Table -->
+    @if (isLoading) {
+      <div class="flex justify-center items-center py-20">
+        <svg class="animate-spin h-10 w-10 text-[#00113a]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+    } @else if (actividades.length === 0) {
+      <div class="text-center py-20 text-[#444650]">
+        <span class="material-symbols-outlined text-[64px] text-[#c5c6d2]">assignment_late</span>
+        <p class="text-lg font-bold text-[#191c1d] mt-4">No hay actividades planificadas</p>
+        <p class="text-sm text-[#757682] mt-1">Crea una nueva actividad para comenzar con la planificación del POA.</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left text-[#191c1d]">
+          <thead class="text-xs uppercase bg-[#f3f4f5] text-[#444650] border-b border-[#c5c6d2] font-bold">
+            <tr>
+              <th scope="col" class="px-6 py-4 font-bold">Fecha</th>
+              <th scope="col" class="px-6 py-4 font-bold">Actividad</th>
+              <th scope="col" class="px-6 py-4 font-bold">Ámbito</th>
+              <th scope="col" class="px-6 py-4 font-bold">Responsable</th>
+              @if (canManagePoa()) {
+                <th scope="col" class="px-6 py-4 text-right font-bold">Acciones</th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#e1e3e4]">
+            @for (act of actividades; track act.idActividad) {
+              <tr class="hover:bg-[#f8f9fa] transition duration-100">
+                <td class="px-6 py-4 font-semibold text-[#191c1d] whitespace-nowrap">
+                  {{ act.fecha | date:'dd MMM yyyy' }}
+                </td>
+                <td class="px-6 py-4 text-[#00113a] font-bold">
+                  {{ act.nombre }}
+                </td>
+                <td class="px-6 py-4">
+                  <span
+                    [class]="{
+                      'bg-blue-50 text-blue-700 border border-blue-200': act.ambito === 'CLUB',
+                      'bg-purple-50 text-purple-700 border border-purple-200': act.ambito === 'IGLESIA',
+                      'bg-orange-50 text-orange-700 border border-orange-200': act.ambito === 'REGION',
+                      'bg-yellow-50 text-yellow-700 border border-yellow-300': act.ambito === 'ASOCIACION',
+                      'bg-green-50 text-green-700 border border-green-200': act.ambito === 'RECURRENTE'
+                    }"
+                    class="text-xs px-2.5 py-0.5 rounded-full font-bold uppercase"
+                  >
+                    {{ act.ambito }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-[#444650] font-medium">
+                  {{ act.responsable }}
+                </td>
+                @if (canManagePoa()) {
+                  <td class="px-6 py-4 text-right">
+                    <button
+                      (click)="onReprogramDate(act)"
+                      class="px-3 py-1.5 bg-white hover:bg-[#f3f4f5] border border-[#c5c6d2] text-[#00113a] rounded-lg text-xs font-bold cursor-pointer transition shadow-sm"
+                    >
+                      Reprogramar
+                    </button>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Asymmetric Support Section -->
+  <div class="flex flex-col lg:flex-row gap-6">
+    <div class="lg:w-2/3 bg-[#00113a] text-white p-8 rounded-2xl relative overflow-hidden shadow-md">
+      <!-- Watermark pattern -->
+      <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
+      <div class="relative z-10 space-y-4">
+        <h4 class="text-xl font-bold">Análisis de Progreso del POA</h4>
+        <p class="text-sm opacity-90 max-w-lg">Has completado el 60% de tus objetivos trimestrales. El enfoque para el próximo mes debe centrarse en las actividades de instrucción comunitaria para equilibrar la planificación general.</p>
+        <div class="flex gap-4 pt-4">
+          <button class="px-6 py-2.5 bg-white text-[#00113a] font-bold rounded-lg hover:bg-opacity-90 transition">Ver Informe</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="lg:w-1/3 bg-white border border-[#c5c6d2] rounded-2xl p-8 shadow-sm flex flex-col justify-center items-center text-center space-y-4">
+      <div class="w-16 h-16 rounded-full bg-[#ffdea9] flex items-center justify-center text-[#ffba27] shadow-inner">
+        <span class="material-symbols-outlined text-3xl">lightbulb</span>
+      </div>
+      <div>
+        <h5 class="font-bold text-[#00113a] text-base">Tip de Planificación</h5>
+        <p class="text-xs text-[#444650] mt-2">Recuerda asignar un presupuesto de contingencia del 5% para actividades al aire libre por posibles cambios climáticos.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Crear Actividad -->
+  @if (showActivityModal) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div class="w-full max-w-lg bg-white border border-[#c5c6d2] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div class="p-6 border-b border-[#c5c6d2] flex justify-between items-center bg-[#f8f9fa]">
+          <h3 class="text-lg font-bold text-[#00113a]">Nueva Actividad</h3>
+          <button (click)="closeActivityModal()" class="text-[#757682] hover:text-[#191c1d] cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form [formGroup]="activityForm" (ngSubmit)="onAddActivity()" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Nombre de Actividad</label>
+            <input type="text" formControlName="nombre" class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none" placeholder="Ej. Campamento de supervivencia">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-[#191c1d] mb-2">Fecha</label>
+              <input type="date" formControlName="fecha" class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none">
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-[#191c1d] mb-2">Ámbito</label>
+              <select formControlName="ambito" class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none bg-white">
+                <option value="CLUB">Club</option>
+                <option value="IGLESIA">Iglesia</option>
+                <option value="REGION">Región</option>
+                <option value="ASOCIACION">Asociación</option>
+                <option value="RECURRENTE">Recurrente</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Líder Responsable</label>
+            <input type="text" formControlName="responsable" class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none" placeholder="Ej. Guía Mayor Juan Pérez">
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2] mt-6">
+            <button type="button" (click)="closeActivityModal()" class="px-4 py-2 bg-[#f3f4f5] hover:bg-[#edeeef] text-[#444650] rounded-lg font-bold text-sm cursor-pointer transition">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="activityForm.invalid" class="px-5 py-2 bg-[#00113a] text-white hover:bg-[#002366] font-bold rounded-lg text-sm cursor-pointer disabled:opacity-50">
+              Crear Actividad
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Inicializar POA -->
+  @if (showPoaModal) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div class="w-full max-w-md bg-white border border-[#c5c6d2] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div class="p-6 border-b border-[#c5c6d2] flex justify-between items-center bg-[#f8f9fa]">
+          <h3 class="text-lg font-bold text-[#00113a]">Inicializar POA Anual</h3>
+          <button (click)="closeNewPoaModal()" class="text-[#757682] hover:text-[#191c1d] cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form [formGroup]="poaForm" (ngSubmit)="onCreatePoa()" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Año de Planificación</label>
+            <input type="number" formControlName="anio" class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none" placeholder="2026">
+            <p class="text-xs text-[#757682] mt-1.5">Se creará un nuevo registro en estado ACTIVO y se inicializará el cronograma.</p>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2] mt-6">
+            <button type="button" (click)="closeNewPoaModal()" class="px-4 py-2 bg-[#f3f4f5] hover:bg-[#edeeef] text-[#444650] rounded-lg font-bold text-sm cursor-pointer transition">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="poaForm.invalid" class="px-5 py-2 bg-[#00113a] text-white hover:bg-[#002366] font-bold rounded-lg text-sm cursor-pointer disabled:opacity-50">
+              Inicializar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

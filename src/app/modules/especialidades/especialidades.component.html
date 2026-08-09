@@ -1,0 +1,212 @@
+<div class="space-y-6">
+  
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2 text-[#00113a]">
+        <span class="material-symbols-outlined text-[22px]">military_tech</span>
+        <span class="text-xs font-bold tracking-wider uppercase text-[#757682]">Catálogo Oficial</span>
+      </div>
+      <h1 class="text-2xl font-black text-[#00113a]">Especialidades de Conquistadores</h1>
+      <p class="text-sm text-[#444650]">Catálogo oficial de especialidades, insignias y evaluación de requisitos.</p>
+    </div>
+
+    <!-- Search Input -->
+    <div class="relative w-full md:w-72">
+      <span class="material-symbols-outlined absolute left-3 top-2.5 text-[#757682] text-[18px]">search</span>
+      <input type="text" [(ngModel)]="searchTerm"
+             class="w-full pl-9 pr-4 py-2 bg-[#f8f9fa] border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:bg-white focus:outline-none transition"
+             placeholder="Buscar especialidad..." />
+    </div>
+  </div>
+
+  <!-- Category Filter Pills -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-2">
+    <button (click)="filtroCategoria.set('TODAS')"
+            class="px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0"
+            [class.bg-[#00113a]]="filtroCategoria() === 'TODAS'"
+            [class.text-white]="filtroCategoria() === 'TODAS'"
+            [class.bg-white]="filtroCategoria() !== 'TODAS'"
+            [class.text-[#444650]]="filtroCategoria() !== 'TODAS'"
+            [class.border]="filtroCategoria() !== 'TODAS'"
+            [class.border-[#c5c6d2]]="filtroCategoria() !== 'TODAS'">
+      Todas
+    </button>
+    @for (cat of categorias; track cat.id) {
+      <button (click)="filtroCategoria.set(cat.id)"
+              class="px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer shrink-0 flex items-center gap-1.5"
+              [class.bg-[#00113a]]="filtroCategoria() === cat.id"
+              [class.text-white]="filtroCategoria() === cat.id"
+              [class.bg-white]="filtroCategoria() !== cat.id"
+              [class.text-[#444650]]="filtroCategoria() !== cat.id"
+              [class.border]="filtroCategoria() !== cat.id"
+              [class.border-[#c5c6d2]]="filtroCategoria() !== cat.id">
+        <span class="material-symbols-outlined text-[15px]">{{ cat.icono }}</span>
+        {{ cat.nombre }}
+      </button>
+    }
+  </div>
+
+  <!-- Specialties Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    @for (esp of filtrarEspecialidades(); track esp.id) {
+      <div class="bg-white border border-[#c5c6d2] rounded-xl p-5 shadow-sm hover:border-[#00113a] hover:shadow-md transition-all flex flex-col justify-between group">
+        
+        <div>
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <!-- Icon Badge -->
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
+                 [style.backgroundColor]="esp.categoriaColor">
+              <span class="material-symbols-outlined text-[26px]">{{ esp.icono }}</span>
+            </div>
+            
+            <div class="flex flex-col items-end">
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                    [style.backgroundColor]="esp.categoriaColor + '15'"
+                    [style.color]="esp.categoriaColor">
+                {{ esp.categoriaNombre }}
+              </span>
+              <span class="text-[10px] font-bold text-[#757682] mt-1">{{ esp.nivel }}</span>
+            </div>
+          </div>
+
+          <h3 class="text-base font-bold text-[#00113a] group-hover:text-[#002366] transition">{{ esp.nombre }}</h3>
+          <p class="text-xs text-[#444650] mt-1 line-clamp-2">{{ esp.descripcion }}</p>
+
+          <div class="flex items-center gap-4 mt-4 text-xs text-[#757682] font-semibold">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">task</span>
+              {{ esp.requisitosCount }} Requisitos
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px] text-amber-500">military_tech</span>
+              {{ esp.conquistadoresCompletados }} Investidos
+            </span>
+          </div>
+        </div>
+
+        <!-- Card Actions -->
+        <div class="pt-4 mt-4 border-t border-[#c5c6d2] flex items-center justify-between gap-2">
+          <button (click)="verDetalles(esp)"
+                  class="text-xs font-bold text-[#00113a] hover:underline cursor-pointer">
+            Ver Requisitos
+          </button>
+          <button (click)="iniciarEvaluacion(esp)"
+                  class="text-xs font-bold text-white bg-[#00113a] hover:bg-[#002366] px-3 py-1.5 rounded-lg shadow-xs transition cursor-pointer">
+            Evaluar
+          </button>
+        </div>
+
+      </div>
+    }
+  </div>
+
+  <!-- Modal: Ver Requisitos -->
+  @if (selectedEspecialidad && !showEvaluacionModal) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white"
+                 [style.backgroundColor]="selectedEspecialidad.categoriaColor">
+              <span class="material-symbols-outlined">{{ selectedEspecialidad.icono }}</span>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-[#00113a]">{{ selectedEspecialidad.nombre }}</h3>
+              <span class="text-xs text-[#757682]">{{ selectedEspecialidad.categoriaNombre }}</span>
+            </div>
+          </div>
+          <button (click)="selectedEspecialidad = null" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="py-4 space-y-3">
+          <p class="text-xs text-[#444650]">{{ selectedEspecialidad.descripcion }}</p>
+          <h4 class="text-xs font-bold uppercase text-[#00113a] tracking-wider">Requisitos Oficiales</h4>
+          <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+            <div class="flex items-start gap-2 p-2 bg-[#f8f9fa] rounded-lg text-xs">
+              <span class="font-bold text-[#00113a]">1.</span>
+              <span class="text-[#444650]">Definir los términos fundamentales y normas de seguridad.</span>
+            </div>
+            <div class="flex items-start gap-2 p-2 bg-[#f8f9fa] rounded-lg text-xs">
+              <span class="font-bold text-[#00113a]">2.</span>
+              <span class="text-[#444650]">Demostrar prácticamente ante el instructor 5 técnicas de campo.</span>
+            </div>
+            <div class="flex items-start gap-2 p-2 bg-[#f8f9fa] rounded-lg text-xs">
+              <span class="font-bold text-[#00113a]">3.</span>
+              <span class="text-[#444650]">Presentar un informe escrito o álbum ilustrado del proyecto.</span>
+            </div>
+            <div class="flex items-start gap-2 p-2 bg-[#f8f9fa] rounded-lg text-xs">
+              <span class="font-bold text-[#00113a]">4.</span>
+              <span class="text-[#444650]">Aprobar el examen teórico-práctico de la comisión evaluadora.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-3 border-t border-[#c5c6d2]">
+          <button (click)="selectedEspecialidad = null"
+                  class="px-4 py-2 text-xs font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg transition cursor-pointer">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Evaluar Especialidad -->
+  @if (showEvaluacionModal && selectedEspecialidad) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
+          <h3 class="text-base font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00113a]">fact_check</span>
+            Evaluación: {{ selectedEspecialidad.nombre }}
+          </h3>
+          <button (click)="showEvaluacionModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="space-y-4 my-4">
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Seleccionar Conquistador</label>
+            <select class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm bg-white focus:border-[#00113a] outline-none">
+              <option>Mateo Silva (Unidad Águilas)</option>
+              <option>Sofía Quispe (Unidad Halcones)</option>
+              <option>Lucas Morales (Unidad Leones)</option>
+              <option>Valentina Castro (Unidad Estrellas)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Calificación de Desempeño</label>
+            <select class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm bg-white focus:border-[#00113a] outline-none">
+              <option>Aprobado con Excelencia (100%)</option>
+              <option>Aprobado Regular (85%)</option>
+              <option>Requisitos Pendientes</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Observaciones del Instructor</label>
+            <textarea rows="2" class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] outline-none"
+                      placeholder="Demostró dominio del temario..."></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-3 border-t border-[#c5c6d2]">
+          <button (click)="showEvaluacionModal = false"
+                  class="px-4 py-2 text-xs font-bold text-[#757682] hover:bg-[#edeeef] rounded-lg transition cursor-pointer">
+            Cancelar
+          </button>
+          <button (click)="guardarEvaluacion()"
+                  class="px-4 py-2 text-xs font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow transition cursor-pointer">
+            Aprobar y Registrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

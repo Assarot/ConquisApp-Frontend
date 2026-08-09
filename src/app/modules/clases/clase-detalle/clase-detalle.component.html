@@ -1,0 +1,249 @@
+<div class="space-y-6">
+  <!-- Class Select and Tab Header -->
+  <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+    <div class="space-y-1">
+      <h2 class="text-2xl font-bold tracking-tight text-[#00113a] flex items-center gap-2">
+        Control de Clases y Sesiones
+      </h2>
+      <p class="text-[#444650] text-sm">Gestiona el progreso del cuadernillo oficial y registra la asistencia de los conquistadores.</p>
+    </div>
+
+    <!-- Class selectors -->
+    <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+      @for (clase of clasesList; track clase.id) {
+        <button
+          (click)="selectedClaseId = clase.id; loadClaseData()"
+          [class]="selectedClaseId === clase.id ? 'bg-[#00113a] text-white shadow-md' : 'bg-white border border-[#c5c6d2] text-[#444650] hover:bg-[#f3f4f5]'"
+          class="px-4 py-2.5 rounded-lg text-sm font-bold transition cursor-pointer"
+        >
+          Clase {{ clase.nombre }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Tab Selector Navigation -->
+  <div class="border-b border-[#c5c6d2]">
+    <ul class="flex flex-wrap -mb-px text-sm font-bold text-center text-[#757682]">
+      <li class="mr-2">
+        <button
+          (click)="activeTab = 'avances'"
+          [class]="activeTab === 'avances' ? 'text-[#00113a] border-b-2 border-[#00113a]' : 'hover:text-[#191c1d]'"
+          class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer transition"
+        >
+          Avance de Cuadernillo
+        </button>
+      </li>
+      <li class="mr-2">
+        <button
+          (click)="activeTab = 'asistencia'"
+          [class]="activeTab === 'asistencia' ? 'text-[#00113a] border-b-2 border-[#00113a]' : 'hover:text-[#191c1d]'"
+          class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer transition"
+        >
+          Asistencia de Sesión
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Tab 1: Avances -->
+  @if (activeTab === 'avances') {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Left Panel: Conquistadores Folders List -->
+      <div class="lg:col-span-1 bg-white border border-[#c5c6d2] rounded-xl p-4 space-y-4 shadow-sm">
+        <h3 class="text-xs font-bold text-[#757682] uppercase tracking-wider px-2">Integrantes de Clase</h3>
+        
+        @if (miembrosDeClase.length === 0) {
+          <div class="text-center py-10 text-[#757682] text-sm">
+            No hay conquistadores registrados en esta clase.
+          </div>
+        } @else {
+          <div class="space-y-2 max-h-[500px] overflow-y-auto">
+            @for (m of miembrosDeClase; track m.idMiembro) {
+              <button
+                (click)="selectMiembro(m)"
+                [class]="selectedMiembro?.idMiembro === m.idMiembro ? 'border-l-4 border-l-[#ffba27] bg-[#dbe1ff] text-[#00113a] font-bold border border-[#c5c6d2]' : 'bg-[#f8f9fa] hover:bg-[#edeeef] border border-[#e1e3e4] text-[#444650]'"
+                class="w-full flex items-center justify-between p-3.5 rounded-lg transition cursor-pointer text-left shadow-sm"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="h-8 w-8 rounded-lg bg-white border border-[#c5c6d2] flex items-center justify-center font-extrabold text-xs text-[#00113a]">
+                    <span class="material-symbols-outlined text-[20px]">folder</span>
+                  </div>
+                  <div>
+                    <div class="font-bold text-sm text-[#00113a]">{{ m.nombre }} {{ m.apellido }}</div>
+                    <div class="text-[10px] text-[#757682]">Unidad: {{ m.nombreUnidad || 'No asignada' }}</div>
+                  </div>
+                </div>
+
+                <!-- Missing requirements indicator badge -->
+                <span
+                  [class]="m.pendientes === 0 ? 'bg-green-50 text-green-700 border-green-200' : m.pendientes <= 2 ? 'bg-yellow-50 text-yellow-700 border-yellow-300' : 'bg-red-50 text-red-700 border-red-200'"
+                  class="text-[10px] px-2 py-0.5 rounded font-bold border"
+                >
+                  {{ m.pendientes }} Pend.
+                </span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Right Panel: Cuadernillo Requirements Matrix (Asymmetric Details card) -->
+      <div class="lg:col-span-2 bg-white border border-[#c5c6d2] rounded-xl p-6 space-y-6 shadow-sm">
+        @if (!selectedMiembro) {
+          <div class="text-center py-20 text-[#757682] flex flex-col items-center justify-center">
+            <span class="material-symbols-outlined text-[64px] text-[#c5c6d2] mb-4">folder_open</span>
+            <p class="font-bold text-base text-[#191c1d]">Selecciona un conquistador</p>
+            <p class="text-xs">Usa la lista de la izquierda para evaluar y completar requisitos del cuadernillo.</p>
+          </div>
+        } @else {
+          <!-- Asymmetric Header details card style -->
+          <div class="bg-[#00113a] text-white p-6 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md relative overflow-hidden">
+            <!-- Background mapping lines -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
+            <div class="relative z-10">
+              <span class="px-2 py-0.5 bg-[#db313f] text-white text-[10px] font-bold rounded uppercase">Progreso Cuadernillo</span>
+              <h3 class="text-xl font-bold mt-1">Requisitos de {{ selectedMiembro.nombre }} {{ selectedMiembro.apellido }}</h3>
+              <p class="text-xs text-[#ffba27] font-bold uppercase mt-1">Clase {{ selectedClaseId.split('-')[1] }}</p>
+            </div>
+            <div class="relative z-10 text-right">
+              <span class="text-[10px] text-gray-300 block">Instructor Responsable:</span>
+              <span class="text-xs font-bold text-white">{{ currentUser()?.nombre }} {{ currentUser()?.apellido }}</span>
+            </div>
+          </div>
+
+          @if (isLoading) {
+            <div class="flex justify-center items-center py-20">
+              <svg class="animate-spin h-8 w-8 text-[#00113a]" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          } @else {
+            <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+              @for (av of avancesDeMiembro; track av.idAvance) {
+                <div class="p-4 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div class="space-y-1.5 flex-1">
+                    <span class="text-[10px] px-2.5 py-0.5 rounded bg-white border border-[#c5c6d2] text-[#00113a] font-bold uppercase">
+                      {{ av.requisito?.categoria }}
+                    </span>
+                    <p class="text-sm text-[#191c1d] font-bold pt-1">{{ av.requisito?.descripcion }}</p>
+                    @if (av.fechaActualizacion) {
+                      <p class="text-[10px] text-[#757682]">Completado el: {{ av.fechaActualizacion | date:'dd MMM yyyy' }}</p>
+                    }
+                  </div>
+
+                  <!-- Quick Action Toggle Buttons -->
+                  <div class="flex gap-1 w-full sm:w-auto shrink-0">
+                    <button
+                      (click)="onToggleStatus(av, 'PENDIENTE')"
+                      [class]="av.estado === 'PENDIENTE' ? 'bg-red-50 text-red-700 border border-red-300 font-bold' : 'bg-white text-gray-400 hover:text-[#191c1d] border border-[#c5c6d2]'"
+                      class="flex-1 sm:flex-none text-[11px] px-3 py-1.5 rounded-md transition cursor-pointer"
+                    >
+                      Pendiente
+                    </button>
+                    <button
+                      (click)="onToggleStatus(av, 'EN_PROGRESO')"
+                      [class]="av.estado === 'EN_PROGRESO' ? 'bg-yellow-50 text-yellow-700 border border-yellow-300 font-bold' : 'bg-white text-gray-400 hover:text-[#191c1d] border border-[#c5c6d2]'"
+                      class="flex-1 sm:flex-none text-[11px] px-3 py-1.5 rounded-md transition cursor-pointer"
+                    >
+                      En Progreso
+                    </button>
+                    <button
+                      (click)="onToggleStatus(av, 'COMPLETADO')"
+                      [class]="av.estado === 'COMPLETADO' ? 'bg-green-50 text-green-700 border border-green-300 font-bold' : 'bg-white text-gray-400 hover:text-[#191c1d] border border-[#c5c6d2]'"
+                      class="flex-1 sm:flex-none text-[11px] px-3 py-1.5 rounded-md transition cursor-pointer"
+                    >
+                      Completado
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Tab 2: Attendance -->
+  @if (activeTab === 'asistencia') {
+    <div class="bg-white border border-[#c5c6d2] rounded-xl shadow-sm p-6 space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-[#c5c6d2] pb-4 gap-4">
+        <div>
+          <h3 class="text-lg font-bold text-[#00113a]">Registro de Asistencia de Sesión</h3>
+          <p class="text-sm text-[#444650]">Marca la asistencia de hoy para los conquistadores de esta clase.</p>
+        </div>
+        <div class="text-xs text-[#00113a] font-bold uppercase bg-[#dbe1ff] px-3 py-1.5 rounded-lg border border-[#c5c6d2]">
+          Clase {{ selectedClaseId.split('-')[1] }}
+        </div>
+      </div>
+
+      @if (miembrosDeClase.length === 0) {
+        <div class="text-center py-20 text-[#757682]">
+          No hay conquistadores en esta clase para registrar asistencia.
+        </div>
+      } @else {
+        <div class="space-y-3">
+          @for (miembro of miembrosDeClase; track miembro.idMiembro) {
+            <div class="p-4 bg-[#f8f9fa] border border-[#e1e3e4] rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div class="flex items-center gap-3">
+                <div class="h-9 w-9 rounded-full bg-gradient-to-tr from-[#00113a] to-[#002366] flex items-center justify-center font-bold text-xs text-white shadow-sm">
+                  {{ miembro.nombre.substring(0, 1) }}{{ miembro.apellido.substring(0, 1) }}
+                </div>
+                <div>
+                  <div class="text-[#00113a] font-bold text-sm">{{ miembro.nombre }} {{ miembro.apellido }}</div>
+                  <div class="text-xs text-[#757682]">Unidad: {{ miembro.nombreUnidad || 'No asignada' }}</div>
+                </div>
+              </div>
+
+              <!-- Selector de Asistencia -->
+              <div class="flex gap-1.5 w-full sm:w-auto">
+                <button
+                  (click)="asistenciaEstados[miembro.idMiembro] = 'PRESENTE'"
+                  [class]="asistenciaEstados[miembro.idMiembro] === 'PRESENTE' ? 'bg-green-50 text-green-700 border border-green-300 font-bold' : 'bg-white text-gray-400 border border-[#c5c6d2] hover:text-[#191c1d]'"
+                  class="flex-1 sm:flex-none text-xs px-3.5 py-2 rounded-lg transition cursor-pointer"
+                >
+                  Presente
+                </button>
+                <button
+                  (click)="asistenciaEstados[miembro.idMiembro] = 'AUSENTE'"
+                  [class]="asistenciaEstados[miembro.idMiembro] === 'AUSENTE' ? 'bg-red-50 text-red-700 border border-red-300 font-bold' : 'bg-white text-gray-400 border border-[#c5c6d2] hover:text-[#191c1d]'"
+                  class="flex-1 sm:flex-none text-xs px-3.5 py-2 rounded-lg transition cursor-pointer"
+                >
+                  Ausente
+                </button>
+                <button
+                  (click)="asistenciaEstados[miembro.idMiembro] = 'JUSTIFICADO'"
+                  [class]="asistenciaEstados[miembro.idMiembro] === 'JUSTIFICADO' ? 'bg-yellow-50 text-yellow-700 border border-yellow-300 font-bold' : 'bg-white text-gray-400 border border-[#c5c6d2] hover:text-[#191c1d]'"
+                  class="flex-1 sm:flex-none text-xs px-3.5 py-2 rounded-lg transition cursor-pointer"
+                >
+                  Justificado
+                </button>
+              </div>
+            </div>
+          }
+
+          <div class="pt-6 border-t border-[#c5c6d2] flex justify-end">
+            <button
+              (click)="onSaveAttendance()"
+              [disabled]="isLoading"
+              class="w-full sm:w-auto px-6 py-3 bg-[#ffba27] hover:brightness-105 text-[#00113a] font-bold rounded-lg text-sm transition cursor-pointer shadow-md flex items-center justify-center gap-2"
+            >
+              @if (isLoading) {
+                <svg class="animate-spin h-5 w-5 text-[#00113a]" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Guardando asistencia...
+              } @else {
+                Guardar Asistencia de Clase
+              }
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

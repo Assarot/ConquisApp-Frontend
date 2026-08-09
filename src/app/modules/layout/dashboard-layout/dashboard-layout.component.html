@@ -1,0 +1,286 @@
+<div class="flex h-screen bg-[#f8f9fa] font-sans overflow-hidden">
+
+  <!-- ─── Mobile Overlay ─── -->
+  @if (isSidebarOpen) {
+  <div (click)="closeSidebar()" class="fixed inset-0 bg-black/40 z-40 md:hidden backdrop-blur-sm"></div>
+  }
+
+  <!-- ─── Sidebar (Desktop: always visible sticky | Mobile: slide-in fixed) ─── -->
+  <aside class="fixed md:sticky top-0 left-0 z-50 h-screen flex flex-col
+           bg-[#f3f4f5] border-r border-[#c5c6d2] shadow-sm shrink-0
+           transition-all duration-300 sidebar-transition
+           md:translate-x-0" [class.-translate-x-full]="!isSidebarOpen" [class.translate-x-0]="isSidebarOpen"
+    [class.w-72]="!isCollapsed" [class.w-20]="isCollapsed" [class.sidebar-collapsed]="isCollapsed"
+    [style.min-width]="isCollapsed ? '5rem' : '18rem'">
+    <!-- Header -->
+    <div class="h-20 flex items-center px-6 justify-between border-b border-[#c5c6d2] shrink-0">
+      <div class="flex items-center gap-3 overflow-hidden">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden p-1">
+          <img src="ConquisLogo.png" alt="Logo" class="w-full h-full object-contain">
+        </div>
+        <div class="hide-on-collapse flex flex-col">
+          <span class="text-sm font-bold text-[#00113a] leading-tight">Conquistadores</span>
+          <span class="text-[10px] text-[#b7102a] font-bold uppercase tracking-wider">Club Fernando Stahl</span>
+        </div>
+      </div>
+      <button class="p-2 hover:bg-[#edeeef] rounded-full transition-colors text-[#757682] cursor-pointer"
+        (click)="toggleSidebarCollapse()">
+        <span class="material-symbols-outlined" id="collapse-icon">{{ isCollapsed ? 'last_page' : 'first_page' }}</span>
+      </button>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+
+      <!-- Dashboard (No Submenu) -->
+      <a routerLink="/dashboard" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="nav-item-active"
+        (click)="closeSidebar()"
+        class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+        <span class="material-symbols-outlined shrink-0" style="font-variation-settings: 'FILL' 1;">home</span>
+        <span class="hide-on-collapse ml-4 text-sm font-medium">Dashboard</span>
+      </a>
+
+      <!-- Miembros (Direct Link - Unified View) -->
+      @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero()) {
+      <a routerLink="/dashboard/miembros" routerLinkActive="nav-item-active"
+        (click)="closeSidebar()"
+        class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">groups</span>
+        <span class="hide-on-collapse ml-4 text-sm font-medium">Miembros</span>
+      </a>
+      }
+
+      <!-- Planificación (Submenu) -->
+      @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero()) {
+      <div class="space-y-1">
+        <button (click)="toggleSubmenu('planning')"
+          class="w-full flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">calendar_today</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium flex-1 text-left">Planificación</span>
+          <span class="material-symbols-outlined hide-on-collapse text-[18px] transition-transform"
+            [class.rotate-icon]="isSubmenuOpen('planning')">expand_more</span>
+        </button>
+        <div class="submenu-transition flex flex-col pl-10 space-y-1" [class.submenu-open]="isSubmenuOpen('planning')">
+          @if (isLeader() || isDirectorAsociado()) {
+          <a routerLink="/dashboard/poa" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">POA</a>
+          }
+          @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero()) {
+          <a routerLink="/dashboard/cronograma" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Cronograma</a>
+          }
+          @if (isLeader() || isDirectorAsociado() || isInstructor()) {
+          <a routerLink="/dashboard/sesiones" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Sesiones</a>
+          }
+          <a routerLink="/dashboard/calendario" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Calendario</a>
+        </div>
+      </div>
+      }
+
+      <!-- Cuadernillos (Submenu) -->
+      <div class="space-y-1">
+        <button (click)="toggleSubmenu('books')"
+          class="w-full flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">menu_book</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium flex-1 text-left">Cuadernillos</span>
+          <span class="material-symbols-outlined hide-on-collapse text-[18px] transition-transform"
+            [class.rotate-icon]="isSubmenuOpen('books')">expand_more</span>
+        </button>
+        <div class="submenu-transition flex flex-col pl-10 space-y-1" [class.submenu-open]="isSubmenuOpen('books')">
+          <a routerLink="/dashboard/clases" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Clases Regulares</a>
+          <a routerLink="/dashboard/clases" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Clases Avanzadas</a>
+          <a routerLink="/dashboard/clases" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Requisitos</a>
+        </div>
+      </div>
+
+      <!-- Especialidades (Submenu) -->
+      <div class="space-y-1">
+        <button (click)="toggleSubmenu('honors')"
+          class="w-full flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">military_tech</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium flex-1 text-left">Especialidades</span>
+          <span class="material-symbols-outlined hide-on-collapse text-[18px] transition-transform"
+            [class.rotate-icon]="isSubmenuOpen('honors')">expand_more</span>
+        </button>
+        <div class="submenu-transition flex flex-col pl-10 space-y-1" [class.submenu-open]="isSubmenuOpen('honors')">
+          <a routerLink="/dashboard/especialidades" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Catálogo</a>
+          @if (isLeader() || isDirectorAsociado() || isInstructor()) {
+          <a routerLink="/dashboard/especialidades" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Evaluaciones</a>
+          }
+        </div>
+      </div>
+
+      <!-- Avances (Submenu) -->
+      @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero()) {
+      <div class="space-y-1">
+        <button (click)="toggleSubmenu('progress')"
+          class="w-full flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">check_circle</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium flex-1 text-left">Avances</span>
+          <span class="material-symbols-outlined hide-on-collapse text-[18px] transition-transform"
+            [class.rotate-icon]="isSubmenuOpen('progress')">expand_more</span>
+        </button>
+        <div class="submenu-transition flex flex-col pl-10 space-y-1" [class.submenu-open]="isSubmenuOpen('progress')">
+          <a routerLink="/dashboard/asistencia" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Asistencia</a>
+        </div>
+      </div>
+      }
+
+      <!-- Reportes (Submenu) -->
+      @if (isLeader() || isDirectorAsociado() || isConsejero()) {
+      <div class="space-y-1">
+        <button (click)="toggleSubmenu('reports')"
+          class="w-full flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">bar_chart</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium flex-1 text-left">Reportes</span>
+          <span class="material-symbols-outlined hide-on-collapse text-[18px] transition-transform"
+            [class.rotate-icon]="isSubmenuOpen('reports')">expand_more</span>
+        </button>
+        <div class="submenu-transition flex flex-col pl-10 space-y-1" [class.submenu-open]="isSubmenuOpen('reports')">
+          <a routerLink="/dashboard/reportes" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Por Unidad</a>
+          @if (isLeader() || isDirectorAsociado()) {
+          <a routerLink="/dashboard/reportes" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">General</a>
+          }
+        </div>
+      </div>
+      }
+
+      <!-- Materiales (No Submenu) -->
+      @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero()) {
+      <a routerLink="/dashboard/materiales" (click)="closeSidebar()"
+        class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">library_books</span>
+        <span class="hide-on-collapse ml-4 text-sm font-medium">Materiales</span>
+      </a>
+      }
+
+      <!-- Ranking (No Submenu) -->
+      @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero() || isConquistador() || isPadre()) {
+      <a routerLink="/dashboard/ranking" (click)="closeSidebar()"
+        class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">workspace_premium</span>
+        <span class="hide-on-collapse ml-4 text-sm font-medium">Ranking</span>
+      </a>
+      }
+
+      <!-- Administración (Submenu) -->
+      @if (isAdmin()) {
+      <div class="space-y-1">
+        <button (click)="toggleSubmenu('admin')"
+          class="w-full flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">settings</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium flex-1 text-left">Administración</span>
+          <span class="material-symbols-outlined hide-on-collapse text-[18px] transition-transform"
+            [class.rotate-icon]="isSubmenuOpen('admin')">expand_more</span>
+        </button>
+        <div class="submenu-transition flex flex-col pl-10 space-y-1" [class.submenu-open]="isSubmenuOpen('admin')">
+          <a routerLink="/dashboard/admin" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Usuarios</a>
+          <a routerLink="/dashboard/admin" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Auditoría</a>
+        </div>
+      </div>
+      }
+
+    </nav>
+
+    <!-- Footer Profile -->
+    <div class="p-4 border-t border-[#c5c6d2] bg-[#f8f9fa] shrink-0">
+
+      <!-- Profile display -->
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-full border-2 border-[#ffba27] p-0.5 bg-[#00113a] text-white flex items-center justify-center font-bold text-xs shrink-0">
+          {{ currentUser()?.nombre?.substring(0, 1) }}{{ currentUser()?.apellido?.substring(0, 1) }}
+        </div>
+        <div class="hide-on-collapse flex flex-col flex-1 min-w-0">
+          <span class="text-xs font-bold text-[#00113a] truncate">{{ currentUser()?.nombre }} {{ currentUser()?.apellido }}</span>
+          <div class="flex items-center gap-1.5 truncate">
+            <span class="text-[10px] text-[#757682] font-semibold uppercase">{{ userRoleName() }}</span>
+            <span class="text-[10px] text-[#c5c6d2]">•</span>
+            <span class="text-[10px] text-[#b7102a] font-bold truncate">Club Fernando Stahl</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick action buttons -->
+      <div class="mt-4 flex items-center justify-around hide-on-collapse">
+        <button
+          class="p-2 text-[#444650] hover:text-[#00113a] hover:bg-[#edeeef] rounded-lg transition-colors cursor-pointer"
+          title="Configuración">
+          <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+        </button>
+        <button (click)="logout()"
+          class="p-2 text-[#b7102a] hover:bg-red-50 rounded-lg transition-colors cursor-pointer" title="Cerrar sesión">
+          <span class="material-symbols-outlined text-[20px]">logout</span>
+        </button>
+      </div>
+
+      <!-- Collapsed state mini profile buttons -->
+      <div class="hidden show-on-collapse flex-col items-center gap-2 mt-2">
+        <button
+          class="w-8 h-8 flex items-center justify-center text-[#444650] hover:text-[#00113a] bg-[#edeeef] rounded-full cursor-pointer"><span
+            class="material-symbols-outlined text-[18px]">manage_accounts</span></button>
+        <button (click)="logout()"
+          class="w-8 h-8 flex items-center justify-center text-[#b7102a] hover:bg-red-50 rounded-full cursor-pointer"><span
+            class="material-symbols-outlined text-[18px]">logout</span></button>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ─── Main Content ─── -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- Page Content -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="p-5 md:p-8 max-w-[1280px] mx-auto pb-20 md:pb-8">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+
+    <!-- Mobile Bottom Nav -->
+    <nav
+      class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-[#c5c6d2] flex justify-around items-center z-30 shadow-t">
+      <a routerLink="/dashboard" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="text-[#00113a]"
+        (click)="closeSidebar()"
+        class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
+        <span class="material-symbols-outlined text-[22px]">dashboard</span>
+        <span class="text-[9px] font-bold">Inicio</span>
+      </a>
+      <a routerLink="/dashboard/miembros" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
+        class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
+        <span class="material-symbols-outlined text-[22px]">groups</span>
+        <span class="text-[9px] font-bold">Miembros</span>
+      </a>
+      <!-- FAB -->
+      <a routerLink="/dashboard/miembros" (click)="closeSidebar()" class="flex flex-col items-center -mt-8 px-3">
+        <div class="w-12 h-12 bg-[#b7102a] rounded-full flex items-center justify-center text-white shadow-lg">
+          <span class="material-symbols-outlined text-[20px]">add</span>
+        </div>
+      </a>
+      <a routerLink="/dashboard/unidades" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
+        class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
+        <span class="material-symbols-outlined text-[22px]">group_work</span>
+        <span class="text-[9px] font-bold">Unidades</span>
+      </a>
+      <a routerLink="/dashboard/poa" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
+        class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
+        <span class="material-symbols-outlined text-[22px]">assignment</span>
+        <span class="text-[9px] font-bold">POA</span>
+      </a>
+    </nav>
+
+  </div>
+
+</div>

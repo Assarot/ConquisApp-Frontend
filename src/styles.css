@@ -1,0 +1,96 @@
+/* src/styles.css */
+@import "tailwindcss";
+@import "flowbite/src/themes/default";
+@plugin "flowbite/plugin";
+@source "../node_modules/flowbite";
+
+@theme {
+  --color-primary: #00113a;
+  --color-secondary: #b7102a;
+  --color-tertiary: #ffba27;
+  --color-outline: #757682;
+  --color-outline-variant: #c5c6d2;
+  --color-on-surface: #191c1d;
+  --color-on-surface-variant: #444650;
+  
+  --border-radius-lg: 0.5rem;
+  --border-radius-xl: 0.75rem;
+}
+
+/* Redefining variables for the Pathfinder Command Design System */
+:root {
+  --color-primary-blue: #00113a;
+  --color-secondary-red: #b7102a;
+  --color-accent-gold: #ffba27;
+  --color-light-bg: #f8f9fa;
+  --color-surface-white: #ffffff;
+  
+  --font-family: 'Inter', sans-serif;
+}
+
+body {
+  background-color: var(--color-light-bg);
+  color: #191c1d;
+  font-family: var(--font-family);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e1e3e4;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c5c6d2;
+}
+
+/* Light theme panel classes matching the Stitch Design System */
+.glass-panel {
+  background-color: #ffffff;
+  border: 1px solid #c5c6d2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  color: #191c1d;
+}
+
+.glass-card {
+  background-color: #ffffff;
+  border: 1px solid #e1e3e4;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  color: #191c1d;
+}
+
+.glass-input {
+  background-color: #ffffff;
+  border: 1px solid #c5c6d2;
+  color: #191c1d;
+}
+
+.glass-input:focus {
+  border-color: var(--color-primary-blue);
+  box-shadow: 0 0 0 2px rgba(0, 17, 58, 0.1);
+  outline: none;
+}
+
+/* Sidebar Transitions & Submenu animations */
+.sidebar-transition { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.nav-item-active {
+  background-color: #e2e4e7 !important;
+  color: #00113a !important;
+  font-weight: 700 !important;
+  border-left: none !important;
+}
+.submenu-transition { 
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+.submenu-open { max-height: 500px; }
+.rotate-icon { transform: rotate(180deg); transition: transform 0.2s; }
+.sidebar-collapsed .hide-on-collapse { display: none; }
+.sidebar-collapsed .show-on-collapse { display: flex; }
+
