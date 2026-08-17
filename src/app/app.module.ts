@@ -36,6 +36,7 @@ import { EspecialidadesComponent } from './modules/especialidades/especialidades
 
 // Attendance / Progress
 import { AsistenciaComponent } from './modules/avances/asistencia/asistencia.component';
+import { AvancesComponent } from './modules/avances/asistencia/avances.component';
 
 // Reports & Materials
 import { ReportesComponent } from './modules/reportes/reportes.component';
@@ -64,6 +65,7 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     CalendarioComponent,
     EspecialidadesComponent,
     AsistenciaComponent,
+    AvancesComponent,
     ReportesComponent,
     MaterialesComponent,
     RankingComponent,

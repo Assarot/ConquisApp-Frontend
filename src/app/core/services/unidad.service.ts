@@ -13,8 +13,10 @@ export class UnidadService {
 
   // Mock data fallback when backend offline
   private mockUnidades: Unidad[] = [
-    { idUnidad: 'unidad-orion-1', nombre: 'Halcones' },
-    { idUnidad: 'unidad-orion-2', nombre: 'Águilas' }
+    { idUnidad: '1', nombre: 'Halcones' },
+    { idUnidad: '2', nombre: 'Águilas' },
+    { idUnidad: '3', nombre: 'Leones' },
+    { idUnidad: '4', nombre: 'Estrellas' }
   ];
 
   constructor(private http: HttpClient) {}

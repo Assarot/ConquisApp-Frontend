@@ -14,31 +14,31 @@ export class AvanceAsistenciaService {
 
   // Internal mock state for Requisitos
   private mockRequisitos: Requisito[] = [
-    { idRequisito: 'req-1', descripcion: 'Memorizar y explicar los ideales: Voto y Ley', categoria: 'General', idVersionCuadernillo: 'ver-1' },
-    { idRequisito: 'req-2', descripcion: 'Completar la especialidad de Nudos y Amarras', categoria: 'Especialidades', idVersionCuadernillo: 'ver-1' },
-    { idRequisito: 'req-3', descripcion: 'Realizar una caminata de 10 km con mochila', categoria: 'Campismo', idVersionCuadernillo: 'ver-1' },
-    { idRequisito: 'req-4', descripcion: 'Leer el libro del año del Club', categoria: 'Lectura', idVersionCuadernillo: 'ver-1' }
+    { idRequisito: '1', descripcion: 'Memorizar y explicar los ideales: Voto y Ley', categoria: 'General', idVersionCuadernillo: '1' },
+    { idRequisito: '2', descripcion: 'Completar la especialidad de Nudos y Amarras', categoria: 'Especialidades', idVersionCuadernillo: '1' },
+    { idRequisito: '3', descripcion: 'Realizar una caminata de 10 km con mochila', categoria: 'Campismo', idVersionCuadernillo: '1' },
+    { idRequisito: '4', descripcion: 'Leer el libro del año del Club', categoria: 'Lectura', idVersionCuadernillo: '1' }
   ];
 
   // Internal mock state for Avances
   private mockAvances: { [key: string]: Avance[] } = {
-    'miembro-1': [
-      { idAvance: 'av-1-1', idMiembro: 'miembro-1', idRequisito: 'req-1', estado: 'COMPLETADO', fechaActualizacion: '2026-08-01', idInstructorResponsable: 'miembro-4' },
-      { idAvance: 'av-1-2', idMiembro: 'miembro-1', idRequisito: 'req-2', estado: 'COMPLETADO', fechaActualizacion: '2026-08-02', idInstructorResponsable: 'miembro-4' },
-      { idAvance: 'av-1-3', idMiembro: 'miembro-1', idRequisito: 'req-3', estado: 'COMPLETADO', fechaActualizacion: '2026-08-03', idInstructorResponsable: 'miembro-4' },
-      { idAvance: 'av-1-4', idMiembro: 'miembro-1', idRequisito: 'req-4', estado: 'COMPLETADO', fechaActualizacion: '2026-08-04', idInstructorResponsable: 'miembro-4' }
+    '1': [
+      { idAvance: '1', idMiembro: '1', idRequisito: '1', estado: 'COMPLETADO', fechaActualizacion: '2026-08-01', idInstructorResponsable: '5' },
+      { idAvance: '2', idMiembro: '1', idRequisito: '2', estado: 'COMPLETADO', fechaActualizacion: '2026-08-02', idInstructorResponsable: '5' },
+      { idAvance: '3', idMiembro: '1', idRequisito: '3', estado: 'COMPLETADO', fechaActualizacion: '2026-08-03', idInstructorResponsable: '5' },
+      { idAvance: '4', idMiembro: '1', idRequisito: '4', estado: 'COMPLETADO', fechaActualizacion: '2026-08-04', idInstructorResponsable: '5' }
     ],
-    'miembro-2': [
-      { idAvance: 'av-2-1', idMiembro: 'miembro-2', idRequisito: 'req-1', estado: 'COMPLETADO', fechaActualizacion: '2026-08-01', idInstructorResponsable: 'miembro-4' },
-      { idAvance: 'av-2-2', idMiembro: 'miembro-2', idRequisito: 'req-2', estado: 'EN_PROGRESO', fechaActualizacion: '2026-08-05', idInstructorResponsable: 'miembro-4' },
-      { idAvance: 'av-2-3', idMiembro: 'miembro-2', idRequisito: 'req-3', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined },
-      { idAvance: 'av-2-4', idMiembro: 'miembro-2', idRequisito: 'req-4', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined }
+    '2': [
+      { idAvance: '5', idMiembro: '2', idRequisito: '1', estado: 'COMPLETADO', fechaActualizacion: '2026-08-01', idInstructorResponsable: '5' },
+      { idAvance: '6', idMiembro: '2', idRequisito: '2', estado: 'EN_PROGRESO', fechaActualizacion: '2026-08-05', idInstructorResponsable: '5' },
+      { idAvance: '7', idMiembro: '2', idRequisito: '3', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined },
+      { idAvance: '8', idMiembro: '2', idRequisito: '4', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined }
     ],
-    'miembro-3': [
-      { idAvance: 'av-3-1', idMiembro: 'miembro-3', idRequisito: 'req-1', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined },
-      { idAvance: 'av-3-2', idMiembro: 'miembro-3', idRequisito: 'req-2', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined },
-      { idAvance: 'av-3-3', idMiembro: 'miembro-3', idRequisito: 'req-3', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined },
-      { idAvance: 'av-3-4', idMiembro: 'miembro-3', idRequisito: 'req-4', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined }
+    '3': [
+      { idAvance: '9', idMiembro: '3', idRequisito: '1', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined },
+      { idAvance: '10', idMiembro: '3', idRequisito: '2', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined },
+      { idAvance: '11', idMiembro: '3', idRequisito: '3', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined },
+      { idAvance: '12', idMiembro: '3', idRequisito: '4', estado: 'PENDIENTE', fechaActualizacion: undefined, idInstructorResponsable: undefined }
     ]
   };
 
@@ -101,6 +101,24 @@ export class AvanceAsistenciaService {
             count: request.asistencias.length
           });
         }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  getAsistenciasBySesion(idSesion: string | number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.asistenciasUrl}/sesion/${idSesion}`).pipe(
+      catchError(err => {
+        console.warn('Error fetching asistencias by sesion', err);
+        return of([]);
+      })
+    );
+  }
+
+  registrarAsistencias(asistencias: any[]): Observable<any[]> {
+    return this.http.post<any[]>(this.asistenciasUrl, asistencias).pipe(
+      catchError(err => {
+        console.error('Error saving asistencias', err);
         return throwError(() => err);
       })
     );

@@ -13,19 +13,19 @@ export class PoaService {
 
   // Internal memory mock state for seamless updates
   private mockPoas: Poa[] = [
-    { idPoa: 'poa-2025', idClub: 'uuid-club-conquistadores-orion', anio: 2025, estado: 'COMPLETADO' },
-    { idPoa: 'poa-2026', idClub: 'uuid-club-conquistadores-orion', anio: 2026, estado: 'ACTIVO' }
+    { idPoa: '1', idClub: '1', anio: 2025, estado: 'COMPLETADO' },
+    { idPoa: '2', idClub: '1', anio: 2026, estado: 'ACTIVO' }
   ];
 
   private mockActividades: { [key: string]: ActividadPoa[] } = {
-    'poa-2026': [
-      { idActividad: 'act-1', idPoa: 'poa-2026', nombre: 'Campamento de Supervivencia', fecha: '2026-09-18', ambito: 'CLUB', responsable: 'Instructor Juan' },
-      { idActividad: 'act-2', idPoa: 'poa-2026', nombre: 'Desfile del Día del Conquistador', fecha: '2026-10-24', ambito: 'ASOCIACION', responsable: 'Director Esteban' },
-      { idActividad: 'act-3', idPoa: 'poa-2026', nombre: 'Investidura Anual', fecha: '2026-11-15', ambito: 'CLUB', responsable: 'Secretaria María' },
-      { idActividad: 'act-4', idPoa: 'poa-2026', nombre: 'Reunión de Especialidades (Nudos)', fecha: '2026-08-15', ambito: 'RECURRENTE', responsable: 'Instructor Carlos' }
+    '2': [
+      { idActividad: '1', idPoa: '2', nombre: 'Campamento de Supervivencia', fecha: '2026-09-18', ambito: 'CLUB', responsable: 'Instructor Juan' },
+      { idActividad: '2', idPoa: '2', nombre: 'Desfile del Día del Conquistador', fecha: '2026-10-24', ambito: 'ASOCIACION', responsable: 'Director Esteban' },
+      { idActividad: '3', idPoa: '2', nombre: 'Investidura Anual', fecha: '2026-11-15', ambito: 'CLUB', responsable: 'Secretaria María' },
+      { idActividad: '4', idPoa: '2', nombre: 'Reunión de Especialidades (Nudos)', fecha: '2026-08-15', ambito: 'RECURRENTE', responsable: 'Instructor Carlos' }
     ],
-    'poa-2025': [
-      { idActividad: 'act-old-1', idPoa: 'poa-2025', nombre: 'Campamento de Iniciación 2025', fecha: '2025-04-12', ambito: 'CLUB', responsable: 'Instructor Juan' }
+    '1': [
+      { idActividad: '5', idPoa: '1', nombre: 'Campamento de Iniciación 2025', fecha: '2025-04-12', ambito: 'CLUB', responsable: 'Instructor Juan' }
     ]
   };
 

@@ -6,11 +6,12 @@ import { environment } from '../../../environments/environment';
 export interface EspecialidadBackend {
   idEspecialidad?: string;
   nombre: string;
-  categoria: string;
+  categoria: any;
   descripcion: string;
   icono?: string;
   puntos?: number;
   idClub?: string;
+  requiereExamen?: boolean;
 }
 
 @Injectable({

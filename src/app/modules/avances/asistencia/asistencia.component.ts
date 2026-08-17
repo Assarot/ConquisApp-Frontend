@@ -1,15 +1,24 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
+import { ClubService, ClaseBackend } from '../../../core/services/club.service';
+import { MiembroService } from '../../../core/services/miembro.service';
+import { SesionesService, SesionBackend } from '../../../core/services/sesiones.service';
+import { AvanceAsistenciaService } from '../../../core/services/avance-asistencia.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { Miembro } from '../../../core/models/miembro.model';
 import Swal from 'sweetalert2';
 
 export interface RegistroAsistencia {
-  id: string;
+  idAsistencia?: string;
+  idMiembro: string;
   nombre: string;
+  apellido: string;
   unidad: string;
   clase: string;
-  estado: 'PRESENTE' | 'AUSENTE' | 'TARDANZA' | 'JUSTIFICADO';
-  uniformeCompleto: boolean;
-  cuotaPagada: boolean;
+  estado: 'PRESENTE' | 'AUSENTE' | 'JUSTIFICADO';
+  panoleta: boolean;
   biblia: boolean;
+  agua: boolean;
+  materiales: boolean;
 }
 
 @Component({
@@ -18,102 +27,209 @@ export interface RegistroAsistencia {
   standalone: false
 })
 export class AsistenciaComponent implements OnInit {
-  fechaSeleccionada = signal('2026-08-15');
-  filtroUnidad = signal('TODAS');
+  fechaSeleccionada = signal(new Date().toISOString().split('T')[0]);
+  clasesList = signal<ClaseBackend[]>([]);
+  selectedClaseId = signal<string>('');
+  isLoading = false;
 
-  unidades = ['Águilas', 'Halcones', 'Leones', 'Estrellas'];
+  currentSesion: SesionBackend | null = null;
+  registros = signal<RegistroAsistencia[]>([]);
 
-  registros = signal<RegistroAsistencia[]>([
-    {
-      id: 'm-1',
-      nombre: 'Mateo Silva',
-      unidad: 'Águilas',
-      clase: 'Amigo',
-      estado: 'PRESENTE',
-      uniformeCompleto: true,
-      cuotaPagada: true,
-      biblia: true
-    },
-    {
-      id: 'm-2',
-      nombre: 'Lucas Morales',
-      unidad: 'Águilas',
-      clase: 'Amigo',
-      estado: 'PRESENTE',
-      uniformeCompleto: true,
-      cuotaPagada: false,
-      biblia: true
-    },
-    {
-      id: 'm-3',
-      nombre: 'Sofía Quispe',
-      unidad: 'Halcones',
-      clase: 'Compañero',
-      estado: 'TARDANZA',
-      uniformeCompleto: true,
-      cuotaPagada: true,
-      biblia: false
-    },
-    {
-      id: 'm-4',
-      nombre: 'Valentina Castro',
-      unidad: 'Halcones',
-      clase: 'Compañero',
-      estado: 'PRESENTE',
-      uniformeCompleto: true,
-      cuotaPagada: true,
-      biblia: true
-    },
-    {
-      id: 'm-5',
-      nombre: 'Daniel Rivas',
-      unidad: 'Leones',
-      clase: 'Explorador',
-      estado: 'AUSENTE',
-      uniformeCompleto: false,
-      cuotaPagada: false,
-      biblia: false
-    },
-    {
-      id: 'm-6',
-      nombre: 'Camila Benítez',
-      unidad: 'Estrellas',
-      clase: 'Guía',
-      estado: 'JUSTIFICADO',
-      uniformeCompleto: false,
-      cuotaPagada: true,
-      biblia: true
-    }
-  ]);
+  currentUser = computed(() => this.authService.currentUser());
 
-  ngOnInit(): void {}
-
-  filtrarRegistros(): RegistroAsistencia[] {
-    if (this.filtroUnidad() === 'TODAS') {
-      return this.registros();
-    }
-    return this.registros().filter(r => r.unidad === this.filtroUnidad());
+  get selectedClaseNombre(): string {
+    const selected = this.clasesList().find(c => c.idClase === this.selectedClaseId());
+    return selected ? selected.nombre : '';
   }
 
-  setEstado(id: string, nuevoEstado: 'PRESENTE' | 'AUSENTE' | 'TARDANZA' | 'JUSTIFICADO'): void {
+  constructor(
+    private clubService: ClubService,
+    private miembroService: MiembroService,
+    private sesionesService: SesionesService,
+    private avanceAsistenciaService: AvanceAsistenciaService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    this.cargarClases();
+  }
+
+  cargarClases(): void {
+    this.isLoading = true;
+    this.clubService.getClases().subscribe({
+      next: (clases) => {
+        this.clasesList.set(clases);
+        this.isLoading = false;
+        if (clases.length > 0) {
+          this.selectedClaseId.set(clases[0].idClase || '');
+          this.onFiltroChange();
+        }
+      },
+      error: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onFiltroChange(): void {
+    const idClase = this.selectedClaseId();
+    const fecha = this.fechaSeleccionada();
+    const clubId = String(this.currentUser()?.idClub || '');
+    if (!idClase || !clubId) return;
+
+    this.isLoading = true;
+    this.registros.set([]);
+    this.currentSesion = null;
+
+    // 1. Fetch all members of the club to filter by the selected class
+    this.miembroService.getMiembrosByClub(clubId).subscribe({
+      next: (miembros) => {
+        const classMembers = miembros.filter(m => m.idClase === idClase && m.funcion === 'CONQUISTADOR');
+
+        // 2. Fetch sessions of the class to see if we have a match for the selected date
+        this.sesionesService.getSesionesByClase(idClase).subscribe({
+          next: (sesiones) => {
+            const match = sesiones.find(s => s.fecha === fecha);
+
+            if (match && match.idSesion) {
+              this.currentSesion = match;
+              // 3. Load attendance records for this session
+              this.avanceAsistenciaService.getAsistenciasBySesion(match.idSesion).subscribe({
+                next: (asistencias) => {
+                  const map: Record<string, any> = {};
+                  asistencias.forEach(a => {
+                    const userId = a.usuario?.idUsuario || a.usuario?.id || a.idUsuario;
+                    if (userId) map[String(userId)] = a;
+                  });
+
+                  const list: RegistroAsistencia[] = classMembers.map(m => {
+                    const saved = map[m.idMiembro];
+                    return {
+                      idAsistencia: saved?.idAsistencia,
+                      idMiembro: m.idMiembro,
+                      nombre: m.nombre,
+                      apellido: m.apellido,
+                      unidad: m.nombreUnidad || 'Sin Unidad',
+                      clase: this.selectedClaseNombre,
+                      estado: saved?.estado || 'PRESENTE',
+                      panoleta: saved?.panoleta || false,
+                      biblia: saved?.biblia || false,
+                      agua: saved?.agua || false,
+                      materiales: saved?.materiales || false
+                    };
+                  });
+                  this.registros.set(list);
+                  this.isLoading = false;
+                },
+                error: () => {
+                  this.isLoading = false;
+                }
+              });
+            } else {
+              // No existing session for this date. Create defaults.
+              const list: RegistroAsistencia[] = classMembers.map(m => ({
+                idMiembro: m.idMiembro,
+                nombre: m.nombre,
+                apellido: m.apellido,
+                unidad: m.nombreUnidad || 'Sin Unidad',
+                clase: this.selectedClaseNombre,
+                estado: 'PRESENTE',
+                panoleta: false,
+                biblia: false,
+                agua: false,
+                materiales: false
+              }));
+              this.registros.set(list);
+              this.isLoading = false;
+            }
+          },
+          error: () => {
+            this.isLoading = false;
+          }
+        });
+      },
+      error: () => {
+        this.isLoading = false;
+      }
+    });
+  }
+
+  setEstado(idMiembro: string, nuevoEstado: 'PRESENTE' | 'AUSENTE' | 'JUSTIFICADO'): void {
     this.registros.update(list =>
-      list.map(r => (r.id === id ? { ...r, estado: nuevoEstado } : r))
+      list.map(r => r.idMiembro === idMiembro ? { ...r, estado: nuevoEstado } : r)
     );
   }
 
-  toggleCheck(id: string, field: 'uniformeCompleto' | 'cuotaPagada' | 'biblia'): void {
+  toggleCheck(idMiembro: string, field: 'panoleta' | 'biblia' | 'agua' | 'materiales'): void {
     this.registros.update(list =>
-      list.map(r => (r.id === id ? { ...r, [field]: !r[field] } : r))
+      list.map(r => r.idMiembro === idMiembro ? { ...r, [field]: !r[field] } : r)
     );
   }
 
   guardarAsistencia(): void {
-    Swal.fire({
-      icon: 'success',
-      title: 'Asistencia Guardada',
-      text: 'El pase de lista y la puntualidad fueron registrados exitosamente.',
-      timer: 1800,
-      showConfirmButton: false
+    const idClase = this.selectedClaseId();
+    const fecha = this.fechaSeleccionada();
+    const instructorId = this.currentUser()?.idUsuario;
+
+    if (!idClase || !instructorId) return;
+
+    this.isLoading = true;
+
+    // Check if we need to create the session first
+    if (!this.currentSesion) {
+      const sesionPayload: SesionBackend = {
+        titulo: `Pase de Lista - ${this.selectedClaseNombre}`,
+        descripcion: 'Registro de asistencia semanal',
+        fecha: fecha,
+        duracionMinutos: 60,
+        completada: true,
+        idClase: idClase
+      };
+
+      this.sesionesService.guardarSesion(sesionPayload).subscribe({
+        next: (sesion) => {
+          this.currentSesion = sesion;
+          this.guardarRegistrosDeAsistencia(sesion.idSesion!);
+        },
+        error: () => {
+          this.isLoading = false;
+          Swal.fire('Error', 'No se pudo crear la sesión para registrar la asistencia.', 'error');
+        }
+      });
+    } else {
+      this.guardarRegistrosDeAsistencia(this.currentSesion.idSesion!);
+    }
+  }
+
+  private guardarRegistrosDeAsistencia(idSesion: string | number): void {
+    const payload = this.registros().map(r => ({
+      idAsistencia: r.idAsistencia || null,
+      sesion: { idSesion: idSesion },
+      usuario: { idUsuario: r.idMiembro },
+      estado: r.estado,
+      panoleta: r.panoleta,
+      biblia: r.biblia,
+      agua: r.agua,
+      materiales: r.materiales
+    }));
+
+    this.avanceAsistenciaService.registrarAsistencias(payload).subscribe({
+      next: () => {
+        this.isLoading = false;
+        Swal.fire({
+          icon: 'success',
+          title: 'Asistencia Guardada',
+          text: 'Se registraron los datos de asistencia y el checklist correctamente.',
+          timer: 1800,
+          showConfirmButton: false
+        });
+        this.onFiltroChange(); // Reload state from DB
+      },
+      error: () => {
+        this.isLoading = false;
+        Swal.fire('Error', 'No se pudo guardar el registro de asistencia.', 'error');
+      }
     });
   }
 }
+

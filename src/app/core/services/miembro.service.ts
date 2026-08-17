@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Miembro } from '../models/miembro.model';
 
@@ -14,7 +14,7 @@ export class MiembroService {
   // Internal memory mock state for members (used only if backend is offline)
   private mockMiembros: Miembro[] = [
     {
-      idMiembro: 'miembro-1',
+      idMiembro: '1',
       nombre: 'Esteban',
       apellido: 'Quito',
       funcion: 'CONQUISTADOR',
@@ -23,14 +23,14 @@ export class MiembroService {
       estadoSeguro: 'POSEE_SEGURO',
       estadoAdhesionPadres: 'FIRMADA',
       pendientes: 0,
-      idClub: 'uuid-club-conquistadores-orion',
-      idUnidad: 'unidad-orion-1',
-      idClase: 'clase-guia',
+      idClub: '1',
+      idUnidad: '1',
+      idClase: '6',
       nombreUnidad: 'Halcones',
       nombreClase: 'Guía'
     },
     {
-      idMiembro: 'miembro-2',
+      idMiembro: '2',
       nombre: 'Aquiles',
       apellido: 'Brinco',
       funcion: 'CONQUISTADOR',
@@ -39,14 +39,14 @@ export class MiembroService {
       estadoSeguro: 'POSEE_SEGURO',
       estadoAdhesionPadres: 'FIRMADA',
       pendientes: 1,
-      idClub: 'uuid-club-conquistadores-orion',
-      idUnidad: 'unidad-orion-1',
-      idClase: 'clase-viajero',
+      idClub: '1',
+      idUnidad: '1',
+      idClase: '2',
       nombreUnidad: 'Halcones',
-      nombreClase: 'Viajero'
+      nombreClase: 'Compañero'
     },
     {
-      idMiembro: 'miembro-3',
+      idMiembro: '3',
       nombre: 'Elsa',
       apellido: 'Pato',
       funcion: 'CONQUISTADOR',
@@ -55,9 +55,9 @@ export class MiembroService {
       estadoSeguro: 'NO_POSEE_SEGURO',
       estadoAdhesionPadres: 'PENDIENTE',
       pendientes: 3,
-      idClub: 'uuid-club-conquistadores-orion',
-      idUnidad: 'unidad-orion-2',
-      idClase: 'clase-amigo',
+      idClub: '1',
+      idUnidad: '2',
+      idClase: '1',
       nombreUnidad: 'Águilas',
       nombreClase: 'Amigo'
     }
@@ -66,7 +66,15 @@ export class MiembroService {
   constructor(private http: HttpClient) {}
 
   getMiembrosByClub(idClub: string): Observable<Miembro[]> {
-    return this.http.get<Miembro[]>(`${this.miembrosUrl}/club/${idClub}`).pipe(
+    return this.http.get<any[]>(`${this.miembrosUrl}/club/${idClub}`).pipe(
+      map(list => list.map(m => ({
+        ...m,
+        idClub: String(m.club?.idClub || m.idClub || ''),
+        idUnidad: String(m.unidad?.idUnidad || m.idUnidad || ''),
+        idClase: String(m.clase?.idClase || m.idClase || ''),
+        nombreUnidad: m.unidad?.nombre || m.nombreUnidad,
+        nombreClase: m.clase?.nombre || m.nombreClase
+      }))),
       catchError(err => {
         if (err.status === 0) {
           console.warn('MiembroService.getMiembrosByClub failed (offline), using mock data', err);
@@ -78,7 +86,15 @@ export class MiembroService {
   }
 
   registrarMiembro(miembro: any): Observable<Miembro> {
-    return this.http.post<Miembro>(this.miembrosUrl, miembro).pipe(
+    return this.http.post<any>(this.miembrosUrl, miembro).pipe(
+      map(m => ({
+        ...m,
+        idClub: String(m.club?.idClub || m.idClub || ''),
+        idUnidad: String(m.unidad?.idUnidad || m.idUnidad || ''),
+        idClase: String(m.clase?.idClase || m.idClase || ''),
+        nombreUnidad: m.unidad?.nombre || m.nombreUnidad,
+        nombreClase: m.clase?.nombre || m.nombreClase
+      })),
       catchError(err => {
         if (err.status === 0) {
           console.warn('MiembroService.registrarMiembro failed (offline), simulating locally', err);
@@ -86,11 +102,11 @@ export class MiembroService {
             ...miembro,
             idMiembro: miembro.idMiembro || `miembro-mock-${Date.now()}`,
             estado: miembro.estado || 'ACTIVO',
-            idClub: miembro.club?.idClub || 'uuid-club-conquistadores-orion',
-            idUnidad: miembro.unidad?.idUnidad || 'unidad-orion-1',
-            idClase: miembro.clase?.idClase || 'clase-guia',
-            nombreUnidad: miembro.unidad?.idUnidad === 'unidad-orion-1' ? 'Halcones' : 'Águilas',
-            nombreClase: miembro.clase?.idClase === 'clase-guia' ? 'Guía' : miembro.clase?.idClase === 'clase-viajero' ? 'Viajero' : 'Amigo',
+            idClub: miembro.club?.idClub?.toString() || '1',
+            idUnidad: miembro.unidad?.idUnidad?.toString() || '1',
+            idClase: miembro.clase?.idClase?.toString() || '6',
+            nombreUnidad: miembro.unidad?.idUnidad?.toString() === '1' ? 'Halcones' : miembro.unidad?.idUnidad?.toString() === '2' ? 'Águilas' : miembro.unidad?.idUnidad?.toString() === '3' ? 'Leones' : 'Estrellas',
+            nombreClase: miembro.clase?.idClase?.toString() === '6' ? 'Guía' : miembro.clase?.idClase?.toString() === '2' ? 'Compañero' : 'Amigo',
             pendientes: this.calculateMockPendientes(miembro)
           };
           
@@ -118,7 +134,7 @@ export class MiembroService {
           const idx = this.mockMiembros.findIndex(m => m.idMiembro === idMiembro);
           if (idx !== -1) {
             this.mockMiembros[idx].idUnidad = idUnidadDestino;
-            this.mockMiembros[idx].nombreUnidad = idUnidadDestino === 'unidad-orion-1' ? 'Halcones' : 'Águilas';
+            this.mockMiembros[idx].nombreUnidad = idUnidadDestino === '1' ? 'Halcones' : idUnidadDestino === '2' ? 'Águilas' : idUnidadDestino === '3' ? 'Leones' : 'Estrellas';
             return of(this.mockMiembros[idx]);
           }
         }

@@ -139,4 +139,82 @@ export class AuthService {
       estado: 'ACTIVO'
     };
   }
+
+  getUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.authUrl}/users`).pipe(
+      catchError(error => {
+        if (error.status === 0) {
+          return of([
+            { idUsuario: 1, nombre: 'Admin', apellido: 'General', email: 'admin@club.com', rol: 'ADMINISTRADOR', idClub: 1, estado: 'ACTIVO' },
+            { idUsuario: 2, nombre: 'Carlos', apellido: 'Mendoza', email: 'director@club.com', rol: 'DIRECTOR', idClub: 1, estado: 'ACTIVO' },
+            { idUsuario: 3, nombre: 'Secretario', apellido: 'Mendoza', email: 'secretario@club.com', rol: 'SECRETARIO', idClub: 1, estado: 'ACTIVO' }
+          ]);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getRoles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.authUrl}/roles`).pipe(
+      catchError(error => {
+        if (error.status === 0) {
+          return of([
+            { idRol: 1, nombre: 'ADMINISTRADOR' },
+            { idRol: 2, nombre: 'DIRECTOR' },
+            { idRol: 3, nombre: 'SECRETARIO' },
+            { idRol: 4, nombre: 'DIRECTOR_ASOCIADO' },
+            { idRol: 5, nombre: 'INSTRUCTOR' },
+            { idRol: 6, nombre: 'CONSEJERO' },
+            { idRol: 7, nombre: 'CONQUISTADOR' },
+            { idRol: 8, nombre: 'PADRE' }
+          ]);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getGroupedUsers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.authUrl}/users/grouped`).pipe(
+      catchError(error => {
+        if (error.status === 0) {
+          return of([
+            {
+              idClub: 1,
+              clubNombre: 'Club Fernando Stahl',
+              usuarios: [
+                { idUsuario: 1, nombre: 'Admin', apellido: 'General', email: 'admin@club.com', rol: 'ADMINISTRADOR', idClub: 1, estado: 'ACTIVO' },
+                { idUsuario: 2, nombre: 'Carlos', apellido: 'Mendoza', email: 'director@club.com', rol: 'DIRECTOR', idClub: 1, estado: 'ACTIVO' },
+                { idUsuario: 3, nombre: 'Secretario', apellido: 'Mendoza', email: 'secretario@club.com', rol: 'SECRETARIO', idClub: 1, estado: 'ACTIVO' }
+              ]
+            }
+          ]);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  toggleUserStatus(userId: string | number): Observable<any> {
+    return this.http.put(`${this.authUrl}/users/${userId}/toggle`, {}).pipe(
+      catchError(error => {
+        if (error.status === 0) {
+          return of({ success: true });
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  updateUser(userId: string | number, userData: any): Observable<any> {
+    return this.http.put(`${this.authUrl}/users/${userId}`, userData).pipe(
+      catchError(error => {
+        if (error.status === 0) {
+          return of({ message: 'Mock update successful', success: true });
+        }
+        return throwError(() => error);
+      })
+    );
+  }
 }

@@ -1,5 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { MaterialesService } from '../../core/services/materiales.service';
+import { AuthService } from '../../core/services/auth.service';
+import { ClubService } from '../../core/services/club.service';
+import { EspecialidadService } from '../../core/services/especialidad.service';
+import Swal from 'sweetalert2';
 
 export interface MaterialItem {
   id: string;
@@ -36,16 +40,43 @@ export class MaterialesComponent implements OnInit {
 
   materiales = signal<MaterialItem[]>([]);
 
-  constructor(private materialesService: MaterialesService) {}
+  showSubirModal = false;
+  clasesList = signal<any[]>([]);
+  especialidadesList = signal<any[]>([]);
+  
+  nuevoMaterial = {
+    tipo: 'PDF',
+    urlOArchivo: '',
+    idClase: null as string | null,
+    idEspecialidad: null as string | null
+  };
+
+  currentUser = computed(() => this.authService.currentUser());
+  canUploadMaterial = computed(() => {
+    const rawRol = this.currentUser()?.rol;
+    const role = typeof rawRol === 'string' ? rawRol : (rawRol as any)?.nombre;
+    return ['ADMINISTRADOR', 'DIRECTOR', 'SECRETARIO', 'INSTRUCTOR'].includes(role || '');
+  });
+
+  constructor(
+    private materialesService: MaterialesService,
+    private authService: AuthService,
+    private clubService: ClubService,
+    private especialidadService: EspecialidadService
+  ) {}
 
   ngOnInit(): void {
     this.cargarMateriales();
+    if (this.canUploadMaterial()) {
+      this.cargarClases();
+      this.cargarEspecialidades();
+    }
   }
 
   cargarMateriales(): void {
     this.isLoading.set(true);
     // Load materials for a common class as starting point
-    this.materialesService.getMaterialesByClase('clase-amigo').subscribe({
+    this.materialesService.getMaterialesByClase('1').subscribe({
       next: (data) => {
         this.isLoading.set(false);
         if (data && data.length > 0) {
@@ -191,5 +222,73 @@ export class MaterialesComponent implements OnInit {
     if (item.url && item.url !== '#') {
       window.open(item.url, '_blank');
     }
+  }
+
+  cargarClases(): void {
+    this.clubService.getClases().subscribe(data => this.clasesList.set(data));
+  }
+
+  cargarEspecialidades(): void {
+    this.especialidadService.getEspecialidades().subscribe(data => this.especialidadesList.set(data));
+  }
+
+  subirMaterial(): void {
+    if (!this.nuevoMaterial.urlOArchivo) {
+      Swal.fire('Error', 'Debes ingresar la URL del archivo o recurso.', 'error');
+      return;
+    }
+    if (!this.nuevoMaterial.idClase && !this.nuevoMaterial.idEspecialidad) {
+      Swal.fire('Error', 'Debes seleccionar una Clase o una Especialidad para este recurso.', 'error');
+      return;
+    }
+
+    const payload = {
+      tipo: this.nuevoMaterial.tipo,
+      urlOArchivo: this.nuevoMaterial.urlOArchivo,
+      idClase: this.nuevoMaterial.idClase || undefined,
+      idEspecialidad: this.nuevoMaterial.idEspecialidad || undefined
+    };
+
+    this.materialesService.guardarMaterial(payload).subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Material Subido',
+          text: 'El recurso ha sido guardado exitosamente.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        this.showSubirModal = false;
+        this.nuevoMaterial = { tipo: 'PDF', urlOArchivo: '', idClase: null, idEspecialidad: null };
+        this.cargarMateriales();
+      },
+      error: (err) => {
+        Swal.fire('Error', 'No se pudo guardar el material.', 'error');
+        console.error(err);
+      }
+    });
+  }
+
+  eliminarMaterial(id: string): void {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Este material se eliminará permanentemente de tu biblioteca.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#b7102a',
+      cancelButtonColor: '#757682',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.materialesService.eliminarMaterial(id).subscribe({
+          next: () => {
+            Swal.fire('Eliminado', 'El material ha sido eliminado.', 'success');
+            this.cargarMateriales();
+          },
+          error: (err) => Swal.fire('Error', 'No se pudo eliminar el material.', 'error')
+        });
+      }
+    });
   }
 }

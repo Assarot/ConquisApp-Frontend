@@ -10,6 +10,13 @@
       <h1 class="text-2xl font-black text-[#00113a]">Materiales y Recursos</h1>
       <p class="text-sm text-[#444650]">Manuales, cuadernillos oficiales, guías de especialidades y ceremoniales.</p>
     </div>
+    @if (canUploadMaterial()) {
+      <button (click)="showSubirModal = true"
+              class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+        <span class="material-symbols-outlined text-[18px]">upload</span>
+        Subir Recurso
+      </button>
+    }
   </div>
 
   <!-- Category Pills -->
@@ -90,14 +97,97 @@
             {{ mat.descargas }} descargas
           </span>
 
-          <button (click)="descargar(mat)"
-                  class="flex items-center gap-1.5 bg-[#00113a] hover:bg-[#002366] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer shadow-xs">
-            <span class="material-symbols-outlined text-[15px]">file_download</span>
-            Descargar
-          </button>
+          <div class="flex items-center gap-2">
+            @if (canUploadMaterial() && mat.id && !mat.id.startsWith('m-')) {
+              <button (click)="eliminarMaterial(mat.id)"
+                      class="flex items-center justify-center text-red-600 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 transition cursor-pointer"
+                      title="Eliminar material">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            }
+            <button (click)="descargar(mat)"
+                    class="flex items-center gap-1.5 bg-[#00113a] hover:bg-[#002366] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer shadow-xs">
+              <span class="material-symbols-outlined text-[15px]">file_download</span>
+              Descargar
+            </button>
+          </div>
         </div>
       </div>
     }
   </div>
+
+  <!-- Modal: Subir Nuevo Material -->
+  @if (showSubirModal) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
+          <h3 class="text-lg font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00113a]">cloud_upload</span>
+            Subir Material o Recurso de Club
+          </h3>
+          <button (click)="showSubirModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form (ngSubmit)="subirMaterial()" class="space-y-4 mt-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Tipo de Recurso</label>
+              <select [(ngModel)]="nuevoMaterial.tipo" name="tipoMat"
+                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white" required>
+                <option value="PDF">Documento PDF</option>
+                <option value="WORD">Documento Word</option>
+                <option value="VIDEO">Video Instructivo</option>
+                <option value="ENLACE">Enlace Externo</option>
+                <option value="IMAGEN">Imagen / Infografía</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Asociar a Clase (Global)</label>
+              <select [(ngModel)]="nuevoMaterial.idClase" name="claseMat"
+                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white">
+                <option [value]="null">Ninguna (no asociar a clase)</option>
+                @for (c of clasesList(); track c.idClase) {
+                  <option [value]="c.idClase">{{ c.nombre }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Asociar a Especialidad (Global)</label>
+            <select [(ngModel)]="nuevoMaterial.idEspecialidad" name="especialidadMat"
+                    class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white">
+              <option [value]="null">Ninguna (no asociar a especialidad)</option>
+              @for (e of especialidadesList(); track e.idEspecialidad) {
+                <option [value]="e.idEspecialidad">{{ e.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">URL o Enlace del Recurso</label>
+            <input [(ngModel)]="nuevoMaterial.urlOArchivo" name="urlMat" type="url"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                   placeholder="Ej. https://drive.google.com/file/d/..." required />
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2]">
+            <button type="button" (click)="showSubirModal = false"
+                    class="px-4 py-2 text-sm font-bold text-[#757682] hover:bg-[#edeeef] rounded-lg transition cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit"
+                    class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow transition cursor-pointer">
+              Subir Recurso
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
 
 </div>

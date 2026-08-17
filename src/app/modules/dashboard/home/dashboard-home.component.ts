@@ -1,8 +1,10 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, signal, effect } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { MiembroService } from '../../../core/services/miembro.service';
 import { UnidadService } from '../../../core/services/unidad.service';
 import { RankingService } from '../../../core/services/ranking.service';
+import { ClubService } from '../../../core/services/club.service';
+import { EspecialidadService } from '../../../core/services/especialidad.service';
 
 @Component({
   selector: 'app-dashboard-home',
@@ -11,6 +13,11 @@ import { RankingService } from '../../../core/services/ranking.service';
 })
 export class DashboardHomeComponent implements OnInit {
   currentUser = computed(() => this.authService.currentUser());
+  isAdmin = computed(() => {
+    const role = this.currentUser()?.rol;
+    const roleName = typeof role === 'string' ? role : (role as any)?.nombre;
+    return roleName === 'ADMINISTRADOR';
+  });
 
   stats = signal({
     totalMiembros: 0,
@@ -18,6 +25,15 @@ export class DashboardHomeComponent implements OnInit {
     diasProximoEvento: 15,
     especialidadesOtorgadas: 0
   });
+
+  adminStats = signal({
+    totalClubes: 0,
+    totalUsuarios: 0,
+    totalEspecialidades: 0,
+    totalClases: 0
+  });
+
+  clubName = signal<string>('Club Fernando Stahl');
 
   recentActivity = [
     {
@@ -56,26 +72,65 @@ export class DashboardHomeComponent implements OnInit {
     private authService: AuthService,
     private miembroService: MiembroService,
     private unidadService: UnidadService,
-    private rankingService: RankingService
-  ) {}
+    private rankingService: RankingService,
+    private clubService: ClubService,
+    private especialidadService: EspecialidadService
+  ) {
+    effect(() => {
+      const user = this.currentUser();
+      if (!user) return;
+      if (this.isAdmin()) {
+        this.cargarEstadisticasGlobales();
+      } else {
+        this.cargarEstadisticas();
+      }
+    });
+  }
 
-  ngOnInit(): void {
-    this.cargarEstadisticas();
+  ngOnInit(): void {}
+
+  cargarEstadisticasGlobales(): void {
+    this.clubService.getClubes().subscribe({
+      next: (clubes) => this.adminStats.update(s => ({ ...s, totalClubes: clubes.length })),
+      error: () => this.adminStats.update(s => ({ ...s, totalClubes: 3 }))
+    });
+
+    this.authService.getUsers().subscribe({
+      next: (usuarios) => this.adminStats.update(s => ({ ...s, totalUsuarios: usuarios.length })),
+      error: () => this.adminStats.update(s => ({ ...s, totalUsuarios: 10 }))
+    });
+
+    this.especialidadService.getEspecialidades().subscribe({
+      next: (especialidades) => this.adminStats.update(s => ({ ...s, totalEspecialidades: especialidades.length })),
+      error: () => this.adminStats.update(s => ({ ...s, totalEspecialidades: 8 }))
+    });
+
+    this.clubService.getClases().subscribe({
+      next: (clases) => this.adminStats.update(s => ({ ...s, totalClases: clases.length })),
+      error: () => this.adminStats.update(s => ({ ...s, totalClases: 6 }))
+    });
   }
 
   cargarEstadisticas(): void {
     const user = this.authService.currentUser();
-    const idClub = user?.idClub || 'uuid-club-conquistadores-orion';
+    const idClub = user?.idClub ? Number(user.idClub) : 1;
 
-    // Load real members count
-    this.miembroService.getMiembrosByClub(idClub).subscribe({
+    this.clubService.getClubById(String(idClub)).subscribe({
+      next: (club) => {
+        this.clubName.set(club.nombre);
+      },
+      error: () => {
+        this.clubName.set('Club ' + (user?.idClub || 'Fernando Stahl'));
+      }
+    });
+
+    this.miembroService.getMiembrosByClub(String(idClub)).subscribe({
       next: (miembros) => {
         this.stats.update(s => ({ ...s, totalMiembros: miembros.length }));
       },
       error: () => this.stats.update(s => ({ ...s, totalMiembros: 30 }))
     });
 
-    // Load real units count
     this.unidadService.getUnidades().subscribe({
       next: (unidades) => {
         this.stats.update(s => ({ ...s, unidadesActivas: unidades.length }));
@@ -83,8 +138,7 @@ export class DashboardHomeComponent implements OnInit {
       error: () => this.stats.update(s => ({ ...s, unidadesActivas: 4 }))
     });
 
-    // Load club indicators for especialidades
-    this.rankingService.getIndicadoresByClub(idClub).subscribe({
+    this.rankingService.getIndicadoresByClub(String(idClub)).subscribe({
       next: (data) => {
         if (data && data['especialidadesCompletadas']) {
           this.stats.update(s => ({ ...s, especialidadesOtorgadas: data['especialidadesCompletadas'] }));

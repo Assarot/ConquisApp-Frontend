@@ -66,7 +66,11 @@
                     [style.color]="esp.categoriaColor">
                 {{ esp.categoriaNombre }}
               </span>
-              <span class="text-[10px] font-bold text-[#757682] mt-1">{{ esp.nivel }}</span>
+              @if (esp.requiereExamen) {
+                <span class="text-[10px] font-bold text-amber-600 mt-1 flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[12px]">quiz</span> Con Examen
+                </span>
+              }
             </div>
           </div>
 
@@ -76,24 +80,15 @@
           <div class="flex items-center gap-4 mt-4 text-xs text-[#757682] font-semibold">
             <span class="flex items-center gap-1">
               <span class="material-symbols-outlined text-[16px]">task</span>
-              {{ esp.requisitosCount }} Requisitos
-            </span>
-            <span class="flex items-center gap-1">
-              <span class="material-symbols-outlined text-[16px] text-amber-500">military_tech</span>
-              {{ esp.conquistadoresCompletados }} Investidos
+              Ver Requisitos
             </span>
           </div>
         </div>
 
-        <!-- Card Actions -->
-        <div class="pt-4 mt-4 border-t border-[#c5c6d2] flex items-center justify-between gap-2">
-          <button (click)="verDetalles(esp)"
-                  class="text-xs font-bold text-[#00113a] hover:underline cursor-pointer">
-            Ver Requisitos
-          </button>
-          <button (click)="iniciarEvaluacion(esp)"
+        <div class="pt-4 mt-4 border-t border-[#c5c6d2] flex items-center justify-end gap-2">
+          <button (click)="verRequisitos(esp)"
                   class="text-xs font-bold text-white bg-[#00113a] hover:bg-[#002366] px-3 py-1.5 rounded-lg shadow-xs transition cursor-pointer">
-            Evaluar
+            Ver Requisitos
           </button>
         </div>
 
@@ -101,8 +96,8 @@
     }
   </div>
 
-  <!-- Modal: Ver Requisitos -->
-  @if (selectedEspecialidad && !showEvaluacionModal) {
+  <!-- Modal: Ver Requisitos (real from DB) -->
+  @if (selectedEspecialidad && !loadingRequisitos()) {
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
       <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
         <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
@@ -116,36 +111,54 @@
               <span class="text-xs text-[#757682]">{{ selectedEspecialidad.categoriaNombre }}</span>
             </div>
           </div>
-          <button (click)="selectedEspecialidad = null" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+          <button (click)="cerrarModal()" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
 
         <div class="py-4 space-y-3">
           <p class="text-xs text-[#444650]">{{ selectedEspecialidad.descripcion }}</p>
+
+          @if (selectedEspecialidad.requiereExamen) {
+            <div class="flex items-center gap-1.5 text-amber-600 text-xs font-bold">
+              <span class="material-symbols-outlined text-[15px]">quiz</span>
+              Esta especialidad requiere examen oficial
+            </div>
+          }
+
           <h4 class="text-xs font-bold uppercase text-[#00113a] tracking-wider">Requisitos Oficiales</h4>
-          <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
-            <div class="flex items-start gap-2 p-2 bg-[#f8f9fa] rounded-lg text-xs">
-              <span class="font-bold text-[#00113a]">1.</span>
-              <span class="text-[#444650]">Definir los términos fundamentales y normas de seguridad.</span>
+
+          @if (loadingRequisitos()) {
+            <div class="flex items-center gap-2 text-xs text-[#757682] py-4">
+              <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+              Cargando requisitos...
             </div>
-            <div class="flex items-start gap-2 p-2 bg-[#f8f9fa] rounded-lg text-xs">
-              <span class="font-bold text-[#00113a]">2.</span>
-              <span class="text-[#444650]">Demostrar prácticamente ante el instructor 5 técnicas de campo.</span>
+          } @else if (requisitosModal().length === 0) {
+            <p class="text-xs text-[#757682] italic py-2">No hay requisitos registrados para esta especialidad.</p>
+          } @else {
+            <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+              @for (req of requisitosModal(); track req.idRequisito; let i = $index) {
+                <div class="flex items-start gap-2 p-2 rounded-lg text-xs"
+                     [class.bg-[#e8f5e9]]="!req.esAvanzado"
+                     [class.bg-[#e3f2fd]]="req.esAvanzado">
+                  <span class="font-bold text-[#00113a] shrink-0">{{ i + 1 }}.</span>
+                  <span class="text-[#444650] flex-1">{{ req.descripcion }}</span>
+                  @if (req.esAvanzado) {
+                    <span class="text-[9px] font-bold uppercase text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded shrink-0">Avanzado</span>
+                  } @else {
+                    <span class="text-[9px] font-bold uppercase text-green-700 bg-green-100 px-1.5 py-0.5 rounded shrink-0">Regular</span>
+                  }
+                </div>
+              }
             </div>
-            <div class="flex items-start gap-2 p-2 bg-[#f8f9fa] rounded-lg text-xs">
-              <span class="font-bold text-[#00113a]">3.</span>
-              <span class="text-[#444650]">Presentar un informe escrito o álbum ilustrado del proyecto.</span>
-            </div>
-            <div class="flex items-start gap-2 p-2 bg-[#f8f9fa] rounded-lg text-xs">
-              <span class="font-bold text-[#00113a]">4.</span>
-              <span class="text-[#444650]">Aprobar el examen teórico-práctico de la comisión evaluadora.</span>
-            </div>
-          </div>
+          }
         </div>
 
-        <div class="flex justify-end pt-3 border-t border-[#c5c6d2]">
-          <button (click)="selectedEspecialidad = null"
+        <div class="flex justify-between items-center pt-3 border-t border-[#c5c6d2]">
+          <span class="text-xs text-[#757682]">
+            {{ requisitosModal().length }} requisito(s) registrado(s)
+          </span>
+          <button (click)="cerrarModal()"
                   class="px-4 py-2 text-xs font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg transition cursor-pointer">
             Cerrar
           </button>
@@ -154,59 +167,5 @@
     </div>
   }
 
-  <!-- Modal: Evaluar Especialidad -->
-  @if (showEvaluacionModal && selectedEspecialidad) {
-    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
-        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
-          <h3 class="text-base font-bold text-[#00113a] flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#00113a]">fact_check</span>
-            Evaluación: {{ selectedEspecialidad.nombre }}
-          </h3>
-          <button (click)="showEvaluacionModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        <div class="space-y-4 my-4">
-          <div>
-            <label class="block text-xs font-bold text-[#191c1d] mb-1">Seleccionar Conquistador</label>
-            <select class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm bg-white focus:border-[#00113a] outline-none">
-              <option>Mateo Silva (Unidad Águilas)</option>
-              <option>Sofía Quispe (Unidad Halcones)</option>
-              <option>Lucas Morales (Unidad Leones)</option>
-              <option>Valentina Castro (Unidad Estrellas)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-[#191c1d] mb-1">Calificación de Desempeño</label>
-            <select class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm bg-white focus:border-[#00113a] outline-none">
-              <option>Aprobado con Excelencia (100%)</option>
-              <option>Aprobado Regular (85%)</option>
-              <option>Requisitos Pendientes</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-[#191c1d] mb-1">Observaciones del Instructor</label>
-            <textarea rows="2" class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] outline-none"
-                      placeholder="Demostró dominio del temario..."></textarea>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-3 border-t border-[#c5c6d2]">
-          <button (click)="showEvaluacionModal = false"
-                  class="px-4 py-2 text-xs font-bold text-[#757682] hover:bg-[#edeeef] rounded-lg transition cursor-pointer">
-            Cancelar
-          </button>
-          <button (click)="guardarEvaluacion()"
-                  class="px-4 py-2 text-xs font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow transition cursor-pointer">
-            Aprobar y Registrar
-          </button>
-        </div>
-      </div>
-    </div>
-  }
 
 </div>

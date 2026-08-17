@@ -33,4 +33,12 @@ export class MaterialesService {
       catchError(() => of([]))
     );
   }
+
+  guardarMaterial(material: MaterialBackend): Observable<MaterialBackend> {
+    return this.http.post<MaterialBackend>(this.apiUrl, material);
+  }
+
+  eliminarMaterial(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

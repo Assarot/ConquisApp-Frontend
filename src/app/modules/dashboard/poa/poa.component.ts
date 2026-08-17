@@ -54,7 +54,7 @@ export class PoaComponent implements OnInit {
   }
 
   loadPoas(): void {
-    const clubId = this.currentUser()?.idClub || 'uuid-club-conquistadores-orion';
+    const clubId = this.currentUser()?.idClub?.toString() || '1';
     this.isLoading = true;
     this.poaService.getPoasByClub(clubId).subscribe({
       next: (poas) => {
@@ -99,7 +99,7 @@ export class PoaComponent implements OnInit {
   onCreatePoa(): void {
     if (this.poaForm.invalid) return;
     const { anio } = this.poaForm.value;
-    const clubId = this.currentUser()?.idClub || 'uuid-club-conquistadores-orion';
+    const clubId = this.currentUser()?.idClub?.toString() || '1';
 
     this.poaService.inicializarPoa(clubId, anio).subscribe({
       next: (newPoa) => {

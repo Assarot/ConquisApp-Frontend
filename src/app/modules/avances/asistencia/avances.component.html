@@ -1,0 +1,240 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-[#00113a] flex items-center justify-center text-white">
+        <span class="material-symbols-outlined text-[20px]">trending_up</span>
+      </div>
+      <div>
+        <h1 class="text-xl font-black text-[#00113a]">Avances de Conquistadores</h1>
+        <p class="text-sm text-[#444650]">Selecciona una clase y luego un conquistador para ver su progreso.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Clase filter pills -->
+  <div class="bg-white rounded-xl border border-[#c5c6d2] p-5 shadow-sm space-y-3">
+    <h2 class="text-xs font-bold text-[#757682] uppercase tracking-wider">Paso 1 — Selecciona la Clase</h2>
+    @if (isLoadingClases()) {
+      <span class="text-xs text-[#757682]">Cargando clases...</span>
+    }
+    <div class="flex flex-wrap gap-2">
+      @for (clase of clasesList(); track clase.idClase) {
+        <button
+          (click)="seleccionarClase(clase.idClase || '')"
+          [class]="selectedClaseId() === clase.idClase
+            ? 'bg-[#00113a] text-white shadow-md'
+            : 'bg-white border border-[#c5c6d2] text-[#444650] hover:bg-[#f3f4f5]'"
+          class="px-4 py-2 rounded-lg text-sm font-bold transition cursor-pointer"
+        >
+          {{ clase.nombre }}
+        </button>
+      }
+      @if (!isLoadingClases() && clasesList().length === 0) {
+        <p class="text-sm text-[#757682]">No hay clases registradas en este club.</p>
+      }
+    </div>
+  </div>
+
+  <!-- Step 2 + 3: Miembros list + Avances detail -->
+  @if (selectedClaseId()) {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left: Miembros de la clase -->
+      <div class="lg:col-span-1 bg-white border border-[#c5c6d2] rounded-xl p-4 shadow-sm space-y-3">
+        <h2 class="text-xs font-bold text-[#757682] uppercase tracking-wider px-1">
+          Paso 2 — Conquistadores · Clase {{ getNombreClase() }}
+        </h2>
+
+        @if (isLoadingMiembros()) {
+          <div class="flex items-center gap-2 text-xs text-[#757682] py-6 justify-center">
+            <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+            Cargando miembros...
+          </div>
+        } @else if (miembrosDeClase().length === 0) {
+          <div class="text-center py-8 text-[#757682] text-sm">
+            <span class="material-symbols-outlined text-[32px] block mb-1">group_off</span>
+            No hay conquistadores en esta clase.
+          </div>
+        } @else {
+          @for (m of miembrosDeClase(); track m.idMiembro) {
+            <button
+              (click)="seleccionarMiembro(m)"
+              class="w-full flex items-center gap-3 p-3 rounded-xl border transition cursor-pointer text-left"
+              [class]="selectedMiembro()?.idMiembro === m.idMiembro
+                ? 'border-[#00113a] bg-[#f0f3ff] shadow-sm'
+                : 'border-[#c5c6d2] hover:bg-[#f8f9fa]'"
+            >
+              <div class="w-9 h-9 rounded-full bg-[#00113a] flex items-center justify-center text-white text-xs font-bold shrink-0">
+                {{ m.nombre.charAt(0) }}{{ m.apellido.charAt(0) }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-[#00113a] truncate">{{ m.nombre }} {{ m.apellido }}</p>
+                <p class="text-[10px] text-[#757682]">{{ m.pendientes || 0 }} pendientes</p>
+              </div>
+              @if (selectedMiembro()?.idMiembro === m.idMiembro) {
+                <span class="material-symbols-outlined text-[#00113a] text-[18px]">chevron_right</span>
+              }
+            </button>
+          }
+        }
+      </div>
+
+      <!-- Right: Progress detail -->
+      <div class="lg:col-span-2 space-y-5">
+
+        @if (!selectedMiembro()) {
+          <div class="bg-white border border-[#c5c6d2] rounded-xl p-10 shadow-sm flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-[48px] text-[#c5c6d2] mb-3">person_search</span>
+            <p class="text-sm text-[#757682]">Selecciona un conquistador para ver su progreso.</p>
+          </div>
+        }
+
+        @if (selectedMiembro()) {
+          <!-- Progress summary card -->
+          <div class="bg-white border border-[#c5c6d2] rounded-xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-[#00113a] flex items-center justify-center text-white font-bold text-lg">
+                  {{ selectedMiembro()!.nombre.charAt(0) }}{{ selectedMiembro()!.apellido.charAt(0) }}
+                </div>
+                <div>
+                  <h3 class="font-bold text-[#00113a]">{{ selectedMiembro()!.nombre }} {{ selectedMiembro()!.apellido }}</h3>
+                  <p class="text-xs text-[#757682]">Clase {{ getNombreClase() }}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-2xl font-black text-[#00113a]">{{ porcentaje }}%</p>
+                <p class="text-[10px] text-[#757682]">Completado</p>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full h-2.5 bg-[#edeeef] rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-[#00113a] to-[#0047ab] rounded-full transition-all duration-500"
+                   [style.width.%]="porcentaje"></div>
+            </div>
+
+            <!-- Stats -->
+            <div class="flex items-center gap-4 mt-3 text-xs">
+              <span class="flex items-center gap-1 text-green-700 font-bold">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                {{ completados }} Completados
+              </span>
+              <span class="flex items-center gap-1 text-blue-700 font-bold">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                {{ enProgreso }} En Progreso
+              </span>
+              <span class="flex items-center gap-1 text-[#757682] font-bold">
+                <span class="w-2 h-2 rounded-full bg-[#c5c6d2]"></span>
+                {{ pendientes }} Pendientes
+              </span>
+            </div>
+          </div>
+
+          <!-- Avances list (class requisitos) -->
+          <div class="bg-white border border-[#c5c6d2] rounded-xl p-5 shadow-sm space-y-3">
+            <h3 class="text-sm font-bold text-[#00113a] flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">menu_book</span>
+              Requisitos del Cuadernillo
+            </h3>
+
+            @if (isLoadingAvances()) {
+              <div class="flex items-center gap-2 text-xs text-[#757682] py-6 justify-center">
+                <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                Cargando avances...
+              </div>
+            } @else if (avancesClase().length === 0) {
+              <p class="text-sm text-[#757682] text-center py-4">No hay requisitos registrados para esta clase.</p>
+            } @else {
+              <!-- Regular -->
+              @if (avancesRegulares.length > 0) {
+                <p class="text-[10px] font-bold uppercase tracking-wider text-green-700 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Regulares
+                </p>
+                @for (av of avancesRegulares; track av.idRequisito; let i = $index) {
+                  <div class="flex items-start gap-3 p-3 rounded-lg border"
+                       [ngClass]="getEstadoClasses(av.estado)">
+                    <span class="text-xs font-bold shrink-0 mt-0.5">{{ i + 1 }}.</span>
+                    <span class="text-xs flex-1">{{ av.descripcion }}</span>
+                    @if (canEdit()) {
+                      <select
+                        [value]="av.estado"
+                        (change)="cambiarEstado(av, $any($event.target).value)"
+                        class="text-[10px] font-bold border rounded px-1.5 py-0.5 cursor-pointer bg-white outline-none ml-2 shrink-0">
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="EN_PROGRESO">En Progreso</option>
+                        <option value="COMPLETADO">Completado</option>
+                      </select>
+                    } @else {
+                      <span class="text-[10px] font-bold shrink-0">{{ getEstadoLabel(av.estado) }}</span>
+                    }
+                  </div>
+                }
+              }
+
+              <!-- Avanzados -->
+              @if (avancesAvanzados.length > 0) {
+                <p class="text-[10px] font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1 mt-3">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Avanzados
+                </p>
+                @for (av of avancesAvanzados; track av.idRequisito; let i = $index) {
+                  <div class="flex items-start gap-3 p-3 rounded-lg border"
+                       [ngClass]="getEstadoClasses(av.estado)">
+                    <span class="text-xs font-bold shrink-0 mt-0.5">{{ i + 1 }}.</span>
+                    <span class="text-xs flex-1">{{ av.descripcion }}</span>
+                    @if (canEdit()) {
+                      <select
+                        [value]="av.estado"
+                        (change)="cambiarEstado(av, $any($event.target).value)"
+                        class="text-[10px] font-bold border rounded px-1.5 py-0.5 cursor-pointer bg-white outline-none ml-2 shrink-0">
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="EN_PROGRESO">En Progreso</option>
+                        <option value="COMPLETADO">Completado</option>
+                      </select>
+                    } @else {
+                      <span class="text-[10px] font-bold shrink-0">{{ getEstadoLabel(av.estado) }}</span>
+                    }
+                  </div>
+                }
+              }
+            }
+          </div>
+
+          <!-- Maestría por categoría (club-level) -->
+          @if (maestriasPorCategoria.length > 0) {
+            <div class="bg-white border border-[#c5c6d2] rounded-xl p-5 shadow-sm space-y-3">
+              <h3 class="text-sm font-bold text-[#00113a] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px] text-amber-500">military_tech</span>
+                Maestrías del Club (por categoría)
+              </h3>
+              <p class="text-[11px] text-[#757682]">Se requieren 5 o más especialidades de la misma categoría para obtener una maestría.</p>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                @for (m of maestriasPorCategoria; track m.categoria) {
+                  <div class="flex flex-col items-center p-3 rounded-xl border text-center gap-1"
+                       [class.border-amber-300]="m.tieneMaestria"
+                       [class.bg-amber-50]="m.tieneMaestria"
+                       [class.border-[#edeeef]]="!m.tieneMaestria">
+                    <span class="material-symbols-outlined text-[22px]"
+                          [class.text-amber-500]="m.tieneMaestria"
+                          [class.text-[#c5c6d2]]="!m.tieneMaestria">military_tech</span>
+                    <p class="text-[10px] font-bold" [style.color]="m.tieneMaestria ? m.color : '#c5c6d2'">{{ m.categoria }}</p>
+                    <p class="text-lg font-black" [style.color]="m.tieneMaestria ? m.color : '#c5c6d2'">{{ m.count }}</p>
+                    <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full"
+                          [class.bg-amber-100]="m.tieneMaestria"
+                          [class.text-amber-700]="m.tieneMaestria"
+                          [class.bg-[#f0f0f2]]="!m.tieneMaestria"
+                          [class.text-[#c5c6d2]]="!m.tieneMaestria">
+                      {{ m.tieneMaestria ? '¡Maestría!' : m.count + '/5' }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

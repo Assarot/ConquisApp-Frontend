@@ -13,6 +13,7 @@ import { SesionesComponent } from './modules/planificacion/sesiones/sesiones.com
 import { CalendarioComponent } from './modules/planificacion/calendario/calendario.component';
 import { EspecialidadesComponent } from './modules/especialidades/especialidades.component';
 import { AsistenciaComponent } from './modules/avances/asistencia/asistencia.component';
+import { AvancesComponent } from './modules/avances/asistencia/avances.component';
 import { ReportesComponent } from './modules/reportes/reportes.component';
 import { MaterialesComponent } from './modules/materiales/materiales.component';
 import { RankingComponent } from './modules/ranking/ranking.component';
@@ -38,6 +39,7 @@ const routes: Routes = [
       { path: 'clases', component: ClaseDetalleComponent },
       { path: 'especialidades', component: EspecialidadesComponent },
       { path: 'asistencia', component: AsistenciaComponent },
+      { path: 'avances', component: AvancesComponent },
       { path: 'reportes', component: ReportesComponent },
       { path: 'materiales', component: MaterialesComponent },
       { path: 'ranking', component: RankingComponent },

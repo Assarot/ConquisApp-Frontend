@@ -20,7 +20,9 @@
         </div>
         <div class="hide-on-collapse flex flex-col">
           <span class="text-sm font-bold text-[#00113a] leading-tight">Conquistadores</span>
-          <span class="text-[10px] text-[#b7102a] font-bold uppercase tracking-wider">Club Fernando Stahl</span>
+          <span class="text-[10px] text-[#b7102a] font-bold uppercase tracking-wider">
+            {{ currentUser()?.idClub ? clubName() : 'Administración Global' }}
+          </span>
         </div>
       </div>
       <button class="p-2 hover:bg-[#edeeef] rounded-full transition-colors text-[#757682] cursor-pointer"
@@ -80,6 +82,7 @@
       }
 
       <!-- Cuadernillos (Submenu) -->
+      @if (!isAdmin()) {
       <div class="space-y-1">
         <button (click)="toggleSubmenu('books')"
           class="w-full flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
@@ -97,8 +100,10 @@
             class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Requisitos</a>
         </div>
       </div>
+      }
 
       <!-- Especialidades (Submenu) -->
+      @if (!isAdmin()) {
       <div class="space-y-1">
         <button (click)="toggleSubmenu('honors')"
           class="w-full flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
@@ -116,6 +121,7 @@
           }
         </div>
       </div>
+      }
 
       <!-- Avances (Submenu) -->
       @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero()) {
@@ -128,6 +134,8 @@
             [class.rotate-icon]="isSubmenuOpen('progress')">expand_more</span>
         </button>
         <div class="submenu-transition flex flex-col pl-10 space-y-1" [class.submenu-open]="isSubmenuOpen('progress')">
+          <a routerLink="/dashboard/avances" (click)="closeSidebar()"
+            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Progreso Conquistadores</a>
           <a routerLink="/dashboard/asistencia" (click)="closeSidebar()"
             class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Asistencia</a>
         </div>
@@ -173,8 +181,8 @@
       </a>
       }
 
-      <!-- Administración (Submenu) -->
-      @if (isAdmin()) {
+      <!-- Administración para Director -->
+      @if (isDirector()) {
       <div class="space-y-1">
         <button (click)="toggleSubmenu('admin')"
           class="w-full flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
@@ -184,11 +192,42 @@
             [class.rotate-icon]="isSubmenuOpen('admin')">expand_more</span>
         </button>
         <div class="submenu-transition flex flex-col pl-10 space-y-1" [class.submenu-open]="isSubmenuOpen('admin')">
-          <a routerLink="/dashboard/admin" (click)="closeSidebar()"
+          <a routerLink="/dashboard/admin" [queryParams]="{tab: 'usuarios'}" (click)="closeSidebar()"
             class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Usuarios</a>
-          <a routerLink="/dashboard/admin" (click)="closeSidebar()"
-            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Auditoría</a>
         </div>
+      </div>
+      }
+
+      <!-- Administración para Administrador General -->
+      @if (isAdmin()) {
+      <div class="space-y-1">
+        <a routerLink="/dashboard/admin" [queryParams]="{tab: 'clubes'}" (click)="closeSidebar()"
+          routerLinkActive="nav-item-active" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }"
+          class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">add_business</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium">Nuevo Club</span>
+        </a>
+
+        <a routerLink="/dashboard/admin" [queryParams]="{tab: 'usuarios'}" (click)="closeSidebar()"
+          routerLinkActive="nav-item-active" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }"
+          class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">manage_accounts</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium">Usuarios</span>
+        </a>
+
+        <a routerLink="/dashboard/admin" [queryParams]="{tab: 'especialidades'}" (click)="closeSidebar()"
+          routerLinkActive="nav-item-active" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }"
+          class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">military_tech</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium">Especialidades</span>
+        </a>
+
+        <a routerLink="/dashboard/admin" [queryParams]="{tab: 'clases'}" (click)="closeSidebar()"
+          routerLinkActive="nav-item-active" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }"
+          class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+          <span class="material-symbols-outlined shrink-0">menu_book</span>
+          <span class="hide-on-collapse ml-4 text-sm font-medium">Cuadernillos</span>
+        </a>
       </div>
       }
 
@@ -208,7 +247,9 @@
           <div class="flex items-center gap-1.5 truncate">
             <span class="text-[10px] text-[#757682] font-semibold uppercase">{{ userRoleName() }}</span>
             <span class="text-[10px] text-[#c5c6d2]">•</span>
-            <span class="text-[10px] text-[#b7102a] font-bold truncate">Club Fernando Stahl</span>
+            <span class="text-[10px] text-[#b7102a] font-bold truncate">
+              {{ currentUser()?.idClub ? clubName() : 'Administración Global' }}
+            </span>
           </div>
         </div>
       </div>
@@ -258,27 +299,35 @@
         <span class="material-symbols-outlined text-[22px]">dashboard</span>
         <span class="text-[9px] font-bold">Inicio</span>
       </a>
-      <a routerLink="/dashboard/miembros" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
-        class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
-        <span class="material-symbols-outlined text-[22px]">groups</span>
-        <span class="text-[9px] font-bold">Miembros</span>
-      </a>
-      <!-- FAB -->
-      <a routerLink="/dashboard/miembros" (click)="closeSidebar()" class="flex flex-col items-center -mt-8 px-3">
-        <div class="w-12 h-12 bg-[#b7102a] rounded-full flex items-center justify-center text-white shadow-lg">
-          <span class="material-symbols-outlined text-[20px]">add</span>
-        </div>
-      </a>
-      <a routerLink="/dashboard/unidades" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
-        class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
-        <span class="material-symbols-outlined text-[22px]">group_work</span>
-        <span class="text-[9px] font-bold">Unidades</span>
-      </a>
-      <a routerLink="/dashboard/poa" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
-        class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
-        <span class="material-symbols-outlined text-[22px]">assignment</span>
-        <span class="text-[9px] font-bold">POA</span>
-      </a>
+      @if (isAdmin()) {
+        <a routerLink="/dashboard/admin" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
+          class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
+          <span class="material-symbols-outlined text-[22px]">settings</span>
+          <span class="text-[9px] font-bold">Administración</span>
+        </a>
+      } @else {
+        <a routerLink="/dashboard/miembros" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
+          class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
+          <span class="material-symbols-outlined text-[22px]">groups</span>
+          <span class="text-[9px] font-bold">Miembros</span>
+        </a>
+        <!-- FAB -->
+        <a routerLink="/dashboard/miembros" (click)="closeSidebar()" class="flex flex-col items-center -mt-8 px-3">
+          <div class="w-12 h-12 bg-[#b7102a] rounded-full flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+          </div>
+        </a>
+        <a routerLink="/dashboard/unidades" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
+          class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
+          <span class="material-symbols-outlined text-[22px]">group_work</span>
+          <span class="text-[9px] font-bold">Unidades</span>
+        </a>
+        <a routerLink="/dashboard/poa" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
+          class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
+          <span class="material-symbols-outlined text-[22px]">assignment</span>
+          <span class="text-[9px] font-bold">POA</span>
+        </a>
+      }
     </nav>
 
   </div>

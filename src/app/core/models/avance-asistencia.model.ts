@@ -21,6 +21,10 @@ export interface Asistencia {
   idSesion: string;
   idUsuario: string; // member or leader
   estado: 'PRESENTE' | 'AUSENTE' | 'JUSTIFICADO';
+  panoleta: boolean;
+  biblia: boolean;
+  agua: boolean;
+  materiales: boolean;
   // Extra display fields
   nombreMiembro?: string;
 }
@@ -41,5 +45,9 @@ export interface AsistenciaMasivaRequest {
   asistencias: {
     idUsuario: string;
     estado: 'PRESENTE' | 'AUSENTE' | 'JUSTIFICADO';
+    panoleta?: boolean;
+    biblia?: boolean;
+    agua?: boolean;
+    materiales?: boolean;
   }[];
 }

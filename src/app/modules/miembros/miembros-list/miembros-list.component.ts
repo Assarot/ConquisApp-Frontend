@@ -27,14 +27,19 @@ export class MiembrosListComponent implements OnInit {
 
   // Seeded static data for dropdowns (mapped to DB seeds)
   unidades = [
-    { id: 'unidad-orion-1', nombre: 'Halcones' },
-    { id: 'unidad-orion-2', nombre: 'Águilas' }
+    { id: '1', nombre: 'Halcones' },
+    { id: '2', nombre: 'Águilas' },
+    { id: '3', nombre: 'Leones' },
+    { id: '4', nombre: 'Estrellas' }
   ];
 
   clases = [
-    { id: 'clase-amigo', nombre: 'Amigo' },
-    { id: 'clase-viajero', nombre: 'Viajero' },
-    { id: 'clase-guia', nombre: 'Guía' }
+    { id: '1', nombre: 'Amigo' },
+    { id: '2', nombre: 'Compañero' },
+    { id: '3', nombre: 'Explorador' },
+    { id: '4', nombre: 'Pionero' },
+    { id: '5', nombre: 'Excursionista' },
+    { id: '6', nombre: 'Guía' }
   ];
 
   // Auth permissions using auth signals
@@ -58,8 +63,8 @@ export class MiembrosListComponent implements OnInit {
       estadoFichaSalud: ['PENDIENTE', [Validators.required]],
       estadoSeguro: ['NO_POSEE_SEGURO', [Validators.required]],
       estadoAdhesionPadres: ['PENDIENTE', [Validators.required]],
-      idClase: ['clase-amigo', [Validators.required]],
-      idUnidad: ['unidad-orion-1', [Validators.required]]
+      idClase: ['1', [Validators.required]],
+      idUnidad: ['1', [Validators.required]]
     });
   }
 
@@ -69,7 +74,7 @@ export class MiembrosListComponent implements OnInit {
 
   loadMiembros(): void {
     this.isLoading = true;
-    const clubId = this.currentUser()?.idClub || 'uuid-club-conquistadores-orion';
+    const clubId = this.currentUser()?.idClub?.toString() || '1';
     this.miembroService.getMiembrosByClub(clubId).subscribe({
       next: (data) => {
         // Map JPA relationships if returned as nested objects
@@ -84,11 +89,11 @@ export class MiembrosListComponent implements OnInit {
             estadoSeguro: item.estadoSeguro,
             estadoAdhesionPadres: item.estadoAdhesionPadres,
             pendientes: item.pendientes,
-            idClub: item.club?.idClub || item.idClub,
-            idUnidad: item.unidad?.idUnidad || item.idUnidad,
-            idClase: item.clase?.idClase || item.idClase,
-            nombreUnidad: item.unidad?.nombre || item.nombreUnidad || (item.unidad?.idUnidad === 'unidad-orion-1' ? 'Halcones' : item.unidad?.idUnidad === 'unidad-orion-2' ? 'Águilas' : ''),
-            nombreClase: item.clase?.nombre || item.nombreClase || (item.clase?.idClase === 'clase-guia' ? 'Guía' : item.clase?.idClase === 'clase-viajero' ? 'Viajero' : item.clase?.idClase === 'clase-amigo' ? 'Amigo' : '')
+            idClub: item.club?.idClub?.toString() || item.idClub?.toString(),
+            idUnidad: item.unidad?.idUnidad?.toString() || item.idUnidad?.toString(),
+            idClase: item.clase?.idClase?.toString() || item.idClase?.toString(),
+            nombreUnidad: item.unidad?.nombre || item.nombreUnidad || (item.unidad?.idUnidad?.toString() === '1' ? 'Halcones' : item.unidad?.idUnidad?.toString() === '2' ? 'Águilas' : item.unidad?.idUnidad?.toString() === '3' ? 'Leones' : item.unidad?.idUnidad?.toString() === '4' ? 'Estrellas' : ''),
+            nombreClase: item.clase?.nombre || item.nombreClase || (item.clase?.idClase?.toString() === '6' ? 'Guía' : item.clase?.idClase?.toString() === '2' ? 'Compañero' : item.clase?.idClase?.toString() === '1' ? 'Amigo' : '')
           };
         });
         this.applyFilters();
@@ -125,8 +130,8 @@ export class MiembrosListComponent implements OnInit {
       estadoFichaSalud: 'PENDIENTE',
       estadoSeguro: 'NO_POSEE_SEGURO',
       estadoAdhesionPadres: 'PENDIENTE',
-      idClase: 'clase-amigo',
-      idUnidad: 'unidad-orion-1'
+      idClase: '1',
+      idUnidad: '1'
     });
     this.showMemberModal = true;
   }
@@ -259,7 +264,7 @@ export class MiembrosListComponent implements OnInit {
       text: `Selecciona la nueva unidad para ${miembro.nombre}:`,
       input: 'select',
       inputOptions: inputOptions,
-      inputValue: miembro.idUnidad || 'unidad-orion-1',
+      inputValue: miembro.idUnidad || '1',
       showCancelButton: true,
       confirmButtonText: 'Cambiar',
       cancelButtonText: 'Cancelar',
@@ -321,7 +326,7 @@ export class MiembrosListComponent implements OnInit {
       return;
     }
 
-    const clubId = this.currentUser()?.idClub || 'uuid-club-conquistadores-orion';
+    const clubId = this.currentUser()?.idClub?.toString() || '1';
     this.isLoading = true;
 
     this.miembroService.importarMiembrosCsv(file, clubId).subscribe({

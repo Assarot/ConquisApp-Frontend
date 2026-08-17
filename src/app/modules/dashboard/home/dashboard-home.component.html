@@ -1,245 +1,342 @@
 <!-- Dashboard Home: Panel de Control -->
 <div class="space-y-6">
 
-  <!-- Page header with Club Badge -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-xl border border-[#c5c6d2] shadow-sm">
-    <div>
-      <h2 class="text-2xl font-bold text-[#00113a] tracking-tight">Panel de Control</h2>
-      <p class="text-[#444650] text-sm mt-0.5">Bienvenido, {{ currentUser()?.nombre }}. Aquí tienes el resumen de actividades del club.</p>
-    </div>
-    <div class="flex items-center gap-2 self-start sm:self-center px-3.5 py-1.5 bg-[#f8f9fa] border border-[#c5c6d2] rounded-full">
-      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-      <span class="text-xs font-bold text-[#00113a]">Club Fernando Stahl</span>
-      <span class="text-[10px] text-[#757682] uppercase font-semibold">(MOP)</span>
-    </div>
-  </div>
-
-  <!-- Bento Grid Stats -->
-  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    <!-- Total Miembros -->
-    <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
-      <div class="flex justify-between items-start">
-        <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Total Miembros</span>
-        <div class="bg-[#00113a]/10 text-[#00113a] p-2 rounded-lg">
-          <span class="material-symbols-outlined text-[20px]">person</span>
-        </div>
-      </div>
+  @if (isAdmin()) {
+    <!-- Page header with Admin details -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-xl border border-[#c5c6d2] shadow-sm">
       <div>
-        <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().totalMiembros || '—' }}</h2>
-        <div class="flex items-center gap-1 text-green-600 text-xs mt-1">
-          <span class="material-symbols-outlined text-[14px]">trending_up</span>
-          <span>Crecimiento este trimestre</span>
-        </div>
+        <h2 class="text-2xl font-bold text-[#00113a] tracking-tight">Administración Global del Sistema</h2>
+        <p class="text-[#444650] text-sm mt-0.5">Bienvenido, {{ currentUser()?.nombre }}. Control central de clubes, accesos de directores y catálogos globales.</p>
+      </div>
+      <div class="flex items-center gap-2 self-start sm:self-center px-3.5 py-1.5 bg-[#f8f9fa] border border-[#c5c6d2] rounded-full">
+        <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+        <span class="text-xs font-bold text-[#00113a]">Administración Central</span>
       </div>
     </div>
 
-    <!-- Unidades Activas -->
-    <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
-      <div class="flex justify-between items-start">
-        <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Unidades Activas</span>
-        <div class="bg-[#b7102a]/10 text-[#b7102a] p-2 rounded-lg">
-          <span class="material-symbols-outlined text-[20px]">group_work</span>
-        </div>
-      </div>
-      <div>
-        <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().unidadesActivas }}</h2>
-        <span class="text-[#444650] text-xs">Todas las unidades reportando actividad</span>
-      </div>
-    </div>
-
-    <!-- Próximo Evento -->
-    <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 relative overflow-hidden hover:-translate-y-0.5 transition-transform duration-200">
-      <div class="absolute -right-4 -bottom-4 opacity-[0.06] text-[#00113a]">
-        <span class="material-symbols-outlined text-[120px]">terrain</span>
-      </div>
-      <div class="flex justify-between items-start">
-        <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Próximo Evento</span>
-        <div class="bg-[#002366] text-[#758dd5] p-2 rounded-lg">
-          <span class="material-symbols-outlined text-[20px]">event</span>
-        </div>
-      </div>
-      <div>
-        <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().diasProximoEvento }} días</h2>
-        <span class="text-[#444650] text-xs">Campaña Regional 2026</span>
-      </div>
-    </div>
-
-    <!-- Especialidades Otorgadas (Primary accent card) -->
-    <div class="bg-[#002366] p-6 rounded-xl border border-[#002366] shadow-lg flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
-      <div class="flex justify-between items-start">
-        <span class="text-white/80 text-xs font-semibold uppercase tracking-wider">Especialidades</span>
-        <div class="bg-white/20 p-2 rounded-lg">
-          <span class="material-symbols-outlined text-white text-[20px]">military_tech</span>
-        </div>
-      </div>
-      <div>
-        <h2 class="text-4xl font-bold text-white">{{ stats().especialidadesOtorgadas }}</h2>
-        <span class="text-white/70 text-xs">Desempeño anual acumulado</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Two-column layout -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    <!-- Left Column (2/3 width) -->
-    <div class="lg:col-span-2 space-y-6">
-
-      <!-- Next Meeting Card -->
-      <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm overflow-hidden">
-        <div class="p-6 bg-[#f3f4f5] border-b border-[#c5c6d2] flex justify-between items-center">
-          <h3 class="text-lg font-bold text-[#00113a]">Próxima Reunión</h3>
-          <span class="bg-[#b7102a] text-white px-3 py-1 rounded-full text-xs font-bold">PRONTO</span>
-        </div>
-        <div class="p-6 flex flex-col md:flex-row gap-6">
-          <div class="w-full md:w-1/3 aspect-video rounded-lg overflow-hidden relative bg-[#dbe1ff] flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-[#00113a] text-[64px] opacity-30">park</span>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-              <span class="text-white text-xs font-semibold flex items-center gap-1">
-                <span class="material-symbols-outlined text-[14px]">location_on</span>Salón Principal
-              </span>
-            </div>
+    <!-- Bento Grid Stats for Admin -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
+        <div class="flex justify-between items-start">
+          <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Total Clubes</span>
+          <div class="bg-[#00113a]/10 text-[#00113a] p-2 rounded-lg">
+            <span class="material-symbols-outlined text-[20px]">domain</span>
           </div>
-          <div class="flex-1 space-y-4">
-            <div>
-              <h4 class="text-lg font-bold text-[#00113a] mb-1">Instrucción de Unidad & Clases de Especialidades</h4>
-              <p class="text-[#444650] text-sm">Viernes, próximo sábado • 18:30 - 20:30</p>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-[#edeeef] flex items-center justify-center text-[#00113a] shrink-0">
-                  <span class="material-symbols-outlined text-[18px]">inventory_2</span>
-                </div>
-                <div>
-                  <p class="text-xs text-[#757682]">Requisito</p>
-                  <p class="text-xs font-bold text-[#00113a]">Uniforme Clase A</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-[#edeeef] flex items-center justify-center text-[#00113a] shrink-0">
-                  <span class="material-symbols-outlined text-[18px]">assignment_ind</span>
-                </div>
-                <div>
-                  <p class="text-xs text-[#757682]">Asistencia</p>
-                  <p class="text-xs font-bold text-[#00113a]">Esperada Completa</p>
-                </div>
-              </div>
-            </div>
-            <button class="px-5 py-2 border-2 border-[#00113a] text-[#00113a] rounded-lg font-bold hover:bg-[#00113a]/5 transition-colors text-sm cursor-pointer">
-              Ver Agenda Completa
-            </button>
+        </div>
+        <div>
+          <h2 class="text-4xl font-bold text-[#00113a]">{{ adminStats().totalClubes }}</h2>
+          <span class="text-xs text-green-600 font-bold">Clubes registrados</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
+        <div class="flex justify-between items-start">
+          <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Usuarios del Sistema</span>
+          <div class="bg-[#b7102a]/10 text-[#b7102a] p-2 rounded-lg">
+            <span class="material-symbols-outlined text-[20px]">group</span>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-4xl font-bold text-[#00113a]">{{ adminStats().totalUsuarios }}</h2>
+          <span class="text-[#444650] text-xs">Cuentas activas registradas</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
+        <div class="flex justify-between items-start">
+          <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Especialidades Globales</span>
+          <div class="bg-[#002366] text-[#758dd5] p-2 rounded-lg">
+            <span class="material-symbols-outlined text-[20px]">military_tech</span>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-4xl font-bold text-[#00113a]">{{ adminStats().totalEspecialidades }}</h2>
+          <span class="text-[#444650] text-xs">Especialidades en catálogo</span>
+        </div>
+      </div>
+
+      <div class="bg-[#002366] p-6 rounded-xl border border-[#002366] shadow-lg flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
+        <div class="flex justify-between items-start">
+          <span class="text-white/80 text-xs font-semibold uppercase tracking-wider">Clases / Cuadernillos</span>
+          <div class="bg-white/20 p-2 rounded-lg">
+            <span class="material-symbols-outlined text-white text-[20px]">menu_book</span>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-4xl font-bold text-white">{{ adminStats().totalClases }}</h2>
+          <span class="text-white/70 text-xs">Cuadernillos registrados</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Tools for Admin -->
+    <section class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm space-y-4">
+      <h3 class="text-base font-black text-[#00113a]">Accesos Rápidos de Administración</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a routerLink="/dashboard/admin" [queryParams]="{tab: 'clubes'}" class="flex flex-col items-center justify-center p-6 bg-[#f8f9fa] border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer text-center">
+          <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[32px]">add_business</span>
+          <span class="text-sm font-bold">Nuevo Club</span>
+          <span class="text-xs opacity-75 mt-1">Registrar club y director</span>
+        </a>
+        <a routerLink="/dashboard/admin" [queryParams]="{tab: 'usuarios'}" class="flex flex-col items-center justify-center p-6 bg-[#f8f9fa] border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer text-center">
+          <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[32px]">manage_accounts</span>
+          <span class="text-sm font-bold">Control de Usuarios</span>
+          <span class="text-xs opacity-75 mt-1">Administrar accesos y roles</span>
+        </a>
+        <a routerLink="/dashboard/admin" [queryParams]="{tab: 'especialidades'}" class="flex flex-col items-center justify-center p-6 bg-[#f8f9fa] border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer text-center">
+          <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[32px]">military_tech</span>
+          <span class="text-sm font-bold">Especialidades</span>
+          <span class="text-xs opacity-75 mt-1">Importar especialidades</span>
+        </a>
+        <a routerLink="/dashboard/admin" [queryParams]="{tab: 'clases'}" class="flex flex-col items-center justify-center p-6 bg-[#f8f9fa] border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer text-center">
+          <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[32px]">auto_stories</span>
+          <span class="text-sm font-bold">Cuadernillos / Clases</span>
+          <span class="text-xs opacity-75 mt-1">Gestionar requisitos</span>
+        </a>
+      </div>
+    </section>
+
+  } @else {
+    <!-- Page header with Club Badge -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-xl border border-[#c5c6d2] shadow-sm">
+      <div>
+        <h2 class="text-2xl font-bold text-[#00113a] tracking-tight">Panel de Control</h2>
+        <p class="text-[#444650] text-sm mt-0.5">Bienvenido, {{ currentUser()?.nombre }}. Aquí tienes el resumen de actividades del club.</p>
+      </div>
+      <div class="flex items-center gap-2 self-start sm:self-center px-3.5 py-1.5 bg-[#f8f9fa] border border-[#c5c6d2] rounded-full">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-xs font-bold text-[#00113a]">{{ clubName() }}</span>
+        <span class="text-[10px] text-[#757682] uppercase font-semibold">(MOP)</span>
+      </div>
+    </div>
+
+    <!-- Bento Grid Stats -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Total Miembros -->
+      <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
+        <div class="flex justify-between items-start">
+          <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Total Miembros</span>
+          <div class="bg-[#00113a]/10 text-[#00113a] p-2 rounded-lg">
+            <span class="material-symbols-outlined text-[20px]">person</span>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().totalMiembros || '—' }}</h2>
+          <div class="flex items-center gap-1 text-green-600 text-xs mt-1">
+            <span class="material-symbols-outlined text-[14px]">trending_up</span>
+            <span>Crecimiento este trimestre</span>
           </div>
         </div>
       </div>
 
-      <!-- Recent Activity -->
-      <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm overflow-hidden">
-        <div class="p-5 border-b border-[#c5c6d2] flex justify-between items-center bg-[#f3f4f5]">
-          <h3 class="text-lg font-bold text-[#00113a]">Actividad Reciente</h3>
-          <button class="text-[#00113a] font-bold text-xs hover:underline cursor-pointer">Ver Todo</button>
+      <!-- Unidades Activas -->
+      <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
+        <div class="flex justify-between items-start">
+          <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Unidades Activas</span>
+          <div class="bg-[#b7102a]/10 text-[#b7102a] p-2 rounded-lg">
+            <span class="material-symbols-outlined text-[20px]">group_work</span>
+          </div>
         </div>
-        <div class="divide-y divide-[#e1e3e4]">
-          @for (activity of recentActivity; track $index) {
-            <div class="p-5 flex gap-4 hover:bg-[#f8f9fa] transition-colors">
-              <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" [class]="activity.colorClass">
-                <span class="material-symbols-outlined text-[18px]">{{ activity.icon }}</span>
+        <div>
+          <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().unidadesActivas }}</h2>
+          <span class="text-[#444650] text-xs">Todas las unidades reportando actividad</span>
+        </div>
+      </div>
+
+      <!-- Próximo Evento -->
+      <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 relative overflow-hidden hover:-translate-y-0.5 transition-transform duration-200">
+        <div class="absolute -right-4 -bottom-4 opacity-[0.06] text-[#00113a]">
+          <span class="material-symbols-outlined text-[120px]">terrain</span>
+        </div>
+        <div class="flex justify-between items-start">
+          <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Próximo Evento</span>
+          <div class="bg-[#002366] text-[#758dd5] p-2 rounded-lg">
+            <span class="material-symbols-outlined text-[20px]">event</span>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().diasProximoEvento }} días</h2>
+          <span class="text-[#444650] text-xs">Campaña Regional 2026</span>
+        </div>
+      </div>
+
+      <!-- Especialidades Otorgadas (Primary accent card) -->
+      <div class="bg-[#002366] p-6 rounded-xl border border-[#002366] shadow-lg flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
+        <div class="flex justify-between items-start">
+          <span class="text-white/80 text-xs font-semibold uppercase tracking-wider">Especialidades</span>
+          <div class="bg-white/20 p-2 rounded-lg">
+            <span class="material-symbols-outlined text-white text-[20px]">military_tech</span>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-4xl font-bold text-white">{{ stats().especialidadesOtorgadas }}</h2>
+          <span class="text-white/70 text-xs">Desempeño anual acumulado</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two-column layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Left Column (2/3 width) -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Next Meeting Card -->
+        <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm overflow-hidden">
+          <div class="p-6 bg-[#f3f4f5] border-b border-[#c5c6d2] flex justify-between items-center">
+            <h3 class="text-lg font-bold text-[#00113a]">Próxima Reunión</h3>
+            <span class="bg-[#b7102a] text-white px-3 py-1 rounded-full text-xs font-bold">PRONTO</span>
+          </div>
+          <div class="p-6 flex flex-col md:flex-row gap-6">
+            <div class="w-full md:w-1/3 aspect-video rounded-lg overflow-hidden relative bg-[#dbe1ff] flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[#00113a] text-[64px] opacity-30">park</span>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                <span class="text-white text-xs font-semibold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">location_on</span>Salón Principal
+                </span>
               </div>
+            </div>
+            <div class="flex-1 space-y-4">
               <div>
-                <p class="text-sm text-[#191c1d]" [innerHTML]="activity.description"></p>
-                <p class="text-xs text-[#757682] mt-1">{{ activity.time }}</p>
+                <h4 class="text-lg font-bold text-[#00113a] mb-1">Instrucción de Unidad & Clases de Especialidades</h4>
+                <p class="text-[#444650] text-sm">Viernes, próximo sábado • 18:30 - 20:30</p>
               </div>
-            </div>
-          }
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Right Column (1/3 width) -->
-    <div class="space-y-6">
-
-      <!-- Live Schedule -->
-      <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm overflow-hidden">
-        <div class="p-5 bg-[#00113a] text-white">
-          <div class="flex justify-between items-center">
-            <h3 class="text-base font-bold">Horario en Vivo</h3>
-            <span class="material-symbols-outlined animate-pulse text-[18px]">sensors</span>
-          </div>
-          <p class="text-xs opacity-70 mt-0.5">Sesión Actual: Bloque Semana 4</p>
-        </div>
-        <div class="p-5 space-y-4">
-          <div class="relative pl-6 border-l-2 border-[#c5c6d2] space-y-6">
-            @for (item of schedule; track $index) {
-              <div class="relative">
-                <div
-                  class="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2"
-                  [class]="item.isCurrent
-                    ? 'bg-[#00113a] border-white shadow-sm ring-2 ring-[#00113a]'
-                    : 'bg-[#d9dadb] border-[#757682]'"
-                ></div>
-                <p class="text-xs" [class]="item.isCurrent ? 'text-[#b7102a] font-bold' : 'text-[#757682]'">
-                  {{ item.time }}{{ item.isCurrent ? ' (Actual)' : '' }}
-                </p>
-                <h5 class="text-sm font-bold text-[#00113a] mt-0.5">{{ item.title }}</h5>
-                @if (item.tags) {
-                  <div class="mt-2 flex flex-wrap gap-2">
-                    @for (tag of item.tags; track tag) {
-                      <span class="bg-[#edeeef] px-2 py-0.5 rounded text-[10px] text-[#444650] uppercase font-bold">{{ tag }}</span>
-                    }
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-[#edeeef] flex items-center justify-center text-[#00113a] shrink-0">
+                    <span class="material-symbols-outlined text-[18px]">inventory_2</span>
                   </div>
-                }
+                  <div>
+                    <p class="text-xs text-[#757682]">Requisito</p>
+                    <p class="text-xs font-bold text-[#00113a]">Uniforme Clase A</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-[#edeeef] flex items-center justify-center text-[#00113a] shrink-0">
+                    <span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+                  </div>
+                  <div>
+                    <p class="text-xs text-[#757682]">Asistencia</p>
+                    <p class="text-xs font-bold text-[#00113a]">Esperada Completa</p>
+                  </div>
+                </div>
+              </div>
+              <button class="px-5 py-2 border-2 border-[#00113a] text-[#00113a] rounded-lg font-bold hover:bg-[#00113a]/5 transition-colors text-sm cursor-pointer">
+                Ver Agenda Completa
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-[#c5c6d2] flex justify-between items-center bg-[#f3f4f5]">
+            <h3 class="text-lg font-bold text-[#00113a]">Actividad Reciente</h3>
+            <button class="text-[#00113a] font-bold text-xs hover:underline cursor-pointer">Ver Todo</button>
+          </div>
+          <div class="divide-y divide-[#e1e3e4]">
+            @for (activity of recentActivity; track $index) {
+              <div class="p-5 flex gap-4 hover:bg-[#f8f9fa] transition-colors">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" [class]="activity.colorClass">
+                  <span class="material-symbols-outlined text-[18px]">{{ activity.icon }}</span>
+                </div>
+                <div>
+                  <p class="text-sm text-[#191c1d]" [innerHTML]="activity.description"></p>
+                  <p class="text-xs text-[#757682] mt-1">{{ activity.time }}</p>
+                </div>
               </div>
             }
           </div>
-          <a routerLink="/dashboard/cronograma" class="w-full py-2.5 bg-[#edeeef] hover:bg-[#e1e3e4] text-[#00113a] font-bold rounded-lg transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer">
-            <span class="material-symbols-outlined text-[18px]">edit_calendar</span>
-            Ver Cronograma Completo
+        </div>
+
+      </div>
+
+      <!-- Right Column (1/3 width) -->
+      <div class="space-y-6">
+
+        <!-- Live Schedule -->
+        <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm overflow-hidden">
+          <div class="p-5 bg-[#00113a] text-white">
+            <div class="flex justify-between items-center">
+              <h3 class="text-base font-bold">Horario en Vivo</h3>
+              <span class="material-symbols-outlined animate-pulse text-[18px]">sensors</span>
+            </div>
+            <p class="text-xs opacity-70 mt-0.5">Sesión Actual: Bloque Semana 4</p>
+          </div>
+          <div class="p-5 space-y-4">
+            <div class="relative pl-6 border-l-2 border-[#c5c6d2] space-y-6">
+              @for (item of schedule; track $index) {
+                <div class="relative">
+                  <div
+                    class="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-2"
+                    [class]="item.isCurrent
+                      ? 'bg-[#00113a] border-white shadow-sm ring-2 ring-[#00113a]'
+                      : 'bg-[#d9dadb] border-[#757682]'"
+                  ></div>
+                  <p class="text-xs" [class]="item.isCurrent ? 'text-[#b7102a] font-bold' : 'text-[#757682]'">
+                    {{ item.time }}{{ item.isCurrent ? ' (Actual)' : '' }}
+                  </p>
+                  <h5 class="text-sm font-bold text-[#00113a] mt-0.5">{{ item.title }}</h5>
+                  @if (item.tags) {
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      @for (tag of item.tags; track tag) {
+                        <span class="bg-[#edeeef] px-2 py-0.5 rounded text-[10px] text-[#444650] uppercase font-bold">{{ tag }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+            <a routerLink="/dashboard/cronograma" class="w-full py-2.5 bg-[#edeeef] hover:bg-[#e1e3e4] text-[#00113a] font-bold rounded-lg transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer">
+              <span class="material-symbols-outlined text-[18px]">edit_calendar</span>
+              Ver Cronograma Completo
+            </a>
+          </div>
+        </div>
+
+        <!-- Unit Readiness Score -->
+        <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm p-5">
+          <h3 class="text-xs font-bold text-[#00113a] mb-4 uppercase tracking-wider">Preparación por Clase</h3>
+          <div class="space-y-4">
+            @for (u of unitReadiness(); track u.clase) {
+              <div class="space-y-1">
+                <div class="flex justify-between text-xs">
+                  <span class="text-[#444650] font-semibold">{{ u.clase }}</span>
+                  <span class="font-bold text-[#00113a]">{{ u.porcentaje }}%</span>
+                </div>
+                <div class="w-full h-2 bg-[#edeeef] rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all duration-500" [class]="u.color" [style.width.%]="u.porcentaje"></div>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="mt-5 pt-4 border-t border-[#c5c6d2]">
+            <p class="text-xs text-[#757682] italic leading-tight">El promedio de preparación del club es 7.2% mayor que el año pasado.</p>
+          </div>
+        </div>
+
+        <!-- Quick Tools -->
+        <div class="grid grid-cols-2 gap-3">
+          <a routerLink="/dashboard/materiales" class="flex flex-col items-center justify-center p-4 bg-white border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer">
+            <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[22px]">file_download</span>
+            <span class="text-xs font-bold">Materiales</span>
+          </a>
+          <a routerLink="/dashboard/asistencia" class="flex flex-col items-center justify-center p-4 bg-white border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer">
+            <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[22px]">how_to_reg</span>
+            <span class="text-xs font-bold">Asistencia</span>
+          </a>
+          <a routerLink="/dashboard/reportes" class="flex flex-col items-center justify-center p-4 bg-white border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer">
+            <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[22px]">bar_chart</span>
+            <span class="text-xs font-bold">Reportes</span>
+          </a>
+          <a routerLink="/dashboard/ranking" class="flex flex-col items-center justify-center p-4 bg-white border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer">
+            <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[22px]">workspace_premium</span>
+            <span class="text-xs font-bold">Ranking</span>
           </a>
         </div>
-      </div>
 
-      <!-- Unit Readiness Score -->
-      <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm p-5">
-        <h3 class="text-xs font-bold text-[#00113a] mb-4 uppercase tracking-wider">Preparación por Clase</h3>
-        <div class="space-y-4">
-          @for (u of unitReadiness(); track u.clase) {
-            <div class="space-y-1">
-              <div class="flex justify-between text-xs">
-                <span class="text-[#444650] font-semibold">{{ u.clase }}</span>
-                <span class="font-bold text-[#00113a]">{{ u.porcentaje }}%</span>
-              </div>
-              <div class="w-full h-2 bg-[#edeeef] rounded-full overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-500" [class]="u.color" [style.width.%]="u.porcentaje"></div>
-              </div>
-            </div>
-          }
-        </div>
-        <div class="mt-5 pt-4 border-t border-[#c5c6d2]">
-          <p class="text-xs text-[#757682] italic leading-tight">El promedio de preparación del club es 7.2% mayor que el año pasado.</p>
-        </div>
       </div>
-
-      <!-- Quick Tools -->
-      <div class="grid grid-cols-2 gap-3">
-        <a routerLink="/dashboard/materiales" class="flex flex-col items-center justify-center p-4 bg-white border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer">
-          <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[22px]">file_download</span>
-          <span class="text-xs font-bold">Materiales</span>
-        </a>
-        <a routerLink="/dashboard/asistencia" class="flex flex-col items-center justify-center p-4 bg-white border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer">
-          <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[22px]">how_to_reg</span>
-          <span class="text-xs font-bold">Asistencia</span>
-        </a>
-        <a routerLink="/dashboard/reportes" class="flex flex-col items-center justify-center p-4 bg-white border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer">
-          <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[22px]">bar_chart</span>
-          <span class="text-xs font-bold">Reportes</span>
-        </a>
-        <a routerLink="/dashboard/ranking" class="flex flex-col items-center justify-center p-4 bg-white border border-[#c5c6d2] rounded-xl hover:bg-[#00113a] hover:text-white transition-all duration-200 group cursor-pointer">
-          <span class="material-symbols-outlined mb-2 text-[#00113a] group-hover:text-white text-[22px]">workspace_premium</span>
-          <span class="text-xs font-bold">Ranking</span>
-        </a>
-      </div>
-
     </div>
-  </div>
+  }
 
 </div>

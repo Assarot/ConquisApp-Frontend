@@ -1,19 +1,25 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { EspecialidadService, EspecialidadBackend } from '../../core/services/especialidad.service';
-import Swal from 'sweetalert2';
+import { RequisitoService, RequisitoBackend } from '../../core/services/requisito.service';
 
 export interface EspecialidadItem {
   id: string;
   nombre: string;
-  categoria: string;
+  categoriaId: string;
   categoriaNombre: string;
   categoriaColor: string;
   icono: string;
-  nivel: string;
-  requisitosCount: number;
-  conquistadoresCompletados: number;
   descripcion: string;
+  requiereExamen: boolean;
 }
+
+const CATEGORIA_MAP: Record<string, { nombre: string; color: string; icono: string }> = {
+  'NATURALEZA':  { nombre: 'Naturaleza',              color: '#2e7d32', icono: 'forest' },
+  'HABILIDADES': { nombre: 'Habilidades Manuales',    color: '#00113a', icono: 'handyman' },
+  'MISIONERAS':  { nombre: 'Actividades Misioneras',  color: '#00838f', icono: 'volunteer_activism' },
+  'CIENCIA':     { nombre: 'Ciencia y Salud',         color: '#b7102a', icono: 'vital_signs' },
+  'RECREACION':  { nombre: 'Actividades Recreativas', color: '#ffba27', icono: 'kayaking' }
+};
 
 @Component({
   selector: 'app-especialidades',
@@ -23,21 +29,19 @@ export interface EspecialidadItem {
 export class EspecialidadesComponent implements OnInit {
   filtroCategoria = signal('TODAS');
   searchTerm = signal('');
-  selectedEspecialidad: EspecialidadItem | null = null;
-  showEvaluacionModal = false;
   isLoading = signal(false);
+  selectedEspecialidad: EspecialidadItem | null = null;
+  requisitosModal = signal<RequisitoBackend[]>([]);
+  loadingRequisitos = signal(false);
 
-  categorias = [
-    { id: 'NATURALEZA', nombre: 'Naturaleza', color: '#2e7d32', icono: 'forest' },
-    { id: 'HABILIDADES', nombre: 'Habilidades Manuales', color: '#00113a', icono: 'handyman' },
-    { id: 'MISIONERAS', nombre: 'Actividades Misioneras', color: '#00838f', icono: 'volunteer_activism' },
-    { id: 'CIENCIA', nombre: 'Ciencia y Salud', color: '#b7102a', icono: 'vital_signs' },
-    { id: 'RECREACION', nombre: 'Actividades Recreativas', color: '#ffba27', icono: 'kayaking' }
-  ];
+  categorias = Object.entries(CATEGORIA_MAP).map(([id, v]) => ({ id, ...v }));
 
   especialidades = signal<EspecialidadItem[]>([]);
 
-  constructor(private especialidadService: EspecialidadService) {}
+  constructor(
+    private especialidadService: EspecialidadService,
+    private requisitoService: RequisitoService
+  ) {}
 
   ngOnInit(): void {
     this.cargarEspecialidades();
@@ -48,142 +52,66 @@ export class EspecialidadesComponent implements OnInit {
     this.especialidadService.getEspecialidades().subscribe({
       next: (data) => {
         this.isLoading.set(false);
-        if (data && data.length > 0) {
-          const mapColor: Record<string, string> = {
-            NATURALEZA: '#2e7d32',
-            HABILIDADES: '#00113a',
-            MISIONERAS: '#00838f',
-            CIENCIA: '#b7102a',
-            RECREACION: '#ffba27'
-          };
+        const items: EspecialidadItem[] = data.map(d => {
+          // categoria arrives as object {nombre} or as plain string
+          const catRaw = d.categoria;
+          const catNombre: string = typeof catRaw === 'object' && catRaw !== null
+            ? (catRaw.nombre || '') : (catRaw || '');
 
-          const items: EspecialidadItem[] = data.map(d => ({
-            id: d.idEspecialidad || `esp-${Date.now()}`,
+          const catKey = Object.keys(CATEGORIA_MAP).find(k =>
+            catNombre.toUpperCase().includes(k) || k.includes(catNombre.toUpperCase())
+          ) || catNombre.toUpperCase();
+
+          const catInfo = CATEGORIA_MAP[catKey] || { nombre: catNombre || 'General', color: '#00113a', icono: 'military_tech' };
+
+          return {
+            id: d.idEspecialidad || `esp-${Math.random()}`,
             nombre: d.nombre,
-            categoria: d.categoria,
-            categoriaNombre: this.categorias.find(c => c.id === d.categoria)?.nombre || d.categoria,
-            categoriaColor: mapColor[d.categoria] || '#00113a',
+            categoriaId: catKey,
+            categoriaNombre: catInfo.nombre,
+            categoriaColor: catInfo.color,
             icono: d.icono || 'military_tech',
-            nivel: 'BÁSICO',
-            requisitosCount: 8,
-            conquistadoresCompletados: d.puntos || 12,
-            descripcion: d.descripcion
-          }));
-          this.especialidades.set(items);
-        } else {
-          this.cargarFallback();
-        }
+            descripcion: d.descripcion,
+            requiereExamen: d.requiereExamen || false
+          };
+        });
+        this.especialidades.set(items);
       },
       error: () => {
         this.isLoading.set(false);
-        this.cargarFallback();
       }
     });
   }
 
-  private cargarFallback(): void {
-    this.especialidades.set([
-      {
-        id: 'esp-1',
-        nombre: 'Nudos y Amarras',
-        categoria: 'HABILIDADES',
-        categoriaNombre: 'Habilidades Manuales',
-        categoriaColor: '#00113a',
-        icono: 'all_inclusive',
-        nivel: 'BÁSICO',
-        requisitosCount: 8,
-        conquistadoresCompletados: 18,
-        descripcion: 'Conocer y ejecutar 20 nudos reglamentarios, amarras cuadradas y diagonales.'
-      },
-      {
-        id: 'esp-2',
-        nombre: 'Primeros Auxilios I',
-        categoria: 'CIENCIA',
-        categoriaNombre: 'Ciencia y Salud',
-        categoriaColor: '#b7102a',
-        icono: 'medical_services',
-        nivel: 'BÁSICO',
-        requisitosCount: 10,
-        conquistadoresCompletados: 14,
-        descripcion: 'Atención básica de shock, vendajes, RCP y manejo de fracturas simples.'
-      },
-      {
-        id: 'esp-3',
-        nombre: 'Árboles y Arbustos',
-        categoria: 'NATURALEZA',
-        categoriaNombre: 'Naturaleza',
-        categoriaColor: '#2e7d32',
-        icono: 'park',
-        nivel: 'BÁSICO',
-        requisitosCount: 7,
-        conquistadoresCompletados: 12,
-        descripcion: 'Identificar 15 especies de árboles nativos por corteza, hoja y frutos.'
-      },
-      {
-        id: 'esp-4',
-        nombre: 'Campismo y Supervivencia',
-        categoria: 'RECREACION',
-        categoriaNombre: 'Actividades Recreativas',
-        categoriaColor: '#ffba27',
-        icono: 'cabin',
-        nivel: 'AVANZADO',
-        requisitosCount: 12,
-        conquistadoresCompletados: 9,
-        descripcion: 'Armado de refugios naturales, cocina al aire libre y orientación sin brújula.'
-      },
-      {
-        id: 'esp-5',
-        nombre: 'Testificación Juvenil',
-        categoria: 'MISIONERAS',
-        categoriaNombre: 'Actividades Misioneras',
-        categoriaColor: '#00838f',
-        icono: 'diversity_3',
-        nivel: 'BÁSICO',
-        requisitosCount: 6,
-        conquistadoresCompletados: 20,
-        descripcion: 'Participar activamente en proyectos comunitarios y visitas de servicio.'
-      },
-      {
-        id: 'esp-6',
-        nombre: 'Astronomía',
-        categoria: 'NATURALEZA',
-        categoriaNombre: 'Naturaleza',
-        categoriaColor: '#2e7d32',
-        icono: 'bedtime',
-        nivel: 'AVANZADO',
-        requisitosCount: 9,
-        conquistadoresCompletados: 6,
-        descripcion: 'Reconocer constelaciones principales del hemisferio sur y planetas visibles.'
-      }
-    ]);
-  }
+
 
   filtrarEspecialidades(): EspecialidadItem[] {
     return this.especialidades().filter(e => {
-      const matchCat = this.filtroCategoria() === 'TODAS' || e.categoria === this.filtroCategoria();
-      const matchSearch = e.nombre.toLowerCase().includes(this.searchTerm().toLowerCase()) ||
-                          e.descripcion.toLowerCase().includes(this.searchTerm().toLowerCase());
+      const matchCat = this.filtroCategoria() === 'TODAS' || e.categoriaId === this.filtroCategoria();
+      const term = this.searchTerm().toLowerCase();
+      const matchSearch = !term ||
+        e.nombre.toLowerCase().includes(term) ||
+        e.descripcion.toLowerCase().includes(term) ||
+        e.categoriaNombre.toLowerCase().includes(term);
       return matchCat && matchSearch;
     });
   }
 
-  verDetalles(esp: EspecialidadItem): void {
+  verRequisitos(esp: EspecialidadItem): void {
     this.selectedEspecialidad = esp;
-  }
-
-  iniciarEvaluacion(esp: EspecialidadItem): void {
-    this.selectedEspecialidad = esp;
-    this.showEvaluacionModal = true;
-  }
-
-  guardarEvaluacion(): void {
-    this.showEvaluacionModal = false;
-    Swal.fire({
-      icon: 'success',
-      title: 'Evaluación Registrada',
-      text: `Se registraron los avances en base de datos para "${this.selectedEspecialidad?.nombre}".`,
-      timer: 1800,
-      showConfirmButton: false
+    this.requisitosModal.set([]);
+    this.loadingRequisitos.set(true);
+    this.requisitoService.getRequisitosByEspecialidad(esp.id).subscribe({
+      next: (reqs) => {
+        this.requisitosModal.set(reqs);
+        this.loadingRequisitos.set(false);
+      },
+      error: () => this.loadingRequisitos.set(false)
     });
+  }
+
+  cerrarModal(): void {
+    this.selectedEspecialidad = null;
+    this.requisitosModal.set([]);
   }
 }

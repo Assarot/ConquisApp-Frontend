@@ -11,26 +11,63 @@
       <p class="text-sm text-[#444650]">Control multiclub, registro de directores, usuarios del sistema y auditoría general.</p>
     </div>
 
-    @if (activeTab() === 'CLUBES') {
+    @if (activeTab() === 'CLUBES' && isAdmin()) {
       <button (click)="showCrearClubModal = true"
               class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
         <span class="material-symbols-outlined text-[18px]">add_business</span>
         Registrar Nuevo Club
       </button>
     }
+    @if (activeTab() === 'USUARIOS') {
+      <button (click)="openCrearUsuarioModal()"
+              class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+        <span class="material-symbols-outlined text-[18px]">person_add</span>
+        Registrar Nuevo Usuario
+      </button>
+    }
+    @if (activeTab() === 'ESPECIALIDADES' && isAdmin()) {
+      <div class="flex items-center gap-2">
+        <label class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+          <span class="material-symbols-outlined text-[18px]">upload_file</span>
+          Importar Excel
+          <input type="file" (change)="importarEspecialidades($event)" accept=".xlsx, .xls" class="hidden" />
+        </label>
+        <button (click)="showCrearEspecialidadModal = true"
+                class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+          <span class="material-symbols-outlined text-[18px]">military_tech</span>
+          Registrar Especialidad
+        </button>
+      </div>
+    }
+    @if (activeTab() === 'CLASES' && isAdmin()) {
+      <div class="flex items-center gap-2">
+        <label class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+          <span class="material-symbols-outlined text-[18px]">upload_file</span>
+          Importar Requisitos Excel
+          <input type="file" (change)="importarCuadernillos($event)" accept=".xlsx, .xls" class="hidden" />
+        </label>
+        <button (click)="showCrearClaseModal = true"
+                class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+          <span class="material-symbols-outlined text-[18px]">auto_stories</span>
+          Registrar Clase
+        </button>
+      </div>
+    }
   </div>
 
   <!-- Tabs Navigation -->
   <div class="flex items-center gap-2 border-b border-[#c5c6d2] pb-px">
-    <button (click)="activeTab.set('CLUBES')"
-            class="px-5 py-2.5 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer"
-            [class.border-[#00113a]]="activeTab() === 'CLUBES'"
-            [class.text-[#00113a]]="activeTab() === 'CLUBES'"
-            [class.border-transparent]="activeTab() !== 'CLUBES'"
-            [class.text-[#757682]]="activeTab() !== 'CLUBES'">
-      <span class="material-symbols-outlined text-[18px]">domain</span>
-      Clubes Registrados
-    </button>
+    @if (isAdmin()) {
+      <button (click)="activeTab.set('CLUBES')"
+              class="px-5 py-2.5 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer"
+              [class.border-[#00113a]]="activeTab() === 'CLUBES'"
+              [class.text-[#00113a]]="activeTab() === 'CLUBES'"
+              [class.border-transparent]="activeTab() !== 'CLUBES'"
+              [class.text-[#757682]]="activeTab() !== 'CLUBES'">
+        <span class="material-symbols-outlined text-[18px]">domain</span>
+        Clubes Registrados
+      </button>
+    }
     <button (click)="activeTab.set('USUARIOS')"
             class="px-5 py-2.5 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer"
             [class.border-[#00113a]]="activeTab() === 'USUARIOS'"
@@ -40,15 +77,26 @@
       <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
       Usuarios del Sistema
     </button>
-    <button (click)="activeTab.set('AUDITORIA')"
-            class="px-5 py-2.5 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer"
-            [class.border-[#00113a]]="activeTab() === 'AUDITORIA'"
-            [class.text-[#00113a]]="activeTab() === 'AUDITORIA'"
-            [class.border-transparent]="activeTab() !== 'AUDITORIA'"
-            [class.text-[#757682]]="activeTab() !== 'AUDITORIA'">
-      <span class="material-symbols-outlined text-[18px]">security</span>
-      Registro de Auditoría
-    </button>
+    @if (isAdmin()) {
+      <button (click)="activeTab.set('ESPECIALIDADES')"
+              class="px-5 py-2.5 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer"
+              [class.border-[#00113a]]="activeTab() === 'ESPECIALIDADES'"
+              [class.text-[#00113a]]="activeTab() === 'ESPECIALIDADES'"
+              [class.border-transparent]="activeTab() !== 'ESPECIALIDADES'"
+              [class.text-[#757682]]="activeTab() !== 'ESPECIALIDADES'">
+        <span class="material-symbols-outlined text-[18px]">military_tech</span>
+        Especialidades Globales
+      </button>
+      <button (click)="activeTab.set('CLASES')"
+              class="px-5 py-2.5 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer"
+              [class.border-[#00113a]]="activeTab() === 'CLASES'"
+              [class.text-[#00113a]]="activeTab() === 'CLASES'"
+              [class.border-transparent]="activeTab() !== 'CLASES'"
+              [class.text-[#757682]]="activeTab() !== 'CLASES'">
+        <span class="material-symbols-outlined text-[18px]">auto_stories</span>
+        Clases del Sistema
+      </button>
+    }
   </div>
 
   <!-- Tab 1: Clubes -->
@@ -56,7 +104,7 @@
     <div class="space-y-4">
       
       <!-- KPI stats -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="bg-white border border-[#c5c6d2] p-5 rounded-xl shadow-sm">
           <p class="text-xs text-[#757682] font-semibold uppercase">Total Clubes</p>
           <p class="text-2xl font-black text-[#00113a] mt-1">{{ clubes().length }}</p>
@@ -64,13 +112,8 @@
         </div>
         <div class="bg-white border border-[#c5c6d2] p-5 rounded-xl shadow-sm">
           <p class="text-xs text-[#757682] font-semibold uppercase">Total Conquistadores</p>
-          <p class="text-2xl font-black text-[#00113a] mt-1">68</p>
+          <p class="text-2xl font-black text-[#00113a] mt-1">{{ totalConquistadores() }}</p>
           <span class="text-xs text-[#757682]">Activos en sistema</span>
-        </div>
-        <div class="bg-white border border-[#c5c6d2] p-5 rounded-xl shadow-sm">
-          <p class="text-xs text-[#757682] font-semibold uppercase">Unidades Registradas</p>
-          <p class="text-2xl font-black text-[#00113a] mt-1">9</p>
-          <span class="text-xs text-[#757682]">En los 3 clubes</span>
         </div>
       </div>
 
@@ -84,8 +127,8 @@
                 <th class="py-3.5 px-4">Distrito / Misión</th>
                 <th class="py-3.5 px-4">Director a Cargo</th>
                 <th class="py-3.5 px-4 text-center">Miembros</th>
-                <th class="py-3.5 px-4 text-center">Unidades</th>
                 <th class="py-3.5 px-4 text-center">Estado</th>
+                <th class="py-3.5 px-4 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#c5c6d2] text-sm">
@@ -105,7 +148,6 @@
                   <td class="py-3.5 px-4 text-xs font-semibold text-[#191c1d]">{{ c.distrito }}</td>
                   <td class="py-3.5 px-4 text-xs font-bold text-[#00113a]">{{ c.director }}</td>
                   <td class="py-3.5 px-4 text-center font-bold text-[#191c1d]">{{ c.miembrosCount }}</td>
-                  <td class="py-3.5 px-4 text-center font-bold text-[#191c1d]">{{ c.unidadesCount }}</td>
                   <td class="py-3.5 px-4 text-center">
                     <span class="px-2.5 py-0.5 rounded-full text-xs font-bold"
                           [class.bg-emerald-100]="c.estado === 'ACTIVO'"
@@ -114,6 +156,11 @@
                           [class.text-amber-800]="c.estado === 'EN_FORMACION'">
                       {{ c.estado === 'ACTIVO' ? 'ACTIVO' : 'EN FORMACIÓN' }}
                     </span>
+                  </td>
+                  <td class="py-3.5 px-4 text-center">
+                    <button (click)="abrirEditarClub(c)" class="text-[#00113a] hover:text-[#002366] cursor-pointer p-1" title="Editar Club">
+                      <span class="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
                   </td>
                 </tr>
               }
@@ -126,54 +173,136 @@
 
   <!-- Tab 2: Usuarios -->
   @if (activeTab() === 'USUARIOS') {
+    <div class="space-y-4">
+      @for (group of usuariosGrouped(); track group.idClub) {
+        <div class="bg-white rounded-xl border border-[#c5c6d2] overflow-hidden shadow-sm">
+          <!-- Accordion Header -->
+          <div (click)="toggleGroupOpen(group)" 
+               class="bg-[#f8f9fa] border-b border-[#c5c6d2] px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-[#00113a]">
+                {{ group.idClub ? 'domain' : 'admin_panel_settings' }}
+              </span>
+              <div>
+                <h3 class="font-black text-sm text-[#00113a]">{{ group.clubNombre }}</h3>
+                <p class="text-xs text-[#757682]">{{ group.usuarios.length }} usuario(s) registrado(s)</p>
+              </div>
+            </div>
+            <span class="material-symbols-outlined text-[#757682] transition-transform duration-200"
+                  [class.rotate-180]="group.isOpen">
+              expand_more
+            </span>
+          </div>
+
+          <!-- Accordion Body -->
+          @if (group.isOpen) {
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-[#fcfcfd] border-b border-[#c5c6d2] text-[#757682] text-xs font-bold uppercase tracking-wider">
+                    <th class="py-3 px-6">Usuario</th>
+                    <th class="py-3 px-6">Rol</th>
+                    <th class="py-3 px-6 text-center">Estado</th>
+                    <th class="py-3 px-6">Último Acceso</th>
+                    <th class="py-3 px-6 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#edeeef] text-sm">
+                  @for (u of group.usuarios; track u.id) {
+                    <tr class="hover:bg-[#f8f9fa] transition">
+                      <td class="py-3.5 px-6">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-full bg-[#00113a] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                            {{ u.nombre.substring(0, 1) }}
+                          </div>
+                          <div>
+                            <p class="font-bold text-[#00113a]">{{ u.nombre }}</p>
+                            <p class="text-xs text-[#757682]">{{ u.email }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-6">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide bg-gray-100 text-[#00113a]">
+                          {{ u.rol }}
+                        </span>
+                      </td>
+                      <td class="py-3.5 px-6 text-center">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono"
+                              [class.bg-emerald-100]="u.estado === 'ACTIVO'"
+                              [class.text-emerald-800]="u.estado === 'ACTIVO'"
+                              [class.bg-red-100]="u.estado === 'INACTIVO'"
+                              [class.text-red-800]="u.estado === 'INACTIVO'">
+                          {{ u.estado }}
+                        </span>
+                      </td>
+                      <td class="py-3.5 px-6 text-xs text-[#757682] font-semibold">
+                        {{ u.ultimoAcceso }}
+                      </td>
+                      <td class="py-3.5 px-6 text-right space-x-2">
+                        <button (click)="abrirEditarUsuario(u)"
+                                class="text-xs font-bold px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-50 text-blue-700 transition-all cursor-pointer">
+                          Editar
+                        </button>
+                        <button (click)="toggleEstadoUsuario(u.id)"
+                                class="text-xs font-bold px-3 py-1.5 rounded-lg border border-[#c5c6d2] hover:bg-[#edeeef] text-[#444650] hover:text-[#00113a] transition-all cursor-pointer">
+                          {{ u.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                  @if (group.usuarios.length === 0) {
+                    <tr>
+                      <td colspan="5" class="py-8 text-center text-sm text-[#757682]">
+                        No hay usuarios registrados en este club.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Tab 4: Especialidades Globales -->
+  @if (activeTab() === 'ESPECIALIDADES') {
     <div class="bg-white rounded-xl border border-[#c5c6d2] overflow-hidden shadow-sm">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-[#f8f9fa] border-b border-[#c5c6d2] text-[#757682] text-xs font-bold uppercase tracking-wider">
-              <th class="py-3.5 px-4">Usuario</th>
-              <th class="py-3.5 px-4">Club Asignado</th>
-              <th class="py-3.5 px-4">Rol en el Sistema</th>
-              <th class="py-3.5 px-4 text-center">Estado</th>
-              <th class="py-3.5 px-4">Último Acceso</th>
-              <th class="py-3.5 px-4 text-right">Acciones</th>
+              <th class="py-3.5 px-4">Nombre</th>
+              <th class="py-3.5 px-4">Categoría</th>
+              <th class="py-3.5 px-4">Requiere Examen</th>
+              <th class="py-3.5 px-4">Descripción</th>
+              <th class="py-3.5 px-4 text-center">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#c5c6d2] text-sm">
-            @for (u of usuarios(); track u.id) {
+          <tbody class="divide-y divide-[#c5c6d2] text-xs">
+            @for (esp of especialidades(); track esp.idEspecialidad) {
               <tr class="hover:bg-[#f8f9fa] transition">
+                <td class="py-3.5 px-4 font-bold text-[#00113a]">{{ esp.nombre }}</td>
                 <td class="py-3.5 px-4">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-[#00113a] text-white flex items-center justify-center font-bold text-xs shrink-0">
-                      {{ u.nombre.substring(0, 1) }}
-                    </div>
-                    <div>
-                      <p class="font-bold text-[#00113a]">{{ u.nombre }}</p>
-                      <p class="text-xs text-[#757682]">{{ u.email }}</p>
-                    </div>
-                  </div>
-                </td>
-                <td class="py-3.5 px-4 text-xs font-bold text-[#00113a]">{{ u.club }}</td>
-                <td class="py-3.5 px-4">
-                  <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#edeeef] text-[#00113a]">
-                    {{ u.rol }}
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#00113a]/10 text-[#00113a]">
+                    {{ esp.categoria?.nombre || 'General' }}
                   </span>
                 </td>
-                <td class="py-3.5 px-4 text-center">
-                  <button (click)="toggleEstadoUsuario(u.id)"
-                          class="px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition"
-                          [class.bg-emerald-100]="u.estado === 'ACTIVO'"
-                          [class.text-emerald-800]="u.estado === 'ACTIVO'"
-                          [class.bg-red-100]="u.estado === 'INACTIVO'"
-                          [class.text-red-800]="u.estado === 'INACTIVO'">
-                    {{ u.estado }}
-                  </button>
+                <td class="py-3.5 px-4">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold"
+                        [class.bg-green-100]="esp.requiereExamen" [class.text-green-800]="esp.requiereExamen"
+                        [class.bg-gray-100]="!esp.requiereExamen" [class.text-gray-800]="!esp.requiereExamen">
+                    {{ esp.requiereExamen ? 'SÍ' : 'NO' }}
+                  </span>
                 </td>
-                <td class="py-3.5 px-4 text-xs text-[#757682]">{{ u.ultimoAcceso }}</td>
-                <td class="py-3.5 px-4 text-right">
-                  <button (click)="resetPassword(u.email)"
-                          class="text-xs font-bold text-[#00113a] hover:underline cursor-pointer">
-                    Restablecer Clave
+                <td class="py-3.5 px-4 text-[#444650] max-w-xs truncate">{{ esp.descripcion }}</td>
+                <td class="py-3.5 px-4 text-center font-bold space-x-2">
+                  <button (click)="abrirRequisitosEspecialidad(esp)" class="text-blue-600 hover:text-blue-900 cursor-pointer p-1" title="Ver Requisitos">
+                    <span class="material-symbols-outlined text-[18px]">list_alt</span>
+                  </button>
+                  <button (click)="eliminarEspecialidad(esp.idEspecialidad!)" class="text-red-600 hover:text-red-900 cursor-pointer p-1" title="Eliminar Especialidad">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
                   </button>
                 </td>
               </tr>
@@ -184,32 +313,31 @@
     </div>
   }
 
-  <!-- Tab 3: Auditoria -->
-  @if (activeTab() === 'AUDITORIA') {
-    <div class="bg-white rounded-xl border border-[#c5c6d2] overflow-hidden shadow-sm">
+  <!-- Tab 5: Clases del Sistema -->
+  @if (activeTab() === 'CLASES') {
+    <div class="bg-white rounded-xl border border-[#c5c6d2] overflow-hidden shadow-sm max-w-2xl">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-[#f8f9fa] border-b border-[#c5c6d2] text-[#757682] text-xs font-bold uppercase tracking-wider">
-              <th class="py-3.5 px-4">Fecha y Hora</th>
-              <th class="py-3.5 px-4">Usuario</th>
-              <th class="py-3.5 px-4">Módulo</th>
-              <th class="py-3.5 px-4">Acción Realizada</th>
-              <th class="py-3.5 px-4 text-right">Dirección IP</th>
+              <th class="py-3.5 px-4">Nombre de la Clase</th>
+              <th class="py-3.5 px-4">Versión Cuadernillo</th>
+              <th class="py-3.5 px-4 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#c5c6d2] text-xs">
-            @for (log of logs(); track log.id) {
+            @for (clase of clasesList(); track clase.idClase) {
               <tr class="hover:bg-[#f8f9fa] transition">
-                <td class="py-3.5 px-4 font-mono text-[#757682]">{{ log.fecha }}</td>
-                <td class="py-3.5 px-4 font-bold text-[#00113a]">{{ log.usuario }}</td>
-                <td class="py-3.5 px-4">
-                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#00113a]/10 text-[#00113a]">
-                    {{ log.modulo }}
-                  </span>
+                <td class="py-3.5 px-4 font-bold text-[#00113a]">{{ clase.nombre }}</td>
+                <td class="py-3.5 px-4 text-[#757682]">{{ clase.versionCuadernillo?.numeroVersion || 'v2026' }}</td>
+                <td class="py-3.5 px-4 text-center font-bold space-x-2">
+                  <button (click)="abrirRequisitosClase(clase)" class="text-blue-600 hover:text-blue-900 cursor-pointer p-1" title="Ver Requisitos">
+                    <span class="material-symbols-outlined text-[18px]">list_alt</span>
+                  </button>
+                  <button (click)="eliminarClase(clase.idClase!)" class="text-red-600 hover:text-red-900 cursor-pointer p-1" title="Eliminar Clase">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                  </button>
                 </td>
-                <td class="py-3.5 px-4 text-[#444650]">{{ log.accion }}</td>
-                <td class="py-3.5 px-4 text-right font-mono text-[#757682]">{{ log.ip }}</td>
               </tr>
             }
           </tbody>
@@ -256,21 +384,73 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-bold text-[#191c1d] mb-1">Director Responsable</label>
-              <input [(ngModel)]="nuevoClub.director" name="director" type="text"
-                     class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
-                     placeholder="Ej. Juan Gómez" />
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Estado Inicial</label>
+            <select [(ngModel)]="nuevoClub.estado" name="estado"
+                    class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white">
+              <option value="ACTIVO">Activo</option>
+              <option value="EN_FORMACION">En Formación</option>
+            </select>
+          </div>
+
+          <!-- Director Section -->
+          <div class="border-t border-[#c5c6d2] pt-3">
+            <h4 class="text-xs font-bold text-[#00113a] mb-2">Director del Club</h4>
+            
+            <div class="flex gap-4 mb-3">
+              <label class="flex items-center gap-2 text-xs font-semibold text-[#444650] cursor-pointer">
+                <input type="radio" name="directorOption" value="existing" [(ngModel)]="directorOption" class="text-[#00113a] focus:ring-[#00113a]" />
+                Asignar Existente
+              </label>
+              <label class="flex items-center gap-2 text-xs font-semibold text-[#444650] cursor-pointer">
+                <input type="radio" name="directorOption" value="new" [(ngModel)]="directorOption" class="text-[#00113a] focus:ring-[#00113a]" />
+                Registrar Nuevo
+              </label>
             </div>
-            <div>
-              <label class="block text-xs font-bold text-[#191c1d] mb-1">Estado Inicial</label>
-              <select [(ngModel)]="nuevoClub.estado" name="estado"
-                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white">
-                <option value="ACTIVO">Activo</option>
-                <option value="EN_FORMACION">En Formación</option>
-              </select>
-            </div>
+
+            @if (directorOption === 'existing') {
+              <div>
+                <label class="block text-xs font-bold text-[#191c1d] mb-1">Seleccionar Director</label>
+                <select [(ngModel)]="idDirectorExistente" name="idDirectorExistente"
+                        class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white">
+                  <option [value]="null" disabled selected>Seleccione un usuario...</option>
+                  @for (u of getUnassignedDirectors(); track u.id) {
+                    <option [value]="u.id">{{ u.nombre }} - {{ u.email }}</option>
+                  }
+                </select>
+              </div>
+            } @else if (directorOption === 'new') {
+              <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold text-[#191c1d] mb-1">Nombre</label>
+                    <input [(ngModel)]="directorNuevo.nombre" name="dirNombre" type="text"
+                           class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                           placeholder="Nombre" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-[#191c1d] mb-1">Apellido</label>
+                    <input [(ngModel)]="directorNuevo.apellido" name="dirApellido" type="text"
+                           class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                           placeholder="Apellido" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold text-[#191c1d] mb-1">Correo Electrónico</label>
+                    <input [(ngModel)]="directorNuevo.email" name="dirEmail" type="email"
+                           class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                           placeholder="dir@email.com" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-[#191c1d] mb-1">Contraseña</label>
+                    <input [(ngModel)]="directorNuevo.password" name="dirPassword" type="password"
+                           class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                           placeholder="Clave inicial" />
+                  </div>
+                </div>
+              </div>
+            }
           </div>
 
           <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2]">
@@ -285,6 +465,424 @@
           </div>
         </form>
 
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Crear Nuevo Usuario -->
+  @if (showCrearUsuarioModal) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
+          <h3 class="text-lg font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00113a]">person_add</span>
+            Registrar Nuevo Usuario / Acceso
+          </h3>
+          <button (click)="showCrearUsuarioModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form (ngSubmit)="crearUsuario()" class="space-y-4 mt-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Nombre</label>
+              <input [(ngModel)]="nuevoUsuario.nombre" name="userNombre" type="text"
+                     class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                     placeholder="Ej. Juan" required />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Apellido</label>
+              <input [(ngModel)]="nuevoUsuario.apellido" name="userApellido" type="text"
+                     class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                     placeholder="Ej. Pérez" required />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Correo Electrónico</label>
+            <input [(ngModel)]="nuevoUsuario.email" name="userEmail" type="email"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                   placeholder="Ej. juan.perez@club.com" required />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Contraseña Inicial</label>
+            <input [(ngModel)]="nuevoUsuario.password" name="userPassword" type="password"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                   placeholder="Ingresa la clave temporal" required />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Rol de Acceso</label>
+              <select [(ngModel)]="nuevoUsuario.idRol" name="userIdRol"
+                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white" required>
+                <option [value]="null" disabled selected>Selecciona un rol</option>
+                @for (r of getFilteredRoles(); track r.idRol) {
+                  <option [value]="r.idRol">{{ r.nombre }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Club Asignado</label>
+              @if (isAdmin()) {
+                <select [(ngModel)]="nuevoUsuario.idClub" name="userIdClub"
+                        class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white">
+                  <option [value]="null">Ninguno (Administración Global)</option>
+                  @for (c of clubes(); track c.id) {
+                    <option [value]="c.id">{{ c.nombre }}</option>
+                  }
+                </select>
+              } @else {
+                <input type="text" readonly
+                       [value]="'Tu Club'"
+                       class="w-full px-3 py-2 border border-[#c5c6d2] bg-gray-50 rounded-lg text-sm outline-none text-[#757682] font-semibold" />
+              }
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2]">
+            <button type="button" (click)="showCrearUsuarioModal = false"
+                    class="px-4 py-2 text-sm font-bold text-[#757682] hover:bg-[#edeeef] rounded-lg transition cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit"
+                    class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow transition cursor-pointer">
+              Registrar Usuario
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Crear Nueva Especialidad -->
+  @if (showCrearEspecialidadModal) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
+          <h3 class="text-lg font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00113a]">military_tech</span>
+            Registrar Especialidad Global
+          </h3>
+          <button (click)="showCrearEspecialidadModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form (ngSubmit)="crearEspecialidad()" class="space-y-4 mt-4">
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Nombre de la Especialidad</label>
+            <input [(ngModel)]="nuevaEspecialidad.nombre" name="nombreEsp" type="text"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                   placeholder="Ej. Orientación Básica" required />
+          </div>
+
+          <div class="grid grid-cols-1 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Categoría</label>
+              <select [(ngModel)]="nuevaEspecialidad.categoria" name="categoriaEsp"
+                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white" required>
+                <option value="NATURALEZA">Naturaleza</option>
+                <option value="HABILIDADES">Habilidades Manuales</option>
+                <option value="MISIONERAS">Actividades Misioneras</option>
+                <option value="CIENCIA">Ciencia y Salud</option>
+                <option value="RECREACION">Actividades Recreativas</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 py-1">
+            <input [(ngModel)]="nuevaEspecialidad.requiereExamen" name="requiereExamenEsp" type="checkbox" id="reqExamen"
+                   class="w-4 h-4 text-[#00113a] border-[#c5c6d2] rounded-sm focus:ring-[#00113a]" />
+            <label for="reqExamen" class="text-xs font-bold text-[#191c1d] select-none cursor-pointer">Requiere examen práctico o escrito</label>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Descripción</label>
+            <textarea [(ngModel)]="nuevaEspecialidad.descripcion" name="descripcionEsp" rows="3"
+                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none resize-none"
+                      placeholder="Indica de qué trata la especialidad y sus objetivos principales..."></textarea>
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2]">
+            <button type="button" (click)="showCrearEspecialidadModal = false"
+                    class="px-4 py-2 text-sm font-bold text-[#757682] hover:bg-[#edeeef] rounded-lg transition cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit"
+                    class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow transition cursor-pointer">
+              Guardar Especialidad
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Crear Nueva Clase -->
+  @if (showCrearClaseModal) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
+          <h3 class="text-lg font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00113a]">auto_stories</span>
+            Registrar Nueva Clase
+          </h3>
+          <button (click)="showCrearClaseModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form (ngSubmit)="crearClase()" class="space-y-4 mt-4">
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Nombre de la Clase</label>
+            <input [(ngModel)]="nuevaClase.nombre" name="nombreClase" type="text"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                   placeholder="Ej. Guía Mayor" required />
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2]">
+            <button type="button" (click)="showCrearClaseModal = false"
+                    class="px-4 py-2 text-sm font-bold text-[#757682] hover:bg-[#edeeef] rounded-lg transition cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit"
+                    class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow transition cursor-pointer">
+              Guardar Clase
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Editar Club -->
+  @if (showEditarClubModal && selectedClub) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
+          <h3 class="text-lg font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00113a]">edit</span>
+            Editar Club de Conquistadores
+          </h3>
+          <button (click)="showEditarClubModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form (ngSubmit)="guardarClubEditado()" class="space-y-4 mt-4">
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Nombre del Club</label>
+            <input [(ngModel)]="selectedClub.nombre" name="editClubNombre" type="text"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Distrito</label>
+            <input [(ngModel)]="selectedClub.configuracion.distrito" name="editClubDistrito" type="text"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Asociación / Misión</label>
+            <input [(ngModel)]="selectedClub.configuracion.mision" name="editClubMision" type="text"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Estado</label>
+            <select [(ngModel)]="selectedClub.estado" name="editClubEstado"
+                    class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white" required>
+              <option value="ACTIVO">ACTIVO</option>
+              <option value="EN_FORMACION">EN FORMACIÓN</option>
+            </select>
+          </div>
+          <div class="flex justify-between items-center pt-4 border-t border-[#c5c6d2]">
+            <button type="button" (click)="eliminarClubSeguro(selectedClub)"
+                    class="px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer flex items-center gap-1">
+              <span class="material-symbols-outlined text-[18px]">delete</span>
+              Borrar Club
+            </button>
+            <div class="flex gap-3">
+              <button type="button" (click)="showEditarClubModal = false"
+                      class="px-4 py-2 text-sm font-bold text-[#757682] hover:bg-[#edeeef] rounded-lg transition cursor-pointer">
+                Cancelar
+              </button>
+              <button type="submit"
+                      class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow transition cursor-pointer">
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Editar Usuario -->
+  @if (showEditarUsuarioModal && selectedUsuario) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2]">
+          <h3 class="text-lg font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00113a]">manage_accounts</span>
+            Editar Detalles de Usuario
+          </h3>
+          <button (click)="showEditarUsuarioModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <form (ngSubmit)="guardarUsuarioEditado()" class="space-y-4 mt-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Nombre</label>
+              <input [(ngModel)]="selectedUsuario.nombre" name="editUserNombre" type="text"
+                     class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none" required />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Apellido</label>
+              <input [(ngModel)]="selectedUsuario.apellido" name="editUserApellido" type="text"
+                     class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none" required />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Correo Electrónico</label>
+            <input [(ngModel)]="selectedUsuario.email" name="editUserEmail" type="email"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Nueva Contraseña (dejar vacío para mantener actual)</label>
+            <input [(ngModel)]="selectedUsuario.password" name="editUserPassword" type="password"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none" placeholder="Opcional" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Rol de Acceso</label>
+              <select [(ngModel)]="selectedUsuario.idRol" name="editUserRol"
+                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white" required>
+                @for (r of getFilteredRoles(); track r.idRol) {
+                  <option [value]="r.idRol">{{ r.nombre }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-[#191c1d] mb-1">Club Asignado</label>
+              <select [(ngModel)]="selectedUsuario.idClub" name="editUserClub"
+                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white">
+                <option [value]="null">Ninguno (Administración Global)</option>
+                @for (c of clubes(); track c.id) {
+                  <option [value]="c.id">{{ c.nombre }}</option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2]">
+            <button type="button" (click)="showEditarUsuarioModal = false"
+                    class="px-4 py-2 text-sm font-bold text-[#757682] hover:bg-[#edeeef] rounded-lg transition cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit"
+                    class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow transition cursor-pointer">
+              Actualizar Usuario
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Gestionar Requisitos -->
+  @if (showRequisitosModal) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+      <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#c5c6d2] animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[85vh]">
+        <div class="flex items-center justify-between pb-4 border-b border-[#c5c6d2] shrink-0">
+          <h3 class="text-lg font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00113a]">list_alt</span>
+            Gestión de Requisitos de {{ selectedClase ? selectedClase.nombre : (selectedEspecialidad ? selectedEspecialidad.nombre : '') }}
+          </h3>
+          <button (click)="showRequisitosModal = false" class="text-[#757682] hover:text-[#00113a] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Add Requirement Form -->
+        <div class="bg-[#f8f9fa] border border-[#c5c6d2] p-4 rounded-xl mt-4 shrink-0">
+          <h4 class="text-xs font-bold text-[#00113a] uppercase mb-2">Agregar Nuevo Requisito</h4>
+          <div class="flex flex-col sm:flex-row gap-3 items-end">
+            <div class="flex-1 w-full">
+              <input [(ngModel)]="nuevoRequisitoDesc" name="reqDesc" type="text"
+                     class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white"
+                     placeholder="Ej. Realizar una exposición de 5 minutos..." />
+            </div>
+            @if (selectedClase) {
+              <div class="flex items-center gap-2 pb-2.5">
+                <input [(ngModel)]="nuevoRequisitoEsAvanzado" name="reqEsAvanzado" type="checkbox" id="modalEsAvanzado"
+                       class="w-4 h-4 text-[#00113a] border-[#c5c6d2] rounded-sm focus:ring-[#00113a]" />
+                <label for="modalEsAvanzado" class="text-xs font-bold text-[#191c1d] select-none cursor-pointer">Es Avanzado</label>
+              </div>
+            }
+            <button (click)="agregarRequisito()"
+                    class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow cursor-pointer w-full sm:w-auto shrink-0">
+              Agregar
+            </button>
+          </div>
+        </div>
+
+        <!-- Requirements List -->
+        <div class="flex-1 overflow-y-auto mt-4 pr-1">
+          <div class="bg-white rounded-xl border border-[#c5c6d2] overflow-hidden">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-[#f8f9fa] border-b border-[#c5c6d2] text-[#757682] text-xs font-bold uppercase tracking-wider">
+                  <th class="py-2.5 px-4">Descripción del Requisito</th>
+                  @if (selectedClase) {
+                    <th class="py-2.5 px-4 text-center w-24">Tipo</th>
+                  }
+                  <th class="py-2.5 px-4 text-center w-20">Acción</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#c5c6d2] text-xs">
+                @for (req of requisitos(); track req.idRequisito) {
+                  <tr class="hover:bg-[#f8f9fa] transition">
+                    <td class="py-3 px-4 font-medium text-[#191c1d] whitespace-pre-wrap">{{ req.descripcion }}</td>
+                    @if (selectedClase) {
+                      <td class="py-3 px-4 text-center">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold"
+                              [class.bg-purple-100]="req.esAvanzado" [class.text-purple-800]="req.esAvanzado"
+                              [class.bg-blue-100]="!req.esAvanzado" [class.text-blue-800]="!req.esAvanzado">
+                          {{ req.esAvanzado ? 'Avanzado' : 'Regular' }}
+                        </span>
+                      </td>
+                    }
+                    <td class="py-3 px-4 text-center font-bold">
+                      <button (click)="eliminarRequisito(req.idRequisito!)" class="text-red-600 hover:text-red-900 cursor-pointer p-1">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                }
+                @if (requisitos().length === 0) {
+                  <tr>
+                    <td [attr.colspan]="selectedClase ? 3 : 2" class="py-8 text-center text-sm text-[#757682]">
+                      No hay requisitos registrados para este elemento.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-4 border-t border-[#c5c6d2] mt-4 shrink-0">
+          <button (click)="showRequisitosModal = false"
+                  class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow cursor-pointer">
+            Aceptar
+          </button>
+        </div>
       </div>
     </div>
   }

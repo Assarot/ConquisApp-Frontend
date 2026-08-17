@@ -3,20 +3,24 @@
   <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
     <div class="space-y-1">
       <h2 class="text-2xl font-bold tracking-tight text-[#00113a] flex items-center gap-2">
-        Control de Clases y Sesiones
+        <span class="material-symbols-outlined text-[24px]">menu_book</span>
+        Cuadernillos de Clase
       </h2>
-      <p class="text-[#444650] text-sm">Gestiona el progreso del cuadernillo oficial y registra la asistencia de los conquistadores.</p>
+      <p class="text-[#444650] text-sm">Consulta los requisitos de cada cuadernillo y gestiona el avance de los conquistadores.</p>
     </div>
 
-    <!-- Class selectors -->
+    <!-- Class selectors (from DB) -->
     <div class="flex flex-wrap gap-2 w-full lg:w-auto">
-      @for (clase of clasesList; track clase.id) {
+      @if (isLoading && clasesList().length === 0) {
+        <span class="text-xs text-[#757682]">Cargando clases...</span>
+      }
+      @for (clase of clasesList(); track clase.idClase) {
         <button
-          (click)="selectedClaseId = clase.id; loadClaseData()"
-          [class]="selectedClaseId === clase.id ? 'bg-[#00113a] text-white shadow-md' : 'bg-white border border-[#c5c6d2] text-[#444650] hover:bg-[#f3f4f5]'"
+          (click)="selectedClaseId.set(clase.idClase || ''); onClaseChange()"
+          [class]="selectedClaseId() === clase.idClase ? 'bg-[#00113a] text-white shadow-md' : 'bg-white border border-[#c5c6d2] text-[#444650] hover:bg-[#f3f4f5]'"
           class="px-4 py-2.5 rounded-lg text-sm font-bold transition cursor-pointer"
         >
-          Clase {{ clase.nombre }}
+          {{ clase.nombre }}
         </button>
       }
     </div>
@@ -27,24 +31,101 @@
     <ul class="flex flex-wrap -mb-px text-sm font-bold text-center text-[#757682]">
       <li class="mr-2">
         <button
+          (click)="activeTab = 'cuadernillo'"
+          [class]="activeTab === 'cuadernillo' ? 'text-[#00113a] border-b-2 border-[#00113a]' : 'hover:text-[#191c1d]'"
+          class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer transition flex items-center gap-1.5"
+        >
+          <span class="material-symbols-outlined text-[16px]">menu_book</span> Cuadernillo
+        </button>
+      </li>
+      <li class="mr-2">
+        <button
           (click)="activeTab = 'avances'"
           [class]="activeTab === 'avances' ? 'text-[#00113a] border-b-2 border-[#00113a]' : 'hover:text-[#191c1d]'"
-          class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer transition"
+          class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer transition flex items-center gap-1.5"
         >
-          Avance de Cuadernillo
+          <span class="material-symbols-outlined text-[16px]">trending_up</span> Avance Conquistadores
         </button>
       </li>
       <li class="mr-2">
         <button
           (click)="activeTab = 'asistencia'"
           [class]="activeTab === 'asistencia' ? 'text-[#00113a] border-b-2 border-[#00113a]' : 'hover:text-[#191c1d]'"
-          class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer transition"
+          class="inline-block p-4 border-b-2 border-transparent rounded-t-lg cursor-pointer transition flex items-center gap-1.5"
         >
-          Asistencia de Sesión
+          <span class="material-symbols-outlined text-[16px]">event_available</span> Asistencia
         </button>
       </li>
     </ul>
   </div>
+
+  <!-- Tab 0: Cuadernillo (Requisitos) -->
+  @if (activeTab === 'cuadernillo') {
+    <div class="bg-white border border-[#c5c6d2] rounded-xl p-6 shadow-sm space-y-5">
+      @if (loadingRequisitos()) {
+        <div class="flex items-center gap-2 text-xs text-[#757682] py-8 justify-center">
+          <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+          Cargando requisitos del cuadernillo...
+        </div>
+      } @else if (clasesList().length === 0) {
+        <p class="text-sm text-[#757682] text-center py-8">Selecciona una clase para ver sus requisitos.</p>
+      } @else {
+        <!-- Regular Requisitos -->
+        <div>
+          <h3 class="text-sm font-bold text-[#00113a] mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
+            Requisitos Regulares
+            <span class="text-xs font-normal text-[#757682]">({{ requisitosRegulares.length }})</span>
+          </h3>
+          @if (requisitosRegulares.length === 0) {
+            <p class="text-xs text-[#757682] italic pl-4">No hay requisitos regulares registrados para esta clase.</p>
+          } @else {
+            <div class="space-y-2">
+              @for (req of requisitosRegulares; track req.idRequisito; let i = $index) {
+                <div class="flex items-start gap-3 p-3 bg-[#f0fdf4] border border-green-100 rounded-lg">
+                  <span class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center">{{ i + 1 }}</span>
+                  <span class="text-sm text-[#1a1a1a] flex-1">{{ req.descripcion }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Avanzado Requisitos -->
+        <div>
+          <h3 class="text-sm font-bold text-[#00113a] mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+            Requisitos Avanzados
+            <span class="text-xs font-normal text-[#757682]">({{ requisitosAvanzados.length }})</span>
+          </h3>
+          @if (requisitosAvanzados.length === 0) {
+            <p class="text-xs text-[#757682] italic pl-4">No hay requisitos avanzados registrados para esta clase.</p>
+          } @else {
+            <div class="space-y-2">
+              @for (req of requisitosAvanzados; track req.idRequisito; let i = $index) {
+                <div class="flex items-start gap-3 p-3 bg-[#eff6ff] border border-blue-100 rounded-lg">
+                  <span class="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">{{ i + 1 }}</span>
+                  <span class="text-sm text-[#1a1a1a] flex-1">{{ req.descripcion }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="pt-3 border-t border-[#c5c6d2] flex items-center gap-4 text-xs text-[#757682]">
+          <span class="flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+            {{ requisitosRegulares.length }} Requisitos Regulares
+          </span>
+          <span class="flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            {{ requisitosAvanzados.length }} Requisitos Avanzados
+          </span>
+          <span class="font-bold text-[#00113a]">Total: {{ requisitos().length }}</span>
+        </div>
+      }
+    </div>
+  }
 
   <!-- Tab 1: Avances -->
   @if (activeTab === 'avances') {
@@ -105,7 +186,7 @@
             <div class="relative z-10">
               <span class="px-2 py-0.5 bg-[#db313f] text-white text-[10px] font-bold rounded uppercase">Progreso Cuadernillo</span>
               <h3 class="text-xl font-bold mt-1">Requisitos de {{ selectedMiembro.nombre }} {{ selectedMiembro.apellido }}</h3>
-              <p class="text-xs text-[#ffba27] font-bold uppercase mt-1">Clase {{ selectedClaseId.split('-')[1] }}</p>
+              <p class="text-xs text-[#ffba27] font-bold uppercase mt-1">Clase {{ selectedClaseNombre }}</p>
             </div>
             <div class="relative z-10 text-right">
               <span class="text-[10px] text-gray-300 block">Instructor Responsable:</span>
@@ -176,7 +257,7 @@
           <p class="text-sm text-[#444650]">Marca la asistencia de hoy para los conquistadores de esta clase.</p>
         </div>
         <div class="text-xs text-[#00113a] font-bold uppercase bg-[#dbe1ff] px-3 py-1.5 rounded-lg border border-[#c5c6d2]">
-          Clase {{ selectedClaseId.split('-')[1] }}
+          Clase {{ selectedClaseNombre }}
         </div>
       </div>
 

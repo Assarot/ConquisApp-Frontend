@@ -1,9 +1,11 @@
-import { Component, OnInit, computed } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { MiembroService } from '../../../core/services/miembro.service';
 import { AvanceAsistenciaService } from '../../../core/services/avance-asistencia.service';
+import { ClubService, ClaseBackend } from '../../../core/services/club.service';
+import { RequisitoService, RequisitoBackend } from '../../../core/services/requisito.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Miembro } from '../../../core/models/miembro.model';
-import { Avance, Requisito } from '../../../core/models/avance-asistencia.model';
+import { Avance } from '../../../core/models/avance-asistencia.model';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -12,71 +14,99 @@ import Swal from 'sweetalert2';
   standalone: false
 })
 export class ClaseDetalleComponent implements OnInit {
-  clasesList = [
-    { id: 'clase-amigo', nombre: 'Amigo' },
-    { id: 'clase-viajero', nombre: 'Viajero' },
-    { id: 'clase-guia', nombre: 'Guía' }
-  ];
-
-  selectedClaseId = 'clase-guia';
-  activeTab: 'avances' | 'asistencia' = 'avances';
+  // Real class list from DB
+  clasesList = signal<ClaseBackend[]>([]);
+  selectedClaseId = signal<string>('');
+  activeTab: 'cuadernillo' | 'avances' | 'asistencia' = 'cuadernillo';
   isLoading = false;
 
-  // Class data
-  miembrosDeClase: Miembro[] = [];
-  requisitos: Requisito[] = [];
+  // Requisitos for selected class
+  requisitos = signal<RequisitoBackend[]>([]);
+  loadingRequisitos = signal(false);
 
-  // Selected student's progress state
+  // Members of selected class
+  miembrosDeClase: Miembro[] = [];
   selectedMiembro: Miembro | null = null;
   avancesDeMiembro: Avance[] = [];
 
   // Attendance state
   asistenciaEstados: { [key: string]: 'PRESENTE' | 'AUSENTE' | 'JUSTIFICADO' } = {};
 
-  // Permissions helpers
+  // Permissions
   currentUser = computed(() => this.authService.currentUser());
   canEditAvance = computed(() => {
     const rawRol = this.currentUser()?.rol;
     const role = typeof rawRol === 'string' ? rawRol : (rawRol as any)?.nombre;
-    // Instructors, Secretaries, Directors and Admins can update progress
     return ['ADMINISTRADOR', 'DIRECTOR', 'SECRETARIO', 'INSTRUCTOR'].includes(role || '');
   });
+
+  // Computed counts for cuadernillo tab
+  get requisitosRegulares() { return this.requisitos().filter(r => !r.esAvanzado); }
+  get requisitosAvanzados() { return this.requisitos().filter(r => r.esAvanzado); }
+  get selectedClaseNombre() {
+    const selected = this.clasesList().find(c => c.idClase === this.selectedClaseId());
+    return selected ? selected.nombre : '';
+  }
 
   constructor(
     private miembroService: MiembroService,
     private avanceAsistenciaService: AvanceAsistenciaService,
+    private clubService: ClubService,
+    private requisitoService: RequisitoService,
     private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadClaseData();
-    this.loadRequisitos();
+    this.cargarClases();
   }
 
-  loadRequisitos(): void {
-    this.avanceAsistenciaService.getRequisitos().subscribe(reqs => {
-      this.requisitos = reqs;
+  cargarClases(): void {
+    this.isLoading = true;
+    this.clubService.getClases().subscribe({
+      next: (clases) => {
+        this.clasesList.set(clases);
+        this.isLoading = false;
+        if (clases.length > 0) {
+          this.selectedClaseId.set(clases[0].idClase || '');
+          this.onClaseChange();
+        }
+      },
+      error: () => { this.isLoading = false; }
     });
+  }
+
+  onClaseChange(): void {
+    const id = this.selectedClaseId();
+    if (!id) return;
+
+    // Load requisitos from DB
+    this.loadingRequisitos.set(true);
+    this.requisitoService.getRequisitosByClase(id).subscribe({
+      next: (reqs) => {
+        this.requisitos.set(reqs);
+        this.loadingRequisitos.set(false);
+      },
+      error: () => this.loadingRequisitos.set(false)
+    });
+
+    // Load members of this class from the club
+    this.loadClaseData();
   }
 
   loadClaseData(): void {
     this.isLoading = true;
-    const clubId = this.currentUser()?.idClub || 'uuid-club-conquistadores-orion';
-    
+    const clubId = String(this.currentUser()?.idClub || '');
+    if (!clubId) { this.isLoading = false; return; }
+
     this.miembroService.getMiembrosByClub(clubId).subscribe({
       next: (todos) => {
-        // Filter by selected class and function = CONQUISTADOR
         this.miembrosDeClase = todos.filter(
-          m => m.idClase === this.selectedClaseId && m.funcion === 'CONQUISTADOR'
+          m => m.idClase === this.selectedClaseId() && m.funcion === 'CONQUISTADOR'
         );
-
-        // Prepopulate attendance states
         this.asistenciaEstados = {};
         this.miembrosDeClase.forEach(m => {
           this.asistenciaEstados[m.idMiembro] = 'PRESENTE';
         });
-
-        // Auto select first student for progress display
         if (this.miembrosDeClase.length > 0) {
           this.selectMiembro(this.miembrosDeClase[0]);
         } else {
@@ -85,9 +115,7 @@ export class ClaseDetalleComponent implements OnInit {
           this.isLoading = false;
         }
       },
-      error: () => {
-        this.isLoading = false;
-      }
+      error: () => { this.isLoading = false; }
     });
   }
 
