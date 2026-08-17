@@ -12,6 +12,7 @@ import Swal from 'sweetalert2';
 })
 export class UnidadesListComponent implements OnInit {
   unidades: Unidad[] = [];
+  counselors: any[] = [];
   isLoading = false;
   showModal = false;
   isEditing = false;
@@ -25,13 +26,15 @@ export class UnidadesListComponent implements OnInit {
     return role === 'ADMINISTRADOR' || role === 'DIRECTOR' || role === 'SECRETARIO' || role === 'DIRECTOR_ASOCIADO';
   });
 
-  // Color options for unit icon
+  // Color choices
   colorOptions = [
     { label: 'Azul Marino', value: 'primary' },
     { label: 'Rojo', value: 'secondary' },
-    { label: 'Dorado', value: 'tertiary' }
+    { label: 'Dorado', value: 'tertiary' },
+    { label: 'Verde Bosque', value: 'success' }
   ];
 
+  // Icon choices
   iconOptions = ['pets', 'flight', 'auto_awesome', 'bolt', 'local_fire_department', 'waves', 'grass', 'star'];
 
   constructor(
@@ -43,12 +46,14 @@ export class UnidadesListComponent implements OnInit {
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       descripcion: [''],
       icono: ['pets'],
-      color: ['primary']
+      color: ['primary'],
+      idConsejero: ['']
     });
   }
 
   ngOnInit(): void {
     this.loadUnidades();
+    this.loadCounselors();
   }
 
   loadUnidades(): void {
@@ -65,17 +70,34 @@ export class UnidadesListComponent implements OnInit {
     });
   }
 
+  loadCounselors(): void {
+    this.authService.getUsers().subscribe({
+      next: (users) => {
+        this.counselors = users.filter(u => u.rol !== 'CONQUISTADOR' && u.rol !== 'PADRE');
+      },
+      error: (err) => {
+        console.error('Error loading users for counselors list', err);
+      }
+    });
+  }
+
   openCreateModal(): void {
     this.isEditing = false;
     this.selectedUnidadId = null;
-    this.unidadForm.reset({ nombre: '', descripcion: '', icono: 'pets', color: 'primary' });
+    this.unidadForm.reset({ nombre: '', descripcion: '', icono: 'pets', color: 'primary', idConsejero: '' });
     this.showModal = true;
   }
 
   openEditModal(unidad: Unidad): void {
     this.isEditing = true;
     this.selectedUnidadId = unidad.idUnidad;
-    this.unidadForm.patchValue({ nombre: unidad.nombre, descripcion: '' });
+    this.unidadForm.patchValue({
+      nombre: unidad.nombre,
+      descripcion: unidad.descripcion || '',
+      icono: unidad.icono || 'pets',
+      color: unidad.color || 'primary',
+      idConsejero: unidad.consejeroId || ''
+    });
     this.showModal = true;
   }
 
@@ -88,13 +110,16 @@ export class UnidadesListComponent implements OnInit {
     const formVal = this.unidadForm.value;
     this.isLoading = true;
 
+    const payload: any = {
+      nombre: formVal.nombre,
+      descripcion: formVal.descripcion || '',
+      icono: formVal.icono || 'pets',
+      color: formVal.color || 'primary',
+      consejero: formVal.idConsejero ? { idUsuario: Number(formVal.idConsejero) } : null
+    };
+
     if (this.isEditing && this.selectedUnidadId) {
-      this.unidadService.actualizarUnidad(this.selectedUnidadId, {
-        nombre: formVal.nombre,
-        descripcion: formVal.descripcion,
-        icono: formVal.icono,
-        color: formVal.color
-      }).subscribe({
+      this.unidadService.actualizarUnidad(this.selectedUnidadId, payload).subscribe({
         next: () => {
           this.closeModal();
           this.loadUnidades();
@@ -108,13 +133,7 @@ export class UnidadesListComponent implements OnInit {
         }
       });
     } else {
-      this.unidadService.crearUnidad({
-        idUnidad: '',
-        nombre: formVal.nombre,
-        descripcion: formVal.descripcion,
-        icono: formVal.icono,
-        color: formVal.color
-      }).subscribe({
+      this.unidadService.crearUnidad(payload).subscribe({
         next: () => {
           this.closeModal();
           this.loadUnidades();
@@ -170,13 +189,23 @@ export class UnidadesListComponent implements OnInit {
     return 'group_work';
   }
 
-  getColorClassForUnidad(idx: number): string {
-    const colors = [
-      'bg-[#002366] text-[#758dd5]',
-      'bg-[#b7102a] text-white',
-      'bg-[#ffdea9] text-[#5e4100]',
-      'bg-[#dbe1ff] text-[#2a4386]'
-    ];
-    return colors[idx % colors.length];
+  getColorHex(color: string): string {
+    switch (color) {
+      case 'primary': return '#00113a';
+      case 'secondary': return '#b7102a';
+      case 'tertiary': return '#ff9e00';
+      case 'success': return '#2e7d32';
+      default: return '#00113a';
+    }
+  }
+
+  getColorClassForUnidad(color: string): string {
+    switch (color) {
+      case 'primary': return 'bg-[#dbe1ff] text-[#00113a]';
+      case 'secondary': return 'bg-[#ffdad6] text-[#b7102a]';
+      case 'tertiary': return 'bg-[#ffdea9] text-[#5e4100]';
+      case 'success': return 'bg-[#cbf2d6] text-[#1b5e20]';
+      default: return 'bg-[#dbe1ff] text-[#00113a]';
+    }
   }
 }

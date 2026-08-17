@@ -124,7 +124,7 @@ export class AvancesComponent implements OnInit {
     this.isLoadingMiembros.set(true);
     this.miembroService.getMiembrosByClub(clubId).subscribe({
       next: (todos) => {
-        this.miembrosDeClase.set(todos.filter(m => m.idClase === idClase && m.funcion === 'CONQUISTADOR'));
+        this.miembrosDeClase.set(todos.filter(m => String(m.idClase) === String(idClase) && m.funcion === 'CONQUISTADOR'));
         this.isLoadingMiembros.set(false);
       },
       error: () => this.isLoadingMiembros.set(false)
