@@ -117,4 +117,54 @@ export class PoaService {
       })
     );
   }
+
+  importarExcel(idPoa: string, file: File): Observable<{ mensaje: string; totalImportadas: number }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ mensaje: string; totalImportadas: number }>(
+      `${this.poaUrl}/${idPoa}/import-excel`,
+      formData
+    );
+  }
+
+  actualizarActividad(idActividad: string, datos: Partial<ActividadPoa>): Observable<ActividadPoa> {
+    return this.http.put<ActividadPoa>(`${this.poaUrl}/actividades/${idActividad}`, datos).pipe(
+      catchError(err => {
+        if (err.status === 0) {
+          console.warn('PoaService.actualizarActividad offline mock');
+          for (const poaId of Object.keys(this.mockActividades)) {
+            const idx = this.mockActividades[poaId].findIndex(a => a.idActividad === idActividad);
+            if (idx !== -1) {
+              this.mockActividades[poaId][idx] = { ...this.mockActividades[poaId][idx], ...datos };
+              return of(this.mockActividades[poaId][idx]);
+            }
+          }
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  eliminarActividad(idActividad: string): Observable<void> {
+    return this.http.delete<void>(`${this.poaUrl}/actividades/${idActividad}`).pipe(
+      catchError(err => {
+        if (err.status === 0) {
+          console.warn('PoaService.eliminarActividad offline mock');
+          // Remove from mock data
+          for (const poaId of Object.keys(this.mockActividades)) {
+            this.mockActividades[poaId] = this.mockActividades[poaId]
+              .filter(a => a.idActividad !== idActividad);
+          }
+          return of(void 0);
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  exportarExcel(idPoa: string): Observable<Blob> {
+    return this.http.get(`${this.poaUrl}/${idPoa}/export-excel`, {
+      responseType: 'blob'
+    });
+  }
 }
