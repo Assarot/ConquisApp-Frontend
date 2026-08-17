@@ -9,7 +9,7 @@
     @if (canEdit()) {
       <button
         (click)="openCreateModal()"
-        class="flex items-center gap-2 px-5 py-2.5 bg-[#00113a] text-white font-bold rounded-xl shadow-lg hover:bg-[#002366] transition-all text-sm cursor-pointer active:scale-95"
+        class="flex items-center gap-2 px-5 py-2.5 bg-[#00113a] text-white font-bold rounded-xl shadow-lg hover:bg-[#002366] transition-all text-sm cursor-pointer active:scale-95 animate-fade-in"
       >
         <span class="material-symbols-outlined text-[18px]">group_add</span>
         Agregar Nueva Unidad
@@ -19,7 +19,7 @@
 
   <!-- Stats Row -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4">
+    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4 shadow-sm">
       <div class="w-12 h-12 bg-[#dbe1ff] rounded-lg flex items-center justify-center text-[#00113a]">
         <span class="material-symbols-outlined">diversity_3</span>
       </div>
@@ -29,23 +29,27 @@
       </div>
     </div>
 
-    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4">
+    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4 shadow-sm">
       <div class="w-12 h-12 bg-[#ffdad8] rounded-lg flex items-center justify-center text-[#b7102a]">
         <span class="material-symbols-outlined">person</span>
       </div>
       <div>
-        <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Total Conquistadores</p>
-        <p class="text-2xl font-bold text-[#00113a]">—</p>
+        <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Total Miembros</p>
+        <p class="text-2xl font-bold text-[#00113a]">
+          {{ unidades.length > 0 ? (unidades[0].miembrosCount || 0) : '—' }}
+        </p>
       </div>
     </div>
 
-    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4">
+    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4 shadow-sm">
       <div class="w-12 h-12 bg-[#ffdea9] rounded-lg flex items-center justify-center text-[#5e4100]">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
       </div>
       <div>
         <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Record de Puntos</p>
-        <p class="text-2xl font-bold text-[#00113a]">2.4k</p>
+        <p class="text-2xl font-bold text-[#00113a]">
+          {{ unidades.length > 0 ? (unidades[0].puntos || 0) : '—' }}
+        </p>
       </div>
     </div>
   </div>
@@ -64,10 +68,10 @@
   @if (!isLoading) {
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       @for (unidad of unidades; track unidad.idUnidad; let i = $index) {
-        <div class="bg-white rounded-xl border border-[#c5c6d2] p-6 transition-all duration-300 flex flex-col hover:-translate-y-1 hover:shadow-md">
+        <div class="bg-white rounded-xl border border-[#c5c6d2] p-6 shadow-sm transition-all duration-300 flex flex-col hover:-translate-y-1 hover:shadow-md">
           <div class="flex justify-between items-start mb-6">
             <div class="flex items-center gap-4">
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" [class]="getColorClassForUnidad(i)">
+              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-105" [class]="getColorClassForUnidad(unidad.color || 'primary')">
                 <span class="material-symbols-outlined text-3xl">{{ unidad.icono || getIconForUnidad(unidad.nombre) }}</span>
               </div>
               <div>
@@ -75,16 +79,12 @@
                 <span class="bg-[#dbe1ff] text-[#2a4386] text-xs px-3 py-0.5 rounded-full font-bold">Unidad Activa</span>
               </div>
             </div>
-            @if (canEdit()) {
-              <div class="relative">
-                <button class="text-[#c5c6d2] hover:text-[#00113a] transition-colors cursor-pointer">
-                  <span class="material-symbols-outlined">more_vert</span>
-                </button>
-              </div>
-            }
           </div>
 
           <div class="space-y-4 flex-grow">
+            @if (unidad.descripcion) {
+              <p class="text-sm text-[#444650] line-clamp-2 italic mb-2">"{{ unidad.descripcion }}"</p>
+            }
             <div class="flex justify-between items-center py-2 border-b border-[#e1e3e4]">
               <span class="text-[#444650] flex items-center gap-2 text-sm">
                 <span class="material-symbols-outlined text-sm">badge</span> Consejero
@@ -115,14 +115,14 @@
             @if (canEdit()) {
               <button
                 (click)="openEditModal(unidad)"
-                class="p-2.5 rounded-lg bg-[#e7e8e9] text-[#00113a] hover:bg-[#dbe1ff] transition-all cursor-pointer"
+                class="p-2.5 rounded-lg bg-[#e7e8e9] text-[#00113a] hover:bg-[#dbe1ff] transition-all cursor-pointer active:scale-95"
                 title="Editar unidad"
               >
                 <span class="material-symbols-outlined text-[18px]">edit</span>
               </button>
               <button
                 (click)="onDelete(unidad)"
-                class="p-2.5 rounded-lg bg-[#ffdad6] text-[#b7102a] hover:bg-red-100 transition-all cursor-pointer"
+                class="p-2.5 rounded-lg bg-[#ffdad6] text-[#b7102a] hover:bg-red-100 transition-all cursor-pointer active:scale-95"
                 title="Eliminar unidad"
               >
                 <span class="material-symbols-outlined text-[18px]">delete</span>
@@ -162,7 +162,7 @@
   <!-- Modal: Crear / Editar Unidad -->
   @if (showModal) {
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div class="w-full max-w-lg bg-white border border-[#c5c6d2] rounded-xl shadow-2xl overflow-hidden">
+      <div class="w-full max-w-lg bg-white border border-[#c5c6d2] rounded-xl shadow-2xl overflow-hidden animate-zoom-in">
         <!-- Modal Header -->
         <div class="p-6 border-b border-[#c5c6d2] flex justify-between items-center bg-[#f3f4f5]">
           <h3 class="text-lg font-bold text-[#00113a]">
@@ -174,28 +174,85 @@
         </div>
 
         <!-- Form -->
-        <form [formGroup]="unidadForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+        <form [formGroup]="unidadForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+          <!-- Nombre -->
           <div>
             <label class="block text-sm font-semibold text-[#191c1d] mb-2">Nombre de la Unidad *</label>
             <input
               type="text"
               formControlName="nombre"
-              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition"
-              placeholder="Ej. Halcones, Águilas, Estrellas..."
+              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition bg-white"
+              placeholder="Ej. Halcones, Águilas, Leones..."
             />
             @if (unidadForm.get('nombre')?.touched && unidadForm.get('nombre')?.errors?.['required']) {
               <p class="text-[#b7102a] text-xs mt-1">El nombre es requerido.</p>
             }
           </div>
 
+          <!-- Descripción -->
           <div>
             <label class="block text-sm font-semibold text-[#191c1d] mb-2">Descripción (opcional)</label>
             <textarea
               formControlName="descripcion"
-              rows="3"
-              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition resize-none"
-              placeholder="Descripción breve de la unidad..."
+              rows="2"
+              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition resize-none bg-white"
+              placeholder="Ej. Unidad oficial de conquistadores mayores..."
             ></textarea>
+          </div>
+
+          <!-- Consejero Dropdown -->
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Consejero Asignado</label>
+            <select
+              formControlName="idConsejero"
+              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none transition bg-white cursor-pointer"
+            >
+              <option value="">Sin Consejero</option>
+              @for (c of counselors; track c.idUsuario) {
+                <option [value]="c.idUsuario">{{ c.nombre }} {{ c.apellido }} ({{ c.rol }})</option>
+              }
+            </select>
+          </div>
+
+          <!-- Color Temático Circles -->
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Color Temático</label>
+            <div class="flex gap-4">
+              @for (col of colorOptions; track col.value) {
+                <button
+                  type="button"
+                  (click)="unidadForm.get('color')?.setValue(col.value)"
+                  class="w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center cursor-pointer active:scale-95"
+                  [class.border-[#00113a]]="unidadForm.get('color')?.value === col.value"
+                  [class.border-transparent]="unidadForm.get('color')?.value !== col.value"
+                  [style.background-color]="getColorHex(col.value)"
+                  [title]="col.label"
+                >
+                  @if (unidadForm.get('color')?.value === col.value) {
+                    <span class="material-symbols-outlined text-white text-lg font-bold">check</span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Icon Representative -->
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Icono Representativo</label>
+            <div class="grid grid-cols-4 gap-3 bg-[#f8f9fa] p-3 rounded-lg border border-[#e1e3e4]">
+              @for (icon of iconOptions; track icon) {
+                <button
+                  type="button"
+                  (click)="unidadForm.get('icono')?.setValue(icon)"
+                  class="flex items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer hover:bg-white hover:shadow-sm active:scale-95"
+                  [class.border-[#00113a]]="unidadForm.get('icono')?.value === icon"
+                  [class.border-transparent]="unidadForm.get('icono')?.value !== icon"
+                  [class.bg-white]="unidadForm.get('icono')?.value === icon"
+                >
+                  <span class="material-symbols-outlined text-2xl" [style.color]="getColorHex(unidadForm.get('color')?.value || 'primary')">{{ icon }}</span>
+                </button>
+              }
+            </div>
           </div>
 
           <!-- Action Buttons -->

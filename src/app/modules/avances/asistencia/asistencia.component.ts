@@ -84,7 +84,7 @@ export class AsistenciaComponent implements OnInit {
     // 1. Fetch all members of the club to filter by the selected class
     this.miembroService.getMiembrosByClub(clubId).subscribe({
       next: (miembros) => {
-        const classMembers = miembros.filter(m => m.idClase === idClase && m.funcion === 'CONQUISTADOR');
+        const classMembers = miembros.filter(m => String(m.idClase) === String(idClase) && m.funcion === 'CONQUISTADOR');
 
         // 2. Fetch sessions of the class to see if we have a match for the selected date
         this.sesionesService.getSesionesByClase(idClase).subscribe({

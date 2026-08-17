@@ -101,7 +101,7 @@ export class ClaseDetalleComponent implements OnInit {
     this.miembroService.getMiembrosByClub(clubId).subscribe({
       next: (todos) => {
         this.miembrosDeClase = todos.filter(
-          m => m.idClase === this.selectedClaseId() && m.funcion === 'CONQUISTADOR'
+          m => String(m.idClase) === String(this.selectedClaseId()) && m.funcion === 'CONQUISTADOR'
         );
         this.asistenciaEstados = {};
         this.miembrosDeClase.forEach(m => {

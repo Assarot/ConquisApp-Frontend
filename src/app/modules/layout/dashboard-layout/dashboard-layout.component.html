@@ -52,6 +52,16 @@
       </a>
       }
 
+      <!-- Unidades (Direct Link - Unified View) -->
+      @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero()) {
+      <a routerLink="/dashboard/unidades" routerLinkActive="nav-item-active"
+        (click)="closeSidebar()"
+        class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
+        <span class="material-symbols-outlined shrink-0">group_work</span>
+        <span class="hide-on-collapse ml-4 text-sm font-medium">Unidades</span>
+      </a>
+      }
+
       <!-- Planificación (Submenu) -->
       @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero()) {
       <div class="space-y-1">

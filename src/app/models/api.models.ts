@@ -1,6 +1,7 @@
 export interface Unidad {
   idUnidad: string;
   nombre: string;
+  consejeroId?: number;
   consejeroNombre?: string;
   miembrosCount?: number;
   puntos?: number;
