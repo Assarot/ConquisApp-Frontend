@@ -12,4 +12,5 @@ export interface ActividadPoa {
   fecha: string; // YYYY-MM-DD
   ambito: string; // CLUB, IGLESIA, REGION, ASOCIACION, RECURRENTE
   responsable: string;
+  lugar?: string;
 }
