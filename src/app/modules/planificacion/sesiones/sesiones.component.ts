@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { SesionesService, SesionBackend } from '../../../core/services/sesiones.service';
+import { forkJoin } from 'rxjs';
 import Swal from 'sweetalert2';
 
 export interface SesionItem {
@@ -17,6 +18,7 @@ export interface SesionItem {
   tags: string[];
   requisitoCodigo?: string;
   requisitoNombre?: string;
+  materiales?: string;
   instructor?: string;
 }
 
@@ -56,7 +58,11 @@ export class SesionesComponent implements OnInit {
     duracion: 60,
     completada: false,
     estado: 'PROGRAMADA',
-    tags: []
+    tags: [],
+    requisitoCodigo: '',
+    requisitoNombre: '',
+    materiales: '',
+    instructor: ''
   };
 
   sesiones = signal<SesionItem[]>([]);
@@ -69,25 +75,53 @@ export class SesionesComponent implements OnInit {
 
   cargarSesiones(): void {
     this.isLoading.set(true);
-    // Load sessions for all classes in parallel, starting with Amigo
-    this.sesionesService.getSesionesByClase('clase-amigo').subscribe({
-      next: (data) => {
+    
+    const cIds = ['clase-amigo', 'clase-companero', 'clase-explorador', 'clase-viajero', 'clase-guia'];
+    const requests = cIds.map(cId => this.sesionesService.getSesionesByClase(cId));
+
+    forkJoin(requests).subscribe({
+      next: (results) => {
         this.isLoading.set(false);
-        if (data && data.length > 0) {
-          const items: SesionItem[] = data.map(s => ({
-            id: s.idSesion || `s-${Date.now()}`,
-            titulo: s.titulo,
-            descripcion: s.descripcion || '',
-            clase: 'Amigo',
-            claseNombre: 'Amigo',
-            claseColor: '#4caf50',
-            duracion: s.duracionMinutos || 60,
-            completada: s.completada || false,
-            estado: s.completada ? 'COMPLETADA' : 'PROGRAMADA',
-            fecha: s.fecha,
-            tags: []
-          }));
-          this.sesiones.set(items);
+        const allItems: SesionItem[] = [];
+        
+        results.forEach((data, index) => {
+          const cId = cIds[index];
+          const classInfo = this.clases.find(c => c.id === cId);
+          
+          if (data && data.length > 0) {
+            data.forEach(s => {
+              let desc = s.descripcion || '';
+              let parsed = { descripcion: desc, materiales: '', requisitoCodigo: 'REGULAR', requisitoNombre: 'Reunión Regular del Club', instructor: 'Instructor' };
+              try {
+                if (desc.startsWith('{')) {
+                  parsed = JSON.parse(desc);
+                }
+              } catch (e) {}
+
+              allItems.push({
+                id: s.idSesion || `s-${Date.now()}-${Math.random()}`,
+                titulo: s.titulo,
+                descripcion: parsed.descripcion || '',
+                clase: classInfo?.nombre || 'Amigo',
+                claseId: cId,
+                claseNombre: classInfo?.nombre || 'Amigo',
+                claseColor: classInfo?.color || '#4caf50',
+                duracion: s.duracionMinutos || 60,
+                completada: s.completada || false,
+                estado: s.completada ? 'COMPLETADA' : 'PROGRAMADA',
+                fecha: s.fecha,
+                tags: [],
+                requisitoCodigo: parsed.requisitoCodigo || 'REGULAR',
+                requisitoNombre: parsed.requisitoNombre || 'Reunión Regular',
+                materiales: parsed.materiales || '',
+                instructor: parsed.instructor || 'Instructor'
+              });
+            });
+          }
+        });
+
+        if (allItems.length > 0) {
+          this.sesiones.set(allItems);
         } else {
           this.cargarFallback();
         }
@@ -112,7 +146,11 @@ export class SesionesComponent implements OnInit {
         completada: true,
         estado: 'COMPLETADA',
         fecha: '2026-08-01',
-        tags: ['Habilidades', 'Nudos']
+        tags: ['Habilidades', 'Nudos'],
+        requisitoCodigo: 'AM-HAB-01',
+        requisitoNombre: 'Nudos básicos',
+        materiales: 'Cuerdas de práctica, folleto guía',
+        instructor: 'Juan Pérez'
       },
       {
         id: 's-2',
@@ -125,7 +163,11 @@ export class SesionesComponent implements OnInit {
         completada: true,
         estado: 'COMPLETADA',
         fecha: '2026-08-08',
-        tags: ['Salud', 'Emergencias']
+        tags: ['Salud', 'Emergencias'],
+        requisitoCodigo: 'CO-SAL-02',
+        requisitoNombre: 'Primeros auxilios',
+        materiales: 'Vendas, botiquín de primeros auxilios',
+        instructor: 'María Castro'
       },
       {
         id: 's-3',
@@ -138,40 +180,21 @@ export class SesionesComponent implements OnInit {
         completada: false,
         estado: 'PROGRAMADA',
         fecha: '2026-08-15',
-        tags: ['Campismo', 'Navegación']
-      },
-      {
-        id: 's-4',
-        titulo: 'Evangelismo Personal',
-        descripcion: 'Cómo compartir el plan de salvación y la historia de fe personal.',
-        clase: 'Viajero',
-        claseNombre: 'Viajero',
-        claseColor: '#9c27b0',
-        duracion: 60,
-        completada: false,
-        estado: 'PROGRAMADA',
-        fecha: '2026-08-22',
-        tags: ['Misionero', 'Espiritual']
-      },
-      {
-        id: 's-5',
-        titulo: 'Liderazgo de Unidad',
-        descripcion: 'Técnicas de comunicación, toma de decisiones y resolución de conflictos.',
-        clase: 'Guía',
-        claseNombre: 'Guía',
-        claseColor: '#b7102a',
-        duracion: 90,
-        completada: false,
-        estado: 'PROGRAMADA',
-        fecha: '2026-08-29',
-        tags: ['Liderazgo', 'Habilidades']
+        tags: ['Campismo', 'Navegación'],
+        requisitoCodigo: 'EX-CAM-03',
+        requisitoNombre: 'Uso de brújula y mapa',
+        materiales: 'Brújulas, mapas de la zona local',
+        instructor: 'Carlos Ruiz'
       }
     ]);
   }
 
   filtrarSesiones(): SesionItem[] {
     if (this.filtroClase() === 'TODAS') return this.sesiones();
-    return this.sesiones().filter(s => s.clase === this.filtroClase());
+    const targetId = this.filtroClase();
+    const classInfo = this.clases.find(c => c.id === targetId);
+    if (!classInfo) return this.sesiones();
+    return this.sesiones().filter(s => s.claseId === targetId || s.clase === classInfo.nombre);
   }
 
   toggleCompletada(id: string): void {
@@ -186,47 +209,73 @@ export class SesionesComponent implements OnInit {
       return;
     }
 
+    const descObj = {
+      descripcion: this.nuevaSesion.descripcion || '',
+      materiales: this.nuevaSesion.materiales || '',
+      requisitoCodigo: this.nuevaSesion.requisitoCodigo || '',
+      requisitoNombre: this.nuevaSesion.requisitoNombre || '',
+      instructor: this.nuevaSesion.instructor || ''
+    };
+
     const payload: SesionBackend = {
       titulo: this.nuevaSesion.titulo || '',
-      descripcion: this.nuevaSesion.descripcion || '',
+      descripcion: JSON.stringify(descObj),
       duracionMinutos: this.nuevaSesion.duracion || 60,
       completada: false,
-      idClase: this.claseIdMap[this.nuevaSesion.clase || 'Amigo'] || 'clase-amigo'
+      idClase: this.nuevaSesion.claseId || 'clase-amigo',
+      fecha: this.nuevaSesion.fecha || new Date().toISOString().split('T')[0]
     };
 
     this.sesionesService.guardarSesion(payload).subscribe({
       next: (res) => {
-        const item: SesionItem = {
-          id: res.idSesion || `s-${Date.now()}`,
-          titulo: res.titulo,
-          descripcion: res.descripcion || '',
-          clase: this.nuevaSesion.clase || 'Amigo',
-          duracion: res.duracionMinutos || 60,
-          completada: false,
-          estado: 'PROGRAMADA',
-          tags: []
-        };
-        this.sesiones.update(list => [...list, item]);
+        this.cargarSesiones();
+        this.showModal = false;
+        this.resetNuevaSesion();
+        Swal.fire({ icon: 'success', title: 'Sesión Guardada', timer: 1500, showConfirmButton: false });
       },
       error: () => {
+        const classInfo = this.clases.find(c => c.id === this.nuevaSesion.claseId);
         const item: SesionItem = {
           id: `s-${Date.now()}`,
           titulo: this.nuevaSesion.titulo || '',
           descripcion: this.nuevaSesion.descripcion || '',
-          clase: this.nuevaSesion.clase || 'Amigo',
+          clase: classInfo?.nombre || 'Amigo',
+          claseId: this.nuevaSesion.claseId || 'clase-amigo',
+          claseNombre: classInfo?.nombre || 'Amigo',
+          claseColor: classInfo?.color || '#4caf50',
           duracion: this.nuevaSesion.duracion || 60,
           completada: false,
           estado: 'PROGRAMADA',
-          tags: []
+          tags: [],
+          requisitoCodigo: this.nuevaSesion.requisitoCodigo || 'REGULAR',
+          requisitoNombre: this.nuevaSesion.requisitoNombre || 'Reunión Regular',
+          materiales: this.nuevaSesion.materiales || '',
+          instructor: this.nuevaSesion.instructor || 'Instructor',
+          fecha: this.nuevaSesion.fecha
         };
         this.sesiones.update(list => [...list, item]);
+        this.showModal = false;
+        this.resetNuevaSesion();
+        Swal.fire({ icon: 'success', title: 'Sesión Guardada (Local)', timer: 1500, showConfirmButton: false });
       }
     });
+  }
 
-    this.showModal = false;
-    this.nuevaSesion = { titulo: '', descripcion: '', clase: 'Amigo', claseId: 'clase-amigo', duracion: 60, completada: false, estado: 'PROGRAMADA', tags: [] };
-
-    Swal.fire({ icon: 'success', title: 'Sesión Guardada', timer: 1500, showConfirmButton: false });
+  private resetNuevaSesion(): void {
+    this.nuevaSesion = {
+      titulo: '',
+      descripcion: '',
+      clase: 'Amigo',
+      claseId: 'clase-amigo',
+      duracion: 60,
+      completada: false,
+      estado: 'PROGRAMADA',
+      tags: [],
+      requisitoCodigo: '',
+      requisitoNombre: '',
+      materiales: '',
+      instructor: ''
+    };
   }
 
   crearSesion(): void {

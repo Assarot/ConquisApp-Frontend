@@ -19,13 +19,13 @@ export class PoaService {
 
   private mockActividades: { [key: string]: ActividadPoa[] } = {
     '2': [
-      { idActividad: '1', idPoa: '2', nombre: 'Campamento de Supervivencia', fecha: '2026-09-18', ambito: 'CLUB', responsable: 'Instructor Juan' },
-      { idActividad: '2', idPoa: '2', nombre: 'Desfile del Día del Conquistador', fecha: '2026-10-24', ambito: 'ASOCIACION', responsable: 'Director Esteban' },
-      { idActividad: '3', idPoa: '2', nombre: 'Investidura Anual', fecha: '2026-11-15', ambito: 'CLUB', responsable: 'Secretaria María' },
-      { idActividad: '4', idPoa: '2', nombre: 'Reunión de Especialidades (Nudos)', fecha: '2026-08-15', ambito: 'RECURRENTE', responsable: 'Instructor Carlos' }
+      { idActividad: '1', idPoa: '2', nombre: 'Campamento de Supervivencia', fecha: '2026-09-18', fechaFin: '2026-09-20', ambito: 'CLUB', responsable: 'Instructor Juan', lugar: 'Parque Nacional' },
+      { idActividad: '2', idPoa: '2', nombre: 'Desfile del Día del Conquistador', fecha: '2026-10-24', ambito: 'ASOCIACION', responsable: 'Director Esteban', lugar: 'Plaza de Armas' },
+      { idActividad: '3', idPoa: '2', nombre: 'Investidura Anual', fecha: '2026-11-15', ambito: 'CLUB', responsable: 'Secretaria María', lugar: 'Iglesia Central' },
+      { idActividad: '4', idPoa: '2', nombre: 'Reunión de Especialidades (Nudos)', fecha: '2026-08-15', ambito: 'RECURRENTE', responsable: 'Instructor Carlos', lugar: 'Club local' }
     ],
     '1': [
-      { idActividad: '5', idPoa: '1', nombre: 'Campamento de Iniciación 2025', fecha: '2025-04-12', ambito: 'CLUB', responsable: 'Instructor Juan' }
+      { idActividad: '5', idPoa: '1', nombre: 'Campamento de Iniciación 2025', fecha: '2025-04-12', ambito: 'CLUB', responsable: 'Instructor Juan', lugar: 'Valle Hermoso' }
     ]
   };
 
@@ -165,6 +165,19 @@ export class PoaService {
   exportarExcel(idPoa: string): Observable<Blob> {
     return this.http.get(`${this.poaUrl}/${idPoa}/export-excel`, {
       responseType: 'blob'
-    });
+    }).pipe(
+      catchError(err => {
+        if (err.status === 0) {
+          console.warn('PoaService.exportarExcel failed (offline), generating mock CSV blob', err);
+          const header = 'Fecha Inicio,Fecha Fin,Actividad,Lugar,Ambito,Responsable\n';
+          const rows = (this.mockActividades[idPoa] || [])
+            .map(a => `${a.fecha || ''},${a.fechaFin || a.fecha || ''},"${a.nombre || ''}","${a.lugar || ''}",${a.ambito || ''},"${a.responsable || ''}"`)
+            .join('\n');
+          const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+          return of(blob);
+        }
+        return throwError(() => err);
+      })
+    );
   }
 }

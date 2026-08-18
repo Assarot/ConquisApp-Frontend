@@ -10,7 +10,8 @@ export interface ActividadPoa {
   idPoa: string;
   nombre: string;
   fecha: string; // YYYY-MM-DD
+  fechaFin?: string; // YYYY-MM-DD
   ambito: string; // CLUB, IGLESIA, REGION, ASOCIACION, RECURRENTE
-  responsable: string;
+  responsable?: string;
   lugar?: string;
 }

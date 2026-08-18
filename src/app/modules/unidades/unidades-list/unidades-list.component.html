@@ -3,10 +3,10 @@
   <!-- Header -->
   <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
     <div>
-      <h2 class="text-2xl font-bold text-[#00113a] tracking-tight">Gestión de Unidades</h2>
-      <p class="text-[#444650] text-sm mt-1">Administra las divisiones del club, consejeros y logros de unidad.</p>
+      <h2 class="text-2xl font-bold text-[#00113a] tracking-tight">Rincón de Unidades</h2>
+      <p class="text-[#444650] text-sm mt-1">Administra las divisiones del club, consejeros, control de asistencia y cuotas.</p>
     </div>
-    @if (canEdit()) {
+    @if (canEdit() && activeTab === 'unidades') {
       <button
         (click)="openCreateModal()"
         class="flex items-center gap-2 px-5 py-2.5 bg-[#00113a] text-white font-bold rounded-xl shadow-lg hover:bg-[#002366] transition-all text-sm cursor-pointer active:scale-95 animate-fade-in"
@@ -17,143 +17,362 @@
     }
   </div>
 
-  <!-- Stats Row -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4 shadow-sm">
-      <div class="w-12 h-12 bg-[#dbe1ff] rounded-lg flex items-center justify-center text-[#00113a]">
-        <span class="material-symbols-outlined">diversity_3</span>
-      </div>
-      <div>
-        <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Total Unidades</p>
-        <p class="text-2xl font-bold text-[#00113a]">{{ unidades.length }}</p>
-      </div>
-    </div>
-
-    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4 shadow-sm">
-      <div class="w-12 h-12 bg-[#ffdad8] rounded-lg flex items-center justify-center text-[#b7102a]">
-        <span class="material-symbols-outlined">person</span>
-      </div>
-      <div>
-        <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Total Miembros</p>
-        <p class="text-2xl font-bold text-[#00113a]">
-          {{ unidades.length > 0 ? (unidades[0].miembrosCount || 0) : '—' }}
-        </p>
-      </div>
-    </div>
-
-    <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4 shadow-sm">
-      <div class="w-12 h-12 bg-[#ffdea9] rounded-lg flex items-center justify-center text-[#5e4100]">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
-      </div>
-      <div>
-        <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Record de Puntos</p>
-        <p class="text-2xl font-bold text-[#00113a]">
-          {{ unidades.length > 0 ? (unidades[0].puntos || 0) : '—' }}
-        </p>
-      </div>
-    </div>
+  <!-- Navigation Tabs -->
+  <div class="flex border-b border-[#c5c6d2] mb-2">
+    <button
+      (click)="activeTab = 'unidades'"
+      class="px-6 py-3 font-bold text-sm border-b-2 cursor-pointer transition-all focus:outline-none"
+      [class.border-[#00113a]]="activeTab === 'unidades'"
+      [class.text-[#00113a]]="activeTab === 'unidades'"
+      [class.border-transparent]="activeTab !== 'unidades'"
+      [class.text-[#757682]]="activeTab !== 'unidades'"
+    >
+      Unidades del Club
+    </button>
+    <button
+      (click)="activeTab = 'asistencia'; onFiltroChange()"
+      class="px-6 py-3 font-bold text-sm border-b-2 cursor-pointer transition-all focus:outline-none"
+      [class.border-[#00113a]]="activeTab === 'asistencia'"
+      [class.text-[#00113a]]="activeTab === 'asistencia'"
+      [class.border-transparent]="activeTab !== 'asistencia'"
+      [class.text-[#757682]]="activeTab !== 'asistencia'"
+    >
+      Control de Asistencia y Cuotas
+    </button>
   </div>
 
-  <!-- Loading State -->
-  @if (isLoading) {
-    <div class="flex justify-center items-center py-20">
-      <svg class="animate-spin h-10 w-10 text-[#00113a]" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
+  @if (activeTab === 'unidades') {
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4 shadow-sm">
+        <div class="w-12 h-12 bg-[#dbe1ff] rounded-lg flex items-center justify-center text-[#00113a]">
+          <span class="material-symbols-outlined">diversity_3</span>
+        </div>
+        <div>
+          <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Total Unidades</p>
+          <p class="text-2xl font-bold text-[#00113a]">{{ unidades.length }}</p>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4 shadow-sm">
+        <div class="w-12 h-12 bg-[#ffdad8] rounded-lg flex items-center justify-center text-[#b7102a]">
+          <span class="material-symbols-outlined">person</span>
+        </div>
+        <div>
+          <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Total Miembros</p>
+          <p class="text-2xl font-bold text-[#00113a]">
+            {{ unidades.length > 0 ? (unidades[0].miembrosCount || 0) : '—' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-[#c5c6d2] flex items-center gap-4 shadow-sm">
+        <div class="w-12 h-12 bg-[#ffdea9] rounded-lg flex items-center justify-center text-[#5e4100]">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+        </div>
+        <div>
+          <p class="text-xs text-[#444650] uppercase tracking-wider font-semibold">Record de Puntos</p>
+          <p class="text-2xl font-bold text-[#00113a]">
+            {{ unidades.length > 0 ? (unidades[0].puntos || 0) : '—' }}
+          </p>
+        </div>
+      </div>
     </div>
-  }
 
-  <!-- Units Grid -->
-  @if (!isLoading) {
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      @for (unidad of unidades; track unidad.idUnidad; let i = $index) {
-        <div class="bg-white rounded-xl border border-[#c5c6d2] p-6 shadow-sm transition-all duration-300 flex flex-col hover:-translate-y-1 hover:shadow-md">
-          <div class="flex justify-between items-start mb-6">
-            <div class="flex items-center gap-4">
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-105" [class]="getColorClassForUnidad(unidad.color || 'primary')">
-                <span class="material-symbols-outlined text-3xl">{{ unidad.icono || getIconForUnidad(unidad.nombre) }}</span>
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="flex justify-center items-center py-20">
+        <svg class="animate-spin h-10 w-10 text-[#00113a]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+    }
+
+    <!-- Units Grid -->
+    @if (!isLoading) {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @for (unidad of unidades; track unidad.idUnidad; let i = $index) {
+          <div class="bg-white rounded-xl border border-[#c5c6d2] p-6 shadow-sm transition-all duration-300 flex flex-col hover:-translate-y-1 hover:shadow-md">
+            <div class="flex justify-between items-start mb-6">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-105" [class]="getColorClassForUnidad(unidad.color || 'primary')">
+                  <span class="material-symbols-outlined text-3xl">{{ unidad.icono || getIconForUnidad(unidad.nombre) }}</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-[#00113a]">{{ unidad.nombre }}</h3>
+                  <span class="bg-[#dbe1ff] text-[#2a4386] text-xs px-3 py-0.5 rounded-full font-bold">Unidad Activa</span>
+                </div>
               </div>
-              <div>
-                <h3 class="text-lg font-bold text-[#00113a]">{{ unidad.nombre }}</h3>
-                <span class="bg-[#dbe1ff] text-[#2a4386] text-xs px-3 py-0.5 rounded-full font-bold">Unidad Activa</span>
+            </div>
+
+            <div class="space-y-4 flex-grow">
+              @if (unidad.descripcion) {
+                <p class="text-sm text-[#444650] line-clamp-2 italic mb-2">"{{ unidad.descripcion }}"</p>
+              }
+              <div class="flex justify-between items-center py-2 border-b border-[#e1e3e4]">
+                <span class="text-[#444650] flex items-center gap-2 text-sm">
+                  <span class="material-symbols-outlined text-sm">badge</span> Consejero
+                </span>
+                <span class="font-bold text-[#00113a] text-sm">{{ unidad.consejeroNombre || 'Sin asignar' }}</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-[#e1e3e4]">
+                <span class="text-[#444650] flex items-center gap-2 text-sm">
+                  <span class="material-symbols-outlined text-sm">groups</span> Miembros
+                </span>
+                <span class="font-bold text-[#00113a] text-sm">{{ unidad.miembrosCount || 0 }} Miembros</span>
+              </div>
+              <div class="flex justify-between items-center py-2">
+                <span class="text-[#444650] flex items-center gap-2 text-sm">
+                  <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span> Puntos
+                </span>
+                <span class="font-bold text-[#b7102a] text-sm">{{ unidad.puntos || 0 }} pts</span>
               </div>
             </div>
-          </div>
 
-          <div class="space-y-4 flex-grow">
-            @if (unidad.descripcion) {
-              <p class="text-sm text-[#444650] line-clamp-2 italic mb-2">"{{ unidad.descripcion }}"</p>
-            }
-            <div class="flex justify-between items-center py-2 border-b border-[#e1e3e4]">
-              <span class="text-[#444650] flex items-center gap-2 text-sm">
-                <span class="material-symbols-outlined text-sm">badge</span> Consejero
-              </span>
-              <span class="font-bold text-[#00113a] text-sm">{{ unidad.consejeroNombre || 'Sin asignar' }}</span>
-            </div>
-            <div class="flex justify-between items-center py-2 border-b border-[#e1e3e4]">
-              <span class="text-[#444650] flex items-center gap-2 text-sm">
-                <span class="material-symbols-outlined text-sm">groups</span> Miembros
-              </span>
-              <span class="font-bold text-[#00113a] text-sm">{{ unidad.miembrosCount || 0 }} Miembros</span>
-            </div>
-            <div class="flex justify-between items-center py-2">
-              <span class="text-[#444650] flex items-center gap-2 text-sm">
-                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span> Puntos
-              </span>
-              <span class="font-bold text-[#b7102a] text-sm">{{ unidad.puntos || 0 }} pts</span>
-            </div>
-          </div>
-
-          <div class="mt-6 flex gap-3">
-            <button
-              routerLink="/dashboard/miembros"
-              class="flex-grow py-2.5 rounded-lg border-2 border-[#00113a] text-[#00113a] font-bold hover:bg-[#00113a] hover:text-white transition-all text-sm cursor-pointer"
-            >
-              Ver Miembros
-            </button>
-            @if (canEdit()) {
+            <div class="mt-6 flex gap-3">
               <button
-                (click)="openEditModal(unidad)"
-                class="p-2.5 rounded-lg bg-[#e7e8e9] text-[#00113a] hover:bg-[#dbe1ff] transition-all cursor-pointer active:scale-95"
-                title="Editar unidad"
+                routerLink="/dashboard/miembros"
+                class="flex-grow py-2.5 rounded-lg border-2 border-[#00113a] text-[#00113a] font-bold hover:bg-[#00113a] hover:text-white transition-all text-sm cursor-pointer"
               >
-                <span class="material-symbols-outlined text-[18px]">edit</span>
+                Ver Miembros
               </button>
-              <button
-                (click)="onDelete(unidad)"
-                class="p-2.5 rounded-lg bg-[#ffdad6] text-[#b7102a] hover:bg-red-100 transition-all cursor-pointer active:scale-95"
-                title="Eliminar unidad"
-              >
-                <span class="material-symbols-outlined text-[18px]">delete</span>
-              </button>
-            }
+              @if (canEdit()) {
+                <button
+                  (click)="openEditModal(unidad)"
+                  class="p-2.5 rounded-lg bg-[#e7e8e9] text-[#00113a] hover:bg-[#dbe1ff] transition-all cursor-pointer active:scale-95"
+                  title="Editar unidad"
+                >
+                  <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+                <button
+                  (click)="onDelete(unidad)"
+                  class="p-2.5 rounded-lg bg-[#ffdad6] text-[#b7102a] hover:bg-red-100 transition-all cursor-pointer active:scale-95"
+                  title="Eliminar unidad"
+                >
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              }
+            </div>
           </div>
-        </div>
-      }
+        }
 
-      <!-- Add Unit placeholder card -->
-      @if (canEdit()) {
-        <div
-          (click)="openCreateModal()"
-          class="cursor-pointer border-2 border-dashed border-[#c5c6d2] rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:border-[#00113a] hover:bg-[#dbe1ff]/20 transition-all duration-300 min-h-[320px] group"
-        >
-          <div class="w-16 h-16 rounded-full bg-[#edeeef] flex items-center justify-center text-[#757682] group-hover:bg-[#00113a] group-hover:text-white transition-all">
-            <span class="material-symbols-outlined text-3xl">add</span>
+        <!-- Add Unit placeholder card -->
+        @if (canEdit()) {
+          <div
+            (click)="openCreateModal()"
+            class="cursor-pointer border-2 border-dashed border-[#c5c6d2] rounded-xl p-6 flex flex-col items-center justify-center gap-4 hover:border-[#00113a] hover:bg-[#dbe1ff]/20 transition-all duration-300 min-h-[320px] group"
+          >
+            <div class="w-16 h-16 rounded-full bg-[#edeeef] flex items-center justify-center text-[#757682] group-hover:bg-[#00113a] group-hover:text-white transition-all">
+              <span class="material-symbols-outlined text-3xl">add</span>
+            </div>
+            <div class="text-center">
+              <p class="text-lg font-bold text-[#757682] group-hover:text-[#00113a] transition-colors">Crear Nueva Unidad</p>
+              <p class="text-[#444650] text-sm mt-1">Crea un nuevo grupo con un consejero asignado.</p>
+            </div>
           </div>
-          <div class="text-center">
-            <p class="text-lg font-bold text-[#757682] group-hover:text-[#00113a] transition-colors">Crear Nueva Unidad</p>
-            <p class="text-[#444650] text-sm mt-1">Crea un nuevo grupo con un consejero asignado.</p>
-          </div>
-        </div>
-      }
+        }
 
-      <!-- Empty state -->
-      @if (unidades.length === 0 && !isLoading) {
-        <div class="col-span-full text-center py-20 text-[#444650]">
-          <span class="material-symbols-outlined text-[64px] text-[#c5c6d2]">group_work</span>
-          <p class="text-lg font-bold text-[#191c1d] mt-4">No hay unidades registradas</p>
-          <p class="text-sm text-[#757682] mt-1">Crea la primera unidad del club haciendo clic en "Agregar Nueva Unidad".</p>
+        <!-- Empty state -->
+        @if (unidades.length === 0 && !isLoading) {
+          <div class="col-span-full text-center py-20 text-[#444650]">
+            <span class="material-symbols-outlined text-[64px] text-[#c5c6d2]">group_work</span>
+            <p class="text-lg font-bold text-[#191c1d] mt-4">No hay unidades registradas</p>
+            <p class="text-sm text-[#757682] mt-1">Crea la primera unidad del club haciendo clic en "Agregar Nueva Unidad".</p>
+          </div>
+        }
+      </div>
+    }
+  } @else if (activeTab === 'asistencia') {
+    <!-- Attendance Header Options -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2 text-[#00113a]">
+          <span class="material-symbols-outlined text-[22px]">how_to_reg</span>
+          <span class="text-xs font-bold tracking-wider uppercase text-[#757682]">Control de Asistencia</span>
+        </div>
+        <h1 class="text-xl font-black text-[#00113a]">Pase de Lista Semanal</h1>
+        <p class="text-xs text-[#444650]">Registro de puntualidad, pañoleta, biblia, agua, materiales y cuota por unidad.</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <select [ngModel]="fechaSeleccionada()" (ngModelChange)="fechaSeleccionada.set($event); onFiltroChange()"
+                class="px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm bg-[#f8f9fa] focus:bg-white outline-none min-w-[200px]">
+          @for (fecha of fechasDisponibles(); track fecha) {
+            <option [value]="fecha">{{ fecha | date:'dd/MM/yyyy' }} (Reunión Regular)</option>
+          }
+          @if (fechasDisponibles().length === 0) {
+            <option value="" disabled selected>No hay reuniones regulares en el POA</option>
+          }
+        </select>
+        <button (click)="guardarAsistencia()" [disabled]="isLoading || registros().length === 0"
+                 class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm disabled:opacity-50">
+          <span class="material-symbols-outlined text-[18px]">save</span>
+          Guardar Asistencia
+        </button>
+      </div>
+    </div>
+
+    <!-- Unit Filter Navigation -->
+    <div class="bg-white rounded-xl border border-[#c5c6d2] p-5 shadow-sm space-y-3">
+      <h2 class="text-xs font-bold text-[#757682] uppercase tracking-wider">Selecciona la Unidad</h2>
+      <div class="flex flex-wrap gap-2">
+        @for (unidad of unidades; track unidad.idUnidad) {
+          <button (click)="selectUnidad(unidad.idUnidad)"
+                  class="px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
+                  [class.bg-[#00113a]]="isUnidadSelected(unidad.idUnidad)"
+                  [class.text-white]="isUnidadSelected(unidad.idUnidad)"
+                  [class.bg-white]="!isUnidadSelected(unidad.idUnidad)"
+                  [class.text-[#444650]]="!isUnidadSelected(unidad.idUnidad)"
+                  [class.border]="!isUnidadSelected(unidad.idUnidad)"
+                  [class.border-[#c5c6d2]]="!isUnidadSelected(unidad.idUnidad)">
+            <span class="material-symbols-outlined text-[16px]">{{ unidad.icono || getIconForUnidad(unidad.nombre) }}</span>
+            {{ unidad.nombre }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="bg-white rounded-xl border border-[#c5c6d2] overflow-hidden shadow-sm">
+      @if (isLoading) {
+        <div class="flex justify-center items-center py-20">
+          <span class="material-symbols-outlined animate-spin text-[32px] text-[#00113a]">progress_activity</span>
+        </div>
+      } @else if (registros().length === 0) {
+        <div class="text-center py-20 text-[#757682]">
+          <span class="material-symbols-outlined text-[48px] block mb-2">group_off</span>
+          No hay conquistadores en esta unidad para registrar asistencia.
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-[#f8f9fa] border-b border-[#c5c6d2] text-[#757682] font-bold uppercase tracking-wider">
+                <th class="py-3.5 px-4 font-bold">Conquistador</th>
+                <th class="py-3.5 px-4 font-bold">Unidad / Clase</th>
+                <th class="py-3.5 px-4 text-center font-bold">Asistencia</th>
+                <th class="py-3.5 px-4 text-center font-bold">Pañoleta</th>
+                <th class="py-3.5 px-4 text-center font-bold">Biblia</th>
+                <th class="py-3.5 px-4 text-center font-bold">Agua</th>
+                <th class="py-3.5 px-4 text-center font-bold">Materiales</th>
+                <th class="py-3.5 px-4 text-center font-bold">Cuota</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#c5c6d2] text-xs">
+              @for (reg of registros(); track reg.idMiembro) {
+                <tr class="hover:bg-[#f8f9fa] transition">
+                  <!-- Name -->
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-full bg-[#00113a] text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                        {{ reg.nombre.substring(0, 1) }}
+                      </div>
+                      <span class="font-bold text-[#00113a] text-xs">{{ reg.nombre }} {{ reg.apellido }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Unit / Class -->
+                  <td class="py-3 px-4">
+                    <div>
+                      <span class="font-bold text-[#191c1d]">{{ reg.unidad }}</span>
+                      <span class="text-[#757682] ml-1">({{ reg.clase }})</span>
+                    </div>
+                  </td>
+
+                  <!-- Status Buttons -->
+                  <td class="py-3 px-4">
+                    <div class="flex items-center justify-center gap-1">
+                      <button (click)="setEstado(reg.idMiembro, 'PRESENTE')"
+                              class="px-2 py-1 text-[10px] font-bold rounded cursor-pointer transition"
+                              [class.bg-emerald-600]="reg.estado === 'PRESENTE'"
+                              [class.text-white]="reg.estado === 'PRESENTE'"
+                              [class.bg-gray-100]="reg.estado !== 'PRESENTE'"
+                              [class.text-gray-600]="reg.estado !== 'PRESENTE'">
+                        P
+                      </button>
+                      <button (click)="setEstado(reg.idMiembro, 'JUSTIFICADO')"
+                              class="px-2 py-1 text-[10px] font-bold rounded cursor-pointer transition"
+                              [class.bg-blue-600]="reg.estado === 'JUSTIFICADO'"
+                              [class.text-white]="reg.estado === 'JUSTIFICADO'"
+                              [class.bg-gray-100]="reg.estado !== 'JUSTIFICADO'"
+                              [class.text-gray-600]="reg.estado !== 'JUSTIFICADO'">
+                        J
+                      </button>
+                      <button (click)="setEstado(reg.idMiembro, 'AUSENTE')"
+                              class="px-2 py-1 text-[10px] font-bold rounded cursor-pointer transition"
+                              [class.bg-red-600]="reg.estado === 'AUSENTE'"
+                              [class.text-white]="reg.estado === 'AUSENTE'"
+                              [class.bg-gray-100]="reg.estado !== 'AUSENTE'"
+                              [class.text-gray-600]="reg.estado !== 'AUSENTE'">
+                        A
+                      </button>
+                    </div>
+                  </td>
+
+                  <!-- Pañoleta Toggle -->
+                  <td class="py-3 px-4 text-center">
+                    <button (click)="toggleCheck(reg.idMiembro, 'panoleta')"
+                            class="p-1 rounded cursor-pointer"
+                            [class.text-emerald-600]="reg.panoleta"
+                            [class.text-gray-300]="!reg.panoleta">
+                      <span class="material-symbols-outlined text-[20px]">
+                        {{ reg.panoleta ? 'check_circle' : 'cancel' }}
+                      </span>
+                    </button>
+                  </td>
+
+                  <!-- Biblia Toggle -->
+                  <td class="py-3 px-4 text-center">
+                    <button (click)="toggleCheck(reg.idMiembro, 'biblia')"
+                            class="p-1 rounded cursor-pointer"
+                            [class.text-emerald-600]="reg.biblia"
+                            [class.text-gray-300]="!reg.biblia">
+                      <span class="material-symbols-outlined text-[20px]">
+                        {{ reg.biblia ? 'check_circle' : 'cancel' }}
+                      </span>
+                    </button>
+                  </td>
+
+                  <!-- Agua Toggle -->
+                  <td class="py-3 px-4 text-center">
+                    <button (click)="toggleCheck(reg.idMiembro, 'agua')"
+                            class="p-1 rounded cursor-pointer"
+                            [class.text-emerald-600]="reg.agua"
+                            [class.text-gray-300]="!reg.agua">
+                      <span class="material-symbols-outlined text-[20px]">
+                        {{ reg.agua ? 'check_circle' : 'cancel' }}
+                      </span>
+                    </button>
+                  </td>
+
+                  <!-- Materiales Toggle -->
+                  <td class="py-3 px-4 text-center">
+                    <button (click)="toggleCheck(reg.idMiembro, 'materiales')"
+                            class="p-1 rounded cursor-pointer"
+                            [class.text-emerald-600]="reg.materiales"
+                            [class.text-gray-300]="!reg.materiales">
+                      <span class="material-symbols-outlined text-[20px]">
+                        {{ reg.materiales ? 'check_circle' : 'cancel' }}
+                      </span>
+                    </button>
+                  </td>
+
+                  <!-- Cuota Toggle -->
+                  <td class="py-3 px-4 text-center">
+                    <button (click)="toggleCheck(reg.idMiembro, 'cuota')"
+                            class="p-1 rounded cursor-pointer"
+                            [class.text-emerald-600]="reg.cuota"
+                            [class.text-gray-300]="!reg.cuota">
+                      <span class="material-symbols-outlined text-[20px]">
+                        {{ reg.cuota ? 'check_circle' : 'cancel' }}
+                      </span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
     </div>

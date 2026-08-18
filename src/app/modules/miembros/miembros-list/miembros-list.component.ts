@@ -25,6 +25,12 @@ export class MiembrosListComponent implements OnInit {
   selectedMiembroId: string | null = null;
   memberForm: FormGroup;
 
+  // Acceso de usuario
+  showCreateUserModal = false;
+  selectedMiembro: Miembro | null = null;
+  userForm: FormGroup;
+  isSavingUser = false;
+
   // Seeded static data for dropdowns (mapped to DB seeds)
   unidades = [
     { id: '1', nombre: 'Halcones' },
@@ -65,6 +71,11 @@ export class MiembrosListComponent implements OnInit {
       estadoAdhesionPadres: ['PENDIENTE', [Validators.required]],
       idClase: ['1', [Validators.required]],
       idUnidad: ['1', [Validators.required]]
+    });
+
+    this.userForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
@@ -358,11 +369,11 @@ export class MiembrosListComponent implements OnInit {
 
   getPendientesBadgeClass(pendientes: number): string {
     if (pendientes === 0) {
-      return 'bg-green-900/30 text-green-400 border border-green-800';
+      return 'bg-green-100 text-green-800 border border-green-200';
     } else if (pendientes <= 2) {
-      return 'bg-yellow-900/30 text-yellow-400 border border-yellow-800';
+      return 'bg-amber-100 text-amber-800 border border-amber-200';
     } else {
-      return 'bg-red-900/30 text-red-400 border border-red-800';
+      return 'bg-red-100 text-red-800 border border-red-200';
     }
   }
 
@@ -370,5 +381,76 @@ export class MiembrosListComponent implements OnInit {
     if (pendientes === 0) return 'Apto (0)';
     if (pendientes <= 2) return `Advertencia (${pendientes})`;
     return `Crítico (${pendientes})`;
+  }
+
+  openCreateUserModal(miembro: Miembro): void {
+    this.selectedMiembro = miembro;
+    this.userForm.reset({
+      email: '',
+      password: ''
+    });
+    this.showCreateUserModal = true;
+  }
+
+  closeCreateUserModal(): void {
+    this.showCreateUserModal = false;
+    this.selectedMiembro = null;
+  }
+
+  onSubmitUser(): void {
+    if (this.userForm.invalid || !this.selectedMiembro) return;
+
+    this.isSavingUser = true;
+    const formVal = this.userForm.value;
+    const rolId = this.mapFuncionToRolId(this.selectedMiembro.funcion);
+    const clubId = this.selectedMiembro.idClub || this.currentUser()?.idClub || '1';
+
+    const payload = {
+      nombre: this.selectedMiembro.nombre,
+      apellido: this.selectedMiembro.apellido,
+      email: formVal.email,
+      password: formVal.password,
+      idClub: Number(clubId),
+      idRol: Number(rolId)
+    };
+
+    this.authService.register(payload).subscribe({
+      next: () => {
+        this.isSavingUser = false;
+        this.closeCreateUserModal();
+        Swal.fire({
+          title: 'Usuario Creado',
+          text: `Se ha creado el usuario de acceso para ${this.selectedMiembro?.nombre} correctamente.`,
+          icon: 'success',
+          background: '#111827',
+          color: '#f3f4f6',
+          confirmButtonColor: '#10b981'
+        });
+      },
+      error: (err) => {
+        this.isSavingUser = false;
+        Swal.fire({
+          title: 'Error al registrar',
+          text: err?.error?.error || 'No se pudo crear el usuario. Es posible que el correo electrónico ya esté registrado.',
+          icon: 'error',
+          background: '#111827',
+          color: '#f3f4f6',
+          confirmButtonColor: '#eab308'
+        });
+      }
+    });
+  }
+
+  mapFuncionToRolId(funcion: string): string {
+    const fn = funcion?.toUpperCase() || '';
+    if (fn.includes('ADMINISTRADOR')) return '1';
+    if (fn.includes('DIRECTOR')) return '2';
+    if (fn.includes('SECRETARIO')) return '3';
+    if (fn.includes('DIRECTOR_ASOCIADO')) return '4';
+    if (fn.includes('INSTRUCTOR')) return '5';
+    if (fn.includes('CONSEJERO')) return '6';
+    if (fn.includes('CONQUISTADOR')) return '7';
+    if (fn.includes('PADRE')) return '8';
+    return '7';
   }
 }
