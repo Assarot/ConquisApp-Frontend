@@ -116,12 +116,11 @@
                   </div>
                   <div>
                     <div class="text-[#00113a] font-bold text-sm">{{ miembro.nombre }} {{ miembro.apellido }}</div>
-                    <div class="text-[10px] text-[#757682]">ID: {{ miembro.idMiembro }}</div>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-[#00113a] font-bold text-xs bg-[#dbe1ff] px-2.5 py-1 rounded">
-                    {{ miembro.funcion }}
+                    {{ miembro.funcion === 'INSTRUCTOR,CONSEJERO' ? 'Instructor y Consejero' : miembro.funcion }}
                   </span>
                 </td>
                 <td class="px-6 py-4 text-[#191c1d]">
@@ -169,7 +168,7 @@
                 <td class="px-6 py-4">
                   <span
                     [class]="getPendientesBadgeClass(miembro.pendientes)"
-                    class="text-xs px-2.5 py-1 rounded font-bold uppercase tracking-wider"
+                    class="text-xs px-2.5 py-1 rounded font-bold uppercase tracking-wider whitespace-nowrap"
                   >
                     {{ getPendientesLabel(miembro.pendientes) }}
                   </span>
@@ -192,6 +191,15 @@
                       title="Cambiar Unidad"
                     >
                       <span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+                    </button>
+
+                    <!-- Create User Button -->
+                    <button
+                      (click)="openCreateUserModal(miembro)"
+                      class="p-2 bg-white border border-[#c5c6d2] rounded text-[#00113a] hover:bg-blue-50 cursor-pointer transition shadow-sm"
+                      title="Asignar Usuario"
+                    >
+                      <span class="material-symbols-outlined text-[18px]">key</span>
                     </button>
 
                     <!-- Inactivate Button -->
@@ -270,6 +278,7 @@
                 <option value="CONQUISTADOR">Conquistador</option>
                 <option value="INSTRUCTOR">Instructor</option>
                 <option value="CONSEJERO">Consejero</option>
+                <option value="INSTRUCTOR,CONSEJERO">Instructor y Consejero</option>
                 <option value="SECRETARIO">Secretario</option>
                 <option value="DIRECTOR">Director</option>
               </select>
@@ -369,6 +378,104 @@
               class="px-6 py-2.5 bg-[#00113a] text-white hover:bg-[#002366] font-bold rounded-lg text-sm cursor-pointer disabled:opacity-50 transition"
             >
               Guardar Miembro
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+  <!-- Modal: Crear Usuario para Miembro -->
+  @if (showCreateUserModal) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div class="w-full max-w-md bg-white border border-[#c5c6d2] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <!-- Modal Header -->
+        <div class="p-6 border-b border-[#c5c6d2] flex justify-between items-center bg-[#f8f9fa]">
+          <h3 class="text-lg font-bold text-[#00113a] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[20px]">key</span>
+            Asignar Usuario de Acceso
+          </h3>
+          <button (click)="closeCreateUserModal()" class="text-[#757682] hover:text-[#191c1d] cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Modal Body / Form -->
+        <form [formGroup]="userForm" (ngSubmit)="onSubmitUser()" class="p-6 space-y-4">
+          <p class="text-xs text-[#444650]">
+            Crea una cuenta de acceso para <strong>{{ selectedMiembro?.nombre }} {{ selectedMiembro?.apellido }}</strong>. Esto le permitirá iniciar sesión en la plataforma con su email y contraseña.
+          </p>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#191c1d] mb-1.5">Nombre completo</label>
+            <input
+              type="text"
+              [value]="selectedMiembro?.nombre + ' ' + selectedMiembro?.apellido"
+              disabled
+              class="w-full px-3 py-2 rounded-lg border border-[#c5c6d2] bg-gray-50 text-gray-500 text-xs focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#191c1d] mb-1.5">Rol de Acceso (Heredado)</label>
+            <input
+              type="text"
+              [value]="selectedMiembro?.funcion"
+              disabled
+              class="w-full px-3 py-2 rounded-lg border border-[#c5c6d2] bg-gray-50 text-gray-500 text-xs focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#191c1d] mb-1.5">Correo Electrónico</label>
+            <input
+              type="email"
+              formControlName="email"
+              class="w-full px-3 py-2 rounded-lg border border-[#c5c6d2] text-xs focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none"
+              placeholder="correo@ejemplo.com"
+            />
+            @if (userForm.get('email')?.touched && userForm.get('email')?.errors?.['required']) {
+              <p class="text-[#b7102a] text-[10px] mt-1">El correo electrónico es requerido.</p>
+            }
+            @if (userForm.get('email')?.touched && userForm.get('email')?.errors?.['email']) {
+              <p class="text-[#b7102a] text-[10px] mt-1">El formato de correo es inválido.</p>
+            }
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#191c1d] mb-1.5">Contraseña</label>
+            <input
+              type="password"
+              formControlName="password"
+              class="w-full px-3 py-2 rounded-lg border border-[#c5c6d2] text-xs focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none"
+              placeholder="Mínimo 6 caracteres"
+            />
+            @if (userForm.get('password')?.touched && userForm.get('password')?.errors?.['required']) {
+              <p class="text-[#b7102a] text-[10px] mt-1">La contraseña es requerida.</p>
+            }
+            @if (userForm.get('password')?.touched && userForm.get('password')?.errors?.['minlength']) {
+              <p class="text-[#b7102a] text-[10px] mt-1">La contraseña debe tener al menos 6 caracteres.</p>
+            }
+          </div>
+
+          <!-- Modal Action Buttons -->
+          <div class="flex justify-end gap-3 pt-4 border-t border-[#c5c6d2] mt-6">
+            <button
+              type="button"
+              (click)="closeCreateUserModal()"
+              class="px-4 py-2.5 bg-[#f3f4f5] hover:bg-[#edeeef] text-[#444650] rounded-lg font-bold text-sm cursor-pointer transition"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              [disabled]="userForm.invalid || isSavingUser"
+              class="px-6 py-2.5 bg-[#00113a] text-white hover:bg-[#002366] font-bold rounded-lg text-sm cursor-pointer disabled:opacity-50 transition"
+            >
+              @if (isSavingUser) {
+                Creando...
+              } @else {
+                Crear Usuario
+              }
             </button>
           </div>
         </form>

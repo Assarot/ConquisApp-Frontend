@@ -110,7 +110,7 @@
     </div>
 
     <!-- Bento Grid Stats -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Total Miembros -->
       <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
         <div class="flex justify-between items-start">
@@ -121,10 +121,7 @@
         </div>
         <div>
           <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().totalMiembros || '—' }}</h2>
-          <div class="flex items-center gap-1 text-green-600 text-xs mt-1">
-            <span class="material-symbols-outlined text-[14px]">trending_up</span>
-            <span>Crecimiento este trimestre</span>
-          </div>
+          <span class="text-[#444650] text-xs">Miembros registrados en el club</span>
         </div>
       </div>
 
@@ -138,7 +135,7 @@
         </div>
         <div>
           <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().unidadesActivas }}</h2>
-          <span class="text-[#444650] text-xs">Todas las unidades reportando actividad</span>
+          <span class="text-[#444650] text-xs">Unidades registradas en el club</span>
         </div>
       </div>
 
@@ -154,22 +151,16 @@
           </div>
         </div>
         <div>
-          <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().diasProximoEvento }} días</h2>
-          <span class="text-[#444650] text-xs">Campaña Regional 2026</span>
-        </div>
-      </div>
-
-      <!-- Especialidades Otorgadas (Primary accent card) -->
-      <div class="bg-[#002366] p-6 rounded-xl border border-[#002366] shadow-lg flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
-        <div class="flex justify-between items-start">
-          <span class="text-white/80 text-xs font-semibold uppercase tracking-wider">Especialidades</span>
-          <div class="bg-white/20 p-2 rounded-lg">
-            <span class="material-symbols-outlined text-white text-[20px]">military_tech</span>
-          </div>
-        </div>
-        <div>
-          <h2 class="text-4xl font-bold text-white">{{ stats().especialidadesOtorgadas }}</h2>
-          <span class="text-white/70 text-xs">Desempeño anual acumulado</span>
+          <h2 class="text-4xl font-bold text-[#00113a]">
+            @if (proximaActividad()) {
+              {{ stats().diasProximoEvento }} {{ stats().diasProximoEvento === 1 ? 'día' : 'días' }}
+            } @else {
+              —
+            }
+          </h2>
+          <span class="text-[#444650] text-xs truncate block max-w-full" [title]="proximaActividad()?.nombre || 'Sin eventos'">
+            {{ proximaActividad()?.nombre || 'Sin eventos programados' }}
+          </span>
         </div>
       </div>
     </section>
@@ -177,51 +168,73 @@
 
 
         <!-- Next Meeting Card -->
+        @if (proximaActividad(); as act) {
         <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm overflow-hidden">
           <div class="p-6 bg-[#f3f4f5] border-b border-[#c5c6d2] flex justify-between items-center">
-            <h3 class="text-lg font-bold text-[#00113a]">Próxima Reunión</h3>
-            <span class="bg-[#b7102a] text-white px-3 py-1 rounded-full text-xs font-bold">PRONTO</span>
-          </div>
-          <div class="p-6 flex flex-col md:flex-row gap-6">
-            <div class="w-full md:w-1/3 aspect-video rounded-lg overflow-hidden relative bg-[#dbe1ff] flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[#00113a] text-[64px] opacity-30">park</span>
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                <span class="text-white text-xs font-semibold flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[14px]">location_on</span>Salón Principal
-                </span>
-              </div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#00113a]">event_upcoming</span>
+              <h3 class="text-lg font-bold text-[#00113a]">Próxima Reunión</h3>
             </div>
-            <div class="flex-1 space-y-4">
-              <div>
-                <h4 class="text-lg font-bold text-[#00113a] mb-1">Instrucción de Unidad & Clases de Especialidades</h4>
-                <p class="text-[#444650] text-sm">Viernes, próximo sábado • 18:30 - 20:30</p>
+            <span class="bg-[#b7102a] text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+              {{ act.ambito }}
+            </span>
+          </div>
+          <div class="p-6 space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div class="space-y-1">
+                <h4 class="text-xl font-extrabold text-[#00113a] leading-tight">{{ act.nombre }}</h4>
+                <p class="text-[#444650] text-sm flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#b7102a]">calendar_today</span>
+                  {{ formatearFechaLarga(act.fecha, act.fechaFin) }}
+                </p>
               </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-full bg-[#edeeef] flex items-center justify-center text-[#00113a] shrink-0">
-                    <span class="material-symbols-outlined text-[18px]">inventory_2</span>
-                  </div>
-                  <div>
-                    <p class="text-xs text-[#757682]">Requisito</p>
-                    <p class="text-xs font-bold text-[#00113a]">Uniforme Clase A</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-full bg-[#edeeef] flex items-center justify-center text-[#00113a] shrink-0">
-                    <span class="material-symbols-outlined text-[18px]">assignment_ind</span>
-                  </div>
-                  <div>
-                    <p class="text-xs text-[#757682]">Asistencia</p>
-                    <p class="text-xs font-bold text-[#00113a]">Esperada Completa</p>
-                  </div>
-                </div>
-              </div>
-              <button class="px-5 py-2 border-2 border-[#00113a] text-[#00113a] rounded-lg font-bold hover:bg-[#00113a]/5 transition-colors text-sm cursor-pointer">
+              <button routerLink="/dashboard/calendario" class="px-5 py-2.5 border-2 border-[#00113a] text-[#00113a] hover:bg-[#00113a] hover:text-white rounded-lg font-bold transition-all duration-200 text-sm cursor-pointer shadow-sm self-start md:self-center shrink-0">
                 Ver Agenda Completa
               </button>
             </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[#e1e3e4]">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#edeeef] flex items-center justify-center text-[#00113a] shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">support_agent</span>
+                </div>
+                <div>
+                  <p class="text-xs text-[#757682]">Responsable</p>
+                  <p class="text-sm font-bold text-[#00113a] truncate max-w-[200px]" [title]="act.responsable || 'Sin asignar'">
+                    {{ act.responsable || 'Sin asignar' }}
+                  </p>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#edeeef] flex items-center justify-center text-[#00113a] shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">place</span>
+                </div>
+                <div>
+                  <p class="text-xs text-[#757682]">Ubicación / Lugar</p>
+                  <p class="text-sm font-bold text-[#00113a] truncate max-w-[200px]" [title]="act.lugar || 'Por definir'">
+                    {{ act.lugar || 'Por definir' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#edeeef] flex items-center justify-center text-[#00113a] shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">
+                    {{ getActividadIcon(act.ambito) }}
+                  </span>
+                </div>
+                <div>
+                  <p class="text-xs text-[#757682]">Tipo de Actividad</p>
+                  <p class="text-sm font-bold text-[#00113a] uppercase">
+                    {{ act.ambito }}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+        }
 
 
   }

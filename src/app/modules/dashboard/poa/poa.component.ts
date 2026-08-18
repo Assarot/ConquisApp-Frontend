@@ -19,6 +19,34 @@ export class PoaComponent implements OnInit {
   selectedPoa: Poa | null = null;
   actividades: ActividadPoa[] = [];
   isLoading = false;
+  filtroFecha = '';
+  terminoBusqueda = '';
+
+  get actividadesFiltradas(): ActividadPoa[] {
+    let result = this.actividades;
+
+    // 1. Filtrar por término de búsqueda (nombre)
+    if (this.terminoBusqueda.trim()) {
+      const term = this.terminoBusqueda.toLowerCase().trim();
+      result = result.filter((act: ActividadPoa) => act.nombre && act.nombre.toLowerCase().includes(term));
+    }
+
+    // 2. Filtrar por fecha
+    if (this.filtroFecha) {
+      result = result.filter((act: ActividadPoa) => {
+        if (!act.fecha) return false;
+        const start = act.fecha;
+        const end = act.fechaFin || act.fecha;
+        return this.filtroFecha >= start && this.filtroFecha <= end;
+      });
+    }
+
+    return result;
+  }
+
+  limpiarFiltroFecha(): void {
+    this.filtroFecha = '';
+  }
 
   // Forms
   activityForm: FormGroup;
@@ -37,6 +65,16 @@ export class PoaComponent implements OnInit {
   nuevoResponsable = '';
   responsablesExtra: string[] = [];    // añadidos manualmente en sesión
   responsablesOcultos: string[] = [];  // no-estándar ocultados por el usuario
+
+  get getActividadesCompletadasCount(): number {
+    const hoyStr = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+    return this.actividades.filter(act => act.fecha && act.fecha <= hoyStr).length;
+  }
+
+  get getPorcentajeAvance(): number {
+    if (this.actividades.length === 0) return 0;
+    return Math.round((this.getActividadesCompletadasCount / this.actividades.length) * 100);
+  }
 
   get responsablesDelPoa(): string[] {
     const todos = this.actividades
@@ -76,18 +114,32 @@ export class PoaComponent implements OnInit {
     this.activityForm = this.fb.group({
       nombre: ['', [Validators.required]],
       fecha: ['', [Validators.required]],
+      fechaFin: [''],
       ambito: ['CLUB', [Validators.required]],
       lugar: [''],
       responsable: [''] // manejado por responsablesSeleccionados
     });
 
+    const defaultYear = new Date().getFullYear() + 1;
     this.poaForm = this.fb.group({
-      anio: [new Date().getFullYear() + 1, [Validators.required, Validators.min(2020), Validators.max(2100)]]
+      anio: [defaultYear, [Validators.required, Validators.min(2020), Validators.max(2100)]],
+      fechaApertura: [this.getFirstSaturdayOfMarch(defaultYear), [Validators.required]],
+      fechaClausura: [this.getLastSaturdayOfNovember(defaultYear), [Validators.required]]
+    });
+
+    this.poaForm.get('anio')?.valueChanges.subscribe(year => {
+      if (year && year >= 2020 && year <= 2100) {
+        this.poaForm.patchValue({
+          fechaApertura: this.getFirstSaturdayOfMarch(Number(year)),
+          fechaClausura: this.getLastSaturdayOfNovember(Number(year))
+        }, { emitEvent: false });
+      }
     });
 
     this.editForm = this.fb.group({
       nombre: ['', [Validators.required]],
       fecha: ['', [Validators.required]],
+      fechaFin: [''],
       ambito: ['CLUB', [Validators.required]],
       lugar: [''],
       responsable: [''] // manejado por responsablesSeleccionados
@@ -123,7 +175,11 @@ export class PoaComponent implements OnInit {
     this.isLoading = true;
     this.poaService.getActividades(poa.idPoa).subscribe({
       next: (acts) => {
-        this.actividades = acts;
+        this.actividades = (acts || []).sort((a, b) => {
+          if (!a.fecha) return 1;
+          if (!b.fecha) return -1;
+          return a.fecha.localeCompare(b.fecha);
+        });
         this.isLoading = false;
       },
       error: () => {
@@ -173,30 +229,205 @@ export class PoaComponent implements OnInit {
 
   // ── POA Modal ──────────────────────────────────────────────────────────────
   openNewPoaModal(): void {
+    const nextYear = new Date().getFullYear() + 1;
+    this.poaForm.patchValue({
+      anio: nextYear,
+      fechaApertura: this.getFirstSaturdayOfMarch(nextYear),
+      fechaClausura: this.getLastSaturdayOfNovember(nextYear)
+    });
     this.showPoaModal = true;
   }
 
   closeNewPoaModal(): void {
     this.showPoaModal = false;
-    this.poaForm.reset({ anio: new Date().getFullYear() + 1 });
+    const nextYear = new Date().getFullYear() + 1;
+    this.poaForm.reset({
+      anio: nextYear,
+      fechaApertura: this.getFirstSaturdayOfMarch(nextYear),
+      fechaClausura: this.getLastSaturdayOfNovember(nextYear)
+    });
   }
 
   onCreatePoa(): void {
     if (this.poaForm.invalid) return;
-    const { anio } = this.poaForm.value;
+    const { anio, fechaApertura, fechaClausura } = this.poaForm.value;
     const clubId = this.currentUser()?.idClub?.toString() || '1';
 
     this.poaService.inicializarPoa(clubId, anio).subscribe({
       next: (newPoa) => {
         this.closeNewPoaModal();
+        
+        // Preguntar si desea autogenerar reuniones regulares
         Swal.fire({
-          title: 'POA Inicializado',
-          text: `El Plan Operativo Anual para el año ${anio} ha sido creado.`,
-          icon: 'success',
+          title: '¿Generar reuniones regulares?',
+          text: `¿Deseas autoprogramar todas las reuniones regulares de sábados y domingos desde el ${fechaApertura} hasta el ${fechaClausura}? Se excluirá un domingo al mes y los domingos de Día de la Madre y del Padre en Perú.`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, generar',
+          cancelButtonText: 'No, solo crear POA vacío',
+          confirmButtonColor: '#ffba27',
+          cancelButtonColor: '#444650',
           background: '#111827',
           color: '#f3f4f6'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            Swal.fire({
+              title: 'Generando reuniones...',
+              text: 'Iniciando programación automática...',
+              allowOutsideClick: false,
+              background: '#111827',
+              color: '#f3f4f6',
+              didOpen: () => Swal.showLoading()
+            });
+
+            const regulares = this.generarReunionesRegulares(fechaApertura, fechaClausura);
+            this.guardarActividadesGeneradas(newPoa.idPoa, regulares, 0);
+          } else {
+            Swal.fire({
+              title: 'POA Inicializado',
+              text: `El Plan Operativo Anual para el año ${anio} ha sido creado vacío.`,
+              icon: 'success',
+              background: '#111827',
+              color: '#f3f4f6'
+            });
+            this.loadPoas();
+          }
         });
-        this.loadPoas();
+      }
+    });
+  }
+
+  generarReunionesRegulares(fechaApertura: string, fechaClausura: string): any[] {
+    const actividades: any[] = [];
+    
+    const fechaInicio = new Date(fechaApertura + 'T00:00:00');
+    const fechaFin = new Date(fechaClausura + 'T00:00:00');
+    const anio = fechaInicio.getFullYear();
+    
+    // Para calcular Día de la Madre (2do domingo de Mayo)
+    // Mayo es mes 4 (0-indexed)
+    let segundoDomingoMayo: string | null = null;
+    let domingosMayoCount = 0;
+    for (let d = 1; d <= 31; d++) {
+      const tempDate = new Date(anio, 4, d);
+      if (tempDate.getDay() === 0) { // 0 = Domingo
+        domingosMayoCount++;
+        if (domingosMayoCount === 2) {
+          const diaStr = String(d).padStart(2, '0');
+          segundoDomingoMayo = `${anio}-05-${diaStr}`;
+          break;
+        }
+      }
+    }
+
+    // Para calcular Día del Padre (3er domingo de Junio)
+    // Junio es mes 5 (0-indexed)
+    let tercerDomingoJunio: string | null = null;
+    let domingosJunioCount = 0;
+    for (let d = 1; d <= 30; d++) {
+      const tempDate = new Date(anio, 5, d);
+      if (tempDate.getDay() === 0) {
+        domingosJunioCount++;
+        if (domingosJunioCount === 3) {
+          const diaStr = String(d).padStart(2, '0');
+          tercerDomingoJunio = `${anio}-06-${diaStr}`;
+          break;
+        }
+      }
+    }
+
+    // Agrupamos domingos por mes para poder saltear el último domingo de cada mes
+    const domingosPorMes: { [key: number]: string[] } = {};
+    for (let m = 0; m <= 11; m++) {
+      domingosPorMes[m] = [];
+    }
+
+    // Primero identificamos todos los sábados y domingos en el rango
+    let current = new Date(fechaInicio);
+    while (current <= fechaFin) {
+      const dayOfWeek = current.getDay();
+      const y = current.getFullYear();
+      const m = String(current.getMonth() + 1).padStart(2, '0');
+      const d = String(current.getDate()).padStart(2, '0');
+      const fechaStr = `${y}-${m}-${d}`;
+
+      if (dayOfWeek === 6) { // Sábado
+        actividades.push({
+          nombre: 'Reunión Regular - Sábado',
+          fecha: fechaStr,
+          ambito: 'RECURRENTE',
+          lugar: 'Club Local',
+          responsable: 'Directiva'
+        });
+      } else if (dayOfWeek === 0) { // Domingo
+        const monthIdx = current.getMonth();
+        domingosPorMes[monthIdx].push(fechaStr);
+      }
+      
+      current.setDate(current.getDate() + 1);
+    }
+
+    // Procesamos los domingos aplicando las reglas
+    for (let m = 0; m <= 11; m++) {
+      const domingos = domingosPorMes[m];
+      if (domingos.length === 0) continue;
+      
+      // El último domingo de cada mes no hay club
+      const ultimoDomingoStr = domingos[domingos.length - 1];
+      
+      domingos.forEach(domingoStr => {
+        // Excluir el último domingo de cada mes
+        if (domingoStr === ultimoDomingoStr) {
+          return;
+        }
+        // Excluir Día de la Madre en Perú
+        if (domingoStr === segundoDomingoMayo) {
+          return;
+        }
+        // Excluir Día del Padre en Perú
+        if (domingoStr === tercerDomingoJunio) {
+          return;
+        }
+
+        actividades.push({
+          nombre: 'Reunión Regular - Domingo',
+          fecha: domingoStr,
+          ambito: 'RECURRENTE',
+          lugar: 'Club Local',
+          responsable: 'Directiva'
+        });
+      });
+    }
+
+    // Ordenar por fecha
+    actividades.sort((a, b) => a.fecha.localeCompare(b.fecha));
+    return actividades;
+  }
+
+  guardarActividadesGeneradas(idPoa: string, lista: any[], index: number): void {
+    if (index >= lista.length) {
+      Swal.fire({
+        title: 'POA Inicializado',
+        text: `El Plan Operativo Anual y ${lista.length} reuniones regulares han sido creados con éxito.`,
+        icon: 'success',
+        background: '#111827',
+        color: '#f3f4f6'
+      });
+      this.loadPoas();
+      return;
+    }
+
+    Swal.update({
+      text: `Guardando actividad regular ${index + 1} de ${lista.length}...`
+    });
+
+    this.poaService.addActividad(idPoa, lista[index]).subscribe({
+      next: () => {
+        this.guardarActividadesGeneradas(idPoa, lista, index + 1);
+      },
+      error: () => {
+        // En caso de error, continuar con las siguientes para no interrumpir el proceso
+        this.guardarActividadesGeneradas(idPoa, lista, index + 1);
       }
     });
   }
@@ -213,15 +444,17 @@ export class PoaComponent implements OnInit {
     this.responsablesSeleccionados = [];
     this.responsablesOcultos = [];
     this.nuevoResponsable = '';
-    this.activityForm.reset({ ambito: 'CLUB', lugar: '', responsable: '', nombre: '', fecha: '' });
+    this.activityForm.reset({ ambito: 'CLUB', lugar: '', responsable: '', nombre: '', fecha: '', fechaFin: '' });
   }
 
   onAddActivity(): void {
     if (this.activityForm.invalid || !this.selectedPoa) return;
     if (this.responsablesSeleccionados.length === 0) return;
 
+    const val = this.activityForm.value;
     const payload = {
-      ...this.activityForm.value,
+      ...val,
+      fechaFin: val.fechaFin ? val.fechaFin : null,
       responsable: this.responsablesSeleccionados.join(', ')
     };
 
@@ -252,6 +485,7 @@ export class PoaComponent implements OnInit {
     this.editForm.setValue({
       nombre: actividad.nombre ?? '',
       fecha: actividad.fecha ?? '',
+      fechaFin: actividad.fechaFin ?? '',
       ambito: actividad.ambito ?? 'CLUB',
       lugar: actividad.lugar ?? '',
       responsable: actividad.responsable ?? ''
@@ -265,15 +499,17 @@ export class PoaComponent implements OnInit {
     this.responsablesSeleccionados = [];
     this.responsablesOcultos = [];
     this.nuevoResponsable = '';
-    this.editForm.reset({ ambito: 'CLUB' });
+    this.editForm.reset({ ambito: 'CLUB', fechaFin: '' });
   }
 
   onGuardarEdicion(): void {
     if (this.editForm.invalid || !this.actividadEditando?.idActividad) return;
     if (this.responsablesSeleccionados.length === 0) return;
     const id = this.actividadEditando.idActividad;
+    const val = this.editForm.value;
     const payload = {
-      ...this.editForm.value,
+      ...val,
+      fechaFin: val.fechaFin ? val.fechaFin : null,
       responsable: this.responsablesSeleccionados.join(', ')
     };
     this.poaService.actualizarActividad(id, payload).subscribe({
@@ -403,5 +639,25 @@ export class PoaComponent implements OnInit {
         });
       }
     });
+  }
+
+  private getFirstSaturdayOfMarch(year: number): string {
+    for (let day = 1; day <= 7; day++) {
+      const d = new Date(year, 2, day);
+      if (d.getDay() === 6) {
+        return `${year}-03-${String(day).padStart(2, '0')}`;
+      }
+    }
+    return `${year}-03-07`;
+  }
+
+  private getLastSaturdayOfNovember(year: number): string {
+    for (let day = 30; day >= 24; day--) {
+      const d = new Date(year, 10, day);
+      if (d.getDay() === 6) {
+        return `${year}-11-${String(day).padStart(2, '0')}`;
+      }
+    }
+    return `${year}-11-28`;
   }
 }

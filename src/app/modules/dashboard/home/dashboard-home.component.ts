@@ -5,6 +5,9 @@ import { UnidadService } from '../../../core/services/unidad.service';
 import { RankingService } from '../../../core/services/ranking.service';
 import { ClubService } from '../../../core/services/club.service';
 import { EspecialidadService } from '../../../core/services/especialidad.service';
+import { PoaService } from '../../../core/services/poa.service';
+import { ActividadPoa } from '../../../core/models/poa.model';
+
 
 @Component({
   selector: 'app-dashboard-home',
@@ -22,9 +25,11 @@ export class DashboardHomeComponent implements OnInit {
   stats = signal({
     totalMiembros: 0,
     unidadesActivas: 0,
-    diasProximoEvento: 15,
+    diasProximoEvento: 0,
     especialidadesOtorgadas: 0
   });
+
+  proximaActividad = signal<ActividadPoa | null>(null);
 
   adminStats = signal({
     totalClubes: 0,
@@ -74,7 +79,8 @@ export class DashboardHomeComponent implements OnInit {
     private unidadService: UnidadService,
     private rankingService: RankingService,
     private clubService: ClubService,
-    private especialidadService: EspecialidadService
+    private especialidadService: EspecialidadService,
+    private poaService: PoaService
   ) {
     effect(() => {
       const user = this.currentUser();
@@ -148,5 +154,100 @@ export class DashboardHomeComponent implements OnInit {
       },
       error: () => this.stats.update(s => ({ ...s, especialidadesOtorgadas: 18 }))
     });
+
+    // Cargar POA y calcular la próxima actividad
+    this.poaService.getPoasByClub(String(idClub)).subscribe({
+      next: (poas) => {
+        const active = poas.find(p => p.estado === 'ACTIVO') || poas[0];
+        if (active) {
+          this.poaService.getActividades(active.idPoa).subscribe({
+            next: (acts) => {
+              if (acts && acts.length > 0) {
+                // Obtener fecha de hoy en formato local YYYY-MM-DD
+                const hoy = new Date();
+                const anio = hoy.getFullYear();
+                const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+                const dia = String(hoy.getDate()).padStart(2, '0');
+                const hoyStr = `${anio}-${mes}-${dia}`;
+
+                // Filtrar actividades futuras o de hoy
+                const futuras = acts.filter(a => a.fecha && a.fecha >= hoyStr);
+                futuras.sort((a, b) => a.fecha.localeCompare(b.fecha));
+
+                const proxima = futuras[0] || null;
+                this.proximaActividad.set(proxima);
+
+                if (proxima && proxima.fecha) {
+                  const fechaAct = new Date(proxima.fecha + 'T00:00:00');
+                  const fechaHoy = new Date(hoyStr + 'T00:00:00');
+                  const diffTime = fechaAct.getTime() - fechaHoy.getTime();
+                  let dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  if (dias < 0) dias = 0;
+                  this.stats.update(s => ({ ...s, diasProximoEvento: dias }));
+                } else {
+                  this.stats.update(s => ({ ...s, diasProximoEvento: 0 }));
+                }
+              } else {
+                this.proximaActividad.set(null);
+                this.stats.update(s => ({ ...s, diasProximoEvento: 0 }));
+              }
+            },
+            error: () => {
+              this.proximaActividad.set(null);
+              this.stats.update(s => ({ ...s, diasProximoEvento: 0 }));
+            }
+          });
+        } else {
+          this.proximaActividad.set(null);
+          this.stats.update(s => ({ ...s, diasProximoEvento: 0 }));
+        }
+      },
+      error: () => {
+        this.proximaActividad.set(null);
+        this.stats.update(s => ({ ...s, diasProximoEvento: 0 }));
+      }
+    });
+  }
+
+  getActividadIcon(ambito?: string): string {
+    switch (ambito?.toUpperCase()) {
+      case 'CLUB': return 'groups';
+      case 'IGLESIA': return 'church';
+      case 'REGION': return 'terrain';
+      case 'ASOCIACION': return 'explore';
+      case 'RECURRENTE': return 'cached';
+      default: return 'event';
+    }
+  }
+
+  formatearFechaLarga(fecha?: string, fechaFin?: string): string {
+    if (!fecha) return '';
+    try {
+      const [year, month, day] = fecha.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      
+      const opciones: Intl.DateTimeFormatOptions = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      
+      let dateStr = dateObj.toLocaleDateString('es-ES', opciones);
+      // Capitalizar la primera letra
+      dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+      
+      if (fechaFin && fechaFin !== fecha) {
+        const [yearF, monthF, dayF] = fechaFin.split('-').map(Number);
+        const dateFinObj = new Date(yearF, monthF - 1, dayF);
+        let dateFinStr = dateFinObj.toLocaleDateString('es-ES', opciones);
+        dateFinStr = dateFinStr.charAt(0).toUpperCase() + dateFinStr.slice(1);
+        return `${dateStr} al ${dateFinStr}`;
+      }
+      
+      return dateStr;
+    } catch (e) {
+      return fecha;
+    }
   }
 }

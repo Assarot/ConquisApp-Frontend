@@ -58,7 +58,7 @@
         (click)="closeSidebar()"
         class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
         <span class="material-symbols-outlined shrink-0">group_work</span>
-        <span class="hide-on-collapse ml-4 text-sm font-medium">Unidades</span>
+        <span class="hide-on-collapse ml-4 text-sm font-medium">Rincón de Unidades</span>
       </a>
       }
 
@@ -77,11 +77,11 @@
           <a routerLink="/dashboard/poa" (click)="closeSidebar()"
             class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">POA</a>
           }
-          @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero()) {
+          @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero() || isAdmin()) {
           <a routerLink="/dashboard/cronograma" (click)="closeSidebar()"
             class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Cronograma</a>
           }
-          @if (isLeader() || isDirectorAsociado() || isInstructor()) {
+          @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero() || isAdmin()) {
           <a routerLink="/dashboard/sesiones" (click)="closeSidebar()"
             class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Sesiones</a>
           }
@@ -146,8 +146,6 @@
         <div class="submenu-transition flex flex-col pl-10 space-y-1" [class.submenu-open]="isSubmenuOpen('progress')">
           <a routerLink="/dashboard/avances" (click)="closeSidebar()"
             class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Progreso Conquistadores</a>
-          <a routerLink="/dashboard/asistencia" (click)="closeSidebar()"
-            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Asistencia</a>
         </div>
       </div>
       }
@@ -328,9 +326,9 @@
           </div>
         </a>
         <a routerLink="/dashboard/unidades" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
-          class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">
-          <span class="material-symbols-outlined text-[22px]">group_work</span>
-          <span class="text-[9px] font-bold">Unidades</span>
+          class="flex flex-col items-center gap-1 py-1 px-3 text-[#757682] hover:text-[#00113a] transition-all shrink-0">
+          <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">group_work</span>
+          <span class="text-[9px] font-bold">Rincón de Unidades</span>
         </a>
         <a routerLink="/dashboard/poa" routerLinkActive="text-[#00113a]" (click)="closeSidebar()"
           class="flex flex-col items-center gap-0.5 text-[#757682] hover:text-[#00113a] transition px-3">

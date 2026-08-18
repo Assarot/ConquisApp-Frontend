@@ -73,6 +73,18 @@
             <span class="font-bold text-[#00113a]">{{ sesion.requisitoCodigo }}:</span>
             <span class="text-[#444650] ml-1">{{ sesion.requisitoNombre }}</span>
           </div>
+
+          @if (sesion.descripcion) {
+            <div class="text-xs text-[#444650] mb-2 leading-relaxed">
+              <span class="font-bold text-[#00113a]">Actividades:</span> {{ sesion.descripcion }}
+            </div>
+          }
+
+          @if (sesion.materiales) {
+            <div class="text-xs text-[#444650] mb-3 leading-relaxed">
+              <span class="font-bold text-[#00113a]">Materiales:</span> {{ sesion.materiales }}
+            </div>
+          }
         </div>
 
         <!-- Card Footer -->
@@ -153,6 +165,20 @@
             <input [(ngModel)]="nuevaSesion.requisitoNombre" name="requisitoNombre" type="text"
                    class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
                    placeholder="Ej. Memorizar y explicar el voto y la ley" required />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Actividades a Realizar (Qué se realizará)</label>
+            <textarea [(ngModel)]="nuevaSesion.descripcion" name="descripcion"
+                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none h-20 resize-none"
+                      placeholder="Ej. Explicar los ideales, dinámicas de memorización en grupo..."></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#191c1d] mb-1">Materiales Asignados</label>
+            <input [(ngModel)]="nuevaSesion.materiales" name="materiales" type="text"
+                   class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none"
+                   placeholder="Ej. Proyector, folletos, cuerdas..." />
           </div>
 
           <div>
