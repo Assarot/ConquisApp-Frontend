@@ -4,6 +4,7 @@ import { PoaService } from '../../../core/services/poa.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Poa, ActividadPoa } from '../../../core/models/poa.model';
 import Swal from 'sweetalert2';
+import * as XLSX from 'xlsx';
 
 // Responsables estándar del club
 const RESPONSABLES_ESTANDAR = ['Jóvenes', 'Directiva', 'Director', 'Director Asociado', 'Secretario', 'Tesorero'];
@@ -51,12 +52,15 @@ export class PoaComponent implements OnInit {
   // Forms
   activityForm: FormGroup;
   poaForm: FormGroup;
+  plantillaForm: FormGroup;
   editForm!: FormGroup;
 
   // Modals visibility toggles
   showActivityModal = false;
   showPoaModal = false;
   showEditModal = false;
+  showPlantillaModal = false;
+  plantillaMode: 'recurrente' | 'vacia' = 'recurrente';
   isUploading = false;
   actividadEditando: ActividadPoa | null = null;
 
@@ -122,14 +126,18 @@ export class PoaComponent implements OnInit {
 
     const defaultYear = new Date().getFullYear() + 1;
     this.poaForm = this.fb.group({
+      anio: [defaultYear, [Validators.required, Validators.min(2020), Validators.max(2100)]]
+    });
+
+    this.plantillaForm = this.fb.group({
       anio: [defaultYear, [Validators.required, Validators.min(2020), Validators.max(2100)]],
       fechaApertura: [this.getFirstSaturdayOfMarch(defaultYear), [Validators.required]],
       fechaClausura: [this.getLastSaturdayOfNovember(defaultYear), [Validators.required]]
     });
 
-    this.poaForm.get('anio')?.valueChanges.subscribe(year => {
+    this.plantillaForm.get('anio')?.valueChanges.subscribe(year => {
       if (year && year >= 2020 && year <= 2100) {
-        this.poaForm.patchValue({
+        this.plantillaForm.patchValue({
           fechaApertura: this.getFirstSaturdayOfMarch(Number(year)),
           fechaClausura: this.getLastSaturdayOfNovember(Number(year))
         }, { emitEvent: false });
@@ -230,68 +238,55 @@ export class PoaComponent implements OnInit {
   // ── POA Modal ──────────────────────────────────────────────────────────────
   openNewPoaModal(): void {
     const nextYear = new Date().getFullYear() + 1;
-    this.poaForm.patchValue({
-      anio: nextYear,
-      fechaApertura: this.getFirstSaturdayOfMarch(nextYear),
-      fechaClausura: this.getLastSaturdayOfNovember(nextYear)
-    });
+    this.poaForm.patchValue({ anio: nextYear });
     this.showPoaModal = true;
   }
 
   closeNewPoaModal(): void {
     this.showPoaModal = false;
     const nextYear = new Date().getFullYear() + 1;
-    this.poaForm.reset({
-      anio: nextYear,
-      fechaApertura: this.getFirstSaturdayOfMarch(nextYear),
-      fechaClausura: this.getLastSaturdayOfNovember(nextYear)
-    });
+    this.poaForm.reset({ anio: nextYear });
   }
 
   onCreatePoa(): void {
     if (this.poaForm.invalid) return;
-    const { anio, fechaApertura, fechaClausura } = this.poaForm.value;
+    const { anio } = this.poaForm.value;
+
+    const existente = this.poas.find(p => p.anio === anio);
+    if (existente) {
+      this.closeNewPoaModal();
+      Swal.fire({
+        title: 'POA Existente',
+        text: `Ya existe un Plan Operativo Anual para el año ${anio}.`,
+        icon: 'warning',
+        background: '#111827',
+        color: '#f3f4f6'
+      });
+      this.selectPoa(existente);
+      return;
+    }
+
     const clubId = this.currentUser()?.idClub?.toString() || '1';
 
     this.poaService.inicializarPoa(clubId, anio).subscribe({
-      next: (newPoa) => {
+      next: () => {
         this.closeNewPoaModal();
-        
-        // Preguntar si desea autogenerar reuniones regulares
         Swal.fire({
-          title: '¿Generar reuniones regulares?',
-          text: `¿Deseas autoprogramar todas las reuniones regulares de sábados y domingos desde el ${fechaApertura} hasta el ${fechaClausura}? Se excluirá un domingo al mes y los domingos de Día de la Madre y del Padre en Perú.`,
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: 'Sí, generar',
-          cancelButtonText: 'No, solo crear POA vacío',
-          confirmButtonColor: '#ffba27',
-          cancelButtonColor: '#444650',
+          title: 'POA Inicializado',
+          text: `El Plan Operativo Anual para el año ${anio} ha sido creado. Ahora puedes generar una plantilla o importar actividades.`,
+          icon: 'success',
           background: '#111827',
           color: '#f3f4f6'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            Swal.fire({
-              title: 'Generando reuniones...',
-              text: 'Iniciando programación automática...',
-              allowOutsideClick: false,
-              background: '#111827',
-              color: '#f3f4f6',
-              didOpen: () => Swal.showLoading()
-            });
-
-            const regulares = this.generarReunionesRegulares(fechaApertura, fechaClausura);
-            this.guardarActividadesGeneradas(newPoa.idPoa, regulares, 0);
-          } else {
-            Swal.fire({
-              title: 'POA Inicializado',
-              text: `El Plan Operativo Anual para el año ${anio} ha sido creado vacío.`,
-              icon: 'success',
-              background: '#111827',
-              color: '#f3f4f6'
-            });
-            this.loadPoas();
-          }
+        });
+        this.loadPoas();
+      },
+      error: (err) => {
+        Swal.fire({
+          title: 'Error',
+          text: err?.error?.error || err?.error?.mensaje || 'No se pudo crear el POA. Intenta de nuevo.',
+          icon: 'error',
+          background: '#111827',
+          color: '#f3f4f6'
         });
       }
     });
@@ -300,6 +295,23 @@ export class PoaComponent implements OnInit {
   generarReunionesRegulares(fechaApertura: string, fechaClausura: string): any[] {
     const actividades: any[] = [];
     
+    // Agregar Apertura y Clausura explícitamente
+    actividades.push({
+      nombre: 'Apertura de Actividades',
+      fecha: fechaApertura,
+      ambito: 'CLUB',
+      lugar: 'Club Local',
+      responsable: 'Directiva'
+    });
+
+    actividades.push({
+      nombre: 'Clausura de Actividades',
+      fecha: fechaClausura,
+      ambito: 'CLUB',
+      lugar: 'Club Local',
+      responsable: 'Directiva'
+    });
+
     const fechaInicio = new Date(fechaApertura + 'T00:00:00');
     const fechaFin = new Date(fechaClausura + 'T00:00:00');
     const anio = fechaInicio.getFullYear();
@@ -351,17 +363,20 @@ export class PoaComponent implements OnInit {
       const d = String(current.getDate()).padStart(2, '0');
       const fechaStr = `${y}-${m}-${d}`;
 
-      if (dayOfWeek === 6) { // Sábado
-        actividades.push({
-          nombre: 'Reunión Regular - Sábado',
-          fecha: fechaStr,
-          ambito: 'RECURRENTE',
-          lugar: 'Club Local',
-          responsable: 'Directiva'
-        });
-      } else if (dayOfWeek === 0) { // Domingo
-        const monthIdx = current.getMonth();
-        domingosPorMes[monthIdx].push(fechaStr);
+      // Skip regular meetings if the date is exactly the Apertura or Clausura date
+      if (fechaStr !== fechaApertura && fechaStr !== fechaClausura) {
+        if (dayOfWeek === 6) { // Sábado
+          actividades.push({
+            nombre: 'Reunión Regular - Sábado',
+            fecha: fechaStr,
+            ambito: 'RECURRENTE',
+            lugar: 'Club Local',
+            responsable: 'Directiva'
+          });
+        } else if (dayOfWeek === 0) { // Domingo
+          const monthIdx = current.getMonth();
+          domingosPorMes[monthIdx].push(fechaStr);
+        }
       }
       
       current.setDate(current.getDate() + 1);
@@ -372,12 +387,20 @@ export class PoaComponent implements OnInit {
       const domingos = domingosPorMes[m];
       if (domingos.length === 0) continue;
       
-      // El último domingo de cada mes no hay club
-      const ultimoDomingoStr = domingos[domingos.length - 1];
+      // Encontrar el VERDADERO último domingo del mes (independientemente del rango seleccionado)
+      const ultimoDiaMes = new Date(anio, m + 1, 0);
+      let tempUltimoDomingo = new Date(ultimoDiaMes);
+      while (tempUltimoDomingo.getDay() !== 0) {
+        tempUltimoDomingo.setDate(tempUltimoDomingo.getDate() - 1);
+      }
+      const yStr = tempUltimoDomingo.getFullYear();
+      const mStr = String(tempUltimoDomingo.getMonth() + 1).padStart(2, '0');
+      const dStr = String(tempUltimoDomingo.getDate()).padStart(2, '0');
+      const ultimoDomingoRealStr = `${yStr}-${mStr}-${dStr}`;
       
       domingos.forEach(domingoStr => {
-        // Excluir el último domingo de cada mes
-        if (domingoStr === ultimoDomingoStr) {
+        // Excluir el último domingo real de cada mes
+        if (domingoStr === ultimoDomingoRealStr) {
           return;
         }
         // Excluir Día de la Madre en Perú
@@ -404,31 +427,71 @@ export class PoaComponent implements OnInit {
     return actividades;
   }
 
-  guardarActividadesGeneradas(idPoa: string, lista: any[], index: number): void {
-    if (index >= lista.length) {
-      Swal.fire({
-        title: 'POA Inicializado',
-        text: `El Plan Operativo Anual y ${lista.length} reuniones regulares han sido creados con éxito.`,
-        icon: 'success',
-        background: '#111827',
-        color: '#f3f4f6'
-      });
-      this.loadPoas();
-      return;
+  // ── Plantilla POA Modal ────────────────────────────────────────────────────
+  openPlantillaModal(): void {
+    const year = this.selectedPoa?.anio || new Date().getFullYear() + 1;
+    this.plantillaForm.patchValue({
+      anio: year,
+      fechaApertura: this.getFirstSaturdayOfMarch(year),
+      fechaClausura: this.getLastSaturdayOfNovember(year)
+    });
+    this.plantillaMode = 'recurrente';
+    this.showPlantillaModal = true;
+  }
+
+  closePlantillaModal(): void {
+    this.showPlantillaModal = false;
+  }
+
+  onDescargarPlantilla(): void {
+    if (this.plantillaForm.invalid) return;
+    const { anio, fechaApertura, fechaClausura } = this.plantillaForm.value;
+
+    let datos: any[] = [];
+    if (this.plantillaMode === 'recurrente') {
+      const reuniones = this.generarReunionesRegulares(fechaApertura, fechaClausura);
+      datos = reuniones.map(r => ({
+        'Fecha': r.fecha,
+        'Actividad': r.nombre,
+        'Lugar': r.lugar || '',
+        'Ambito': r.ambito || '',
+        'Responsable': r.responsable || ''
+      }));
     }
 
-    Swal.update({
-      text: `Guardando actividad regular ${index + 1} de ${lista.length}...`
-    });
+    // Si está vacío, agregar al menos una fila vacía para que se vean los encabezados
+    if (datos.length === 0) {
+      datos = [{
+        'Fecha': '',
+        'Actividad': '',
+        'Lugar': '',
+        'Ambito': '',
+        'Responsable': ''
+      }];
+    }
 
-    this.poaService.addActividad(idPoa, lista[index]).subscribe({
-      next: () => {
-        this.guardarActividadesGeneradas(idPoa, lista, index + 1);
-      },
-      error: () => {
-        // En caso de error, continuar con las siguientes para no interrumpir el proceso
-        this.guardarActividadesGeneradas(idPoa, lista, index + 1);
-      }
+    const ws = XLSX.utils.json_to_sheet(datos);
+
+    // Ajustar anchos de columna
+    ws['!cols'] = [
+      { wch: 14 }, // Fecha
+      { wch: 40 }, // Actividad
+      { wch: 25 }, // Lugar
+      { wch: 15 }, // Ámbito
+      { wch: 25 }, // Responsable
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'POA');
+    XLSX.writeFile(wb, `Plantilla-POA-${anio}.xlsx`);
+
+    this.closePlantillaModal();
+    Swal.fire({
+      title: 'Plantilla descargada',
+      text: `Se ha descargado la plantilla del POA ${anio}. Complétala y luego impórtala con el botón "Importar Excel".`,
+      icon: 'success',
+      background: '#111827',
+      color: '#f3f4f6'
     });
   }
 

@@ -43,7 +43,8 @@
           {{ getActividadesCompletadasCount }} / {{ actividades.length }}
         </h3>
         <div class="mt-2 w-full bg-[#edeeef] h-2 rounded-full overflow-hidden">
-          <div class="bg-[#00113a] h-full rounded-full transition-all duration-500 ease-out" [style.width.%]="getPorcentajeAvance"></div>
+          <div class="bg-[#00113a] h-full rounded-full transition-all duration-500 ease-out"
+            [style.width.%]="getPorcentajeAvance"></div>
         </div>
       </div>
     </div>
@@ -68,7 +69,8 @@
   <!-- 5 & 6. Filters & Table Section -->
   <div class="bg-white rounded-xl border border-[#c5c6d2] shadow-sm overflow-hidden">
     <!-- 1. Header Row (Title & Action Buttons) -->
-    <div class="px-6 py-4 bg-[#f8f9fa] border-b border-[#c5c6d2] flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div
+      class="px-6 py-4 bg-[#f8f9fa] border-b border-[#c5c6d2] flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div class="text-lg font-extrabold text-[#00113a]">
         Lista de Actividades
       </div>
@@ -84,6 +86,13 @@
         }
 
         @if (selectedPoa && canManagePoa()) {
+        <!-- Botón Generar Plantilla POA -->
+        <button type="button" (click)="openPlantillaModal()"
+          class="flex items-center gap-2 px-5 py-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold rounded-lg text-sm transition duration-150 cursor-pointer shadow-sm">
+          <span class="material-symbols-outlined text-[20px]"
+            style="font-variation-settings: 'wght' 600;">description</span>
+          Generar Plantilla
+        </button>
         <!-- Input oculto para subir Excel -->
         <input type="file" id="excelFileInput" #excelFileInput class="hidden" accept=".xlsx,.xls"
           (change)="onExcelFileSelected($event)" />
@@ -108,27 +117,31 @@
     <!-- 2. Filters Row (Search Input & Date Filter) -->
     <div class="px-6 py-3 border-b border-[#e1e3e4] bg-white flex flex-col sm:flex-row items-center gap-4">
       <!-- Buscador por Nombre -->
-      <div class="flex items-center gap-2 bg-[#f8f9fa] border border-[#c5c6d2] px-3 py-1.5 rounded-lg w-full sm:w-80 focus-within:border-[#00113a] transition-colors shadow-sm">
+      <div
+        class="flex items-center gap-2 bg-[#f8f9fa] border border-[#c5c6d2] px-3 py-1.5 rounded-lg w-full sm:w-80 focus-within:border-[#00113a] transition-colors shadow-sm">
         <span class="material-symbols-outlined text-[#757682] text-sm">search</span>
         <input type="text" [(ngModel)]="terminoBusqueda"
-          class="text-xs text-[#191c1d] focus:outline-none bg-transparent w-full"
+          class="text-xs text-[#191c1d] focus:outline-none focus:ring-0 border-none p-0 bg-transparent w-full"
           placeholder="Buscar por nombre de actividad...">
         @if (terminoBusqueda) {
-        <button (click)="terminoBusqueda = ''" class="text-xs font-bold text-[#757682] hover:text-[#191c1d] cursor-pointer transition">
+        <button (click)="terminoBusqueda = ''"
+          class="text-xs font-bold text-[#757682] hover:text-[#191c1d] cursor-pointer transition">
           ×
         </button>
         }
       </div>
 
       <!-- Filtro por Fecha -->
-      <div (click)="filterInput.showPicker()" class="relative flex items-center gap-2 bg-[#f8f9fa] border border-[#c5c6d2] px-3 py-1.5 rounded-lg shadow-sm cursor-pointer hover:border-[#00113a] transition w-full sm:w-auto">
+      <div (click)="filterInput.showPicker()"
+        class="relative flex items-center gap-2 bg-[#f8f9fa] border border-[#c5c6d2] px-3 py-1.5 rounded-lg shadow-sm cursor-pointer hover:border-[#00113a] transition w-full sm:w-auto">
         <span class="material-symbols-outlined text-[#757682] text-sm">calendar_month</span>
-        <span class="text-xs text-[#444650] font-medium">{{ filtroFecha ? (filtroFecha | date:'dd/MM/yyyy') : 'Filtrar por día' }}</span>
+        <span class="text-xs text-[#444650] font-medium">{{ filtroFecha ? (filtroFecha | date:'dd/MM/yyyy') : 'Filtrar
+          por día' }}</span>
         <input type="date" #filterInput [(ngModel)]="filtroFecha"
-          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-          title="Filtrar por día">
+          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" title="Filtrar por día">
         @if (filtroFecha) {
-        <button (click)="$event.stopPropagation(); limpiarFiltroFecha()" class="text-xs font-bold text-red-500 hover:text-red-700 cursor-pointer transition relative z-20">
+        <button (click)="$event.stopPropagation(); limpiarFiltroFecha()"
+          class="text-xs font-bold text-red-500 hover:text-red-700 cursor-pointer transition relative z-20">
           ×
         </button>
         }
@@ -172,7 +185,7 @@
             <td class="px-6 py-4 font-semibold text-[#191c1d] whitespace-nowrap">
               {{ act.fecha | date:'dd MMM yyyy' }}
               @if (act.fechaFin && act.fechaFin !== act.fecha) {
-                - {{ act.fechaFin | date:'dd MMM yyyy' }}
+              - {{ act.fechaFin | date:'dd MMM yyyy' }}
               }
             </td>
             <td class="px-6 py-4 text-[#00113a] font-bold">
@@ -258,7 +271,7 @@
   </div>
   }
 
-  <!-- Modal: Inicializar POA -->
+  <!-- Modal: Inicializar POA (simplificado - solo año) -->
   @if (showPoaModal) {
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
     <div
@@ -281,18 +294,10 @@
               class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none"
               placeholder="Ej. 2025">
           </div>
-
-          <div>
-            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Fecha de Apertura (Inicio de Actividades)</label>
-            <input type="date" formControlName="fechaApertura"
-              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none bg-white">
-          </div>
-
-          <div>
-            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Fecha de Clausura (Fin de Actividades)</label>
-            <input type="date" formControlName="fechaClausura"
-              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none bg-white">
-          </div>
+          <p class="text-xs text-[#757682] leading-relaxed">
+            Se creará un POA vacío. Luego podrás generar una plantilla con reuniones recurrentes o importar actividades
+            desde un archivo Excel.
+          </p>
         </div>
 
         <div class="p-6 border-t border-[#c5c6d2] flex justify-end gap-3 bg-[#f8f9fa] shrink-0">
@@ -303,6 +308,125 @@
           <button type="submit" [disabled]="poaForm.invalid"
             class="px-5 py-2 bg-[#00113a] text-white hover:bg-[#002366] font-bold rounded-lg text-sm cursor-pointer disabled:opacity-50">
             Crear POA
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  <!-- Modal: Generar Plantilla POA -->
+  @if (showPlantillaModal) {
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div
+      class="w-full max-w-md max-h-[90vh] bg-white border border-[#c5c6d2] rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+      <div class="p-6 border-b border-[#c5c6d2] flex justify-between items-center bg-[#f8f9fa] shrink-0">
+        <div>
+          <h3 class="text-lg font-bold text-[#00113a]">Generar Plantilla del POA</h3>
+          <p class="text-xs text-[#757682] mt-0.5">Configura y descarga una plantilla Excel para tu POA.</p>
+        </div>
+        <button (click)="closePlantillaModal()" class="text-[#757682] hover:text-[#191c1d] cursor-pointer">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form [formGroup]="plantillaForm" (ngSubmit)="onDescargarPlantilla()"
+        class="flex flex-col overflow-hidden flex-grow">
+        <div class="p-6 space-y-5 overflow-y-auto flex-grow">
+          <!-- Año -->
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-2">Año</label>
+            <input type="number" formControlName="anio"
+              class="w-full px-4 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none"
+              placeholder="Ej. 2027">
+          </div>
+
+          <!-- Fechas en grid -->
+          <div class="grid grid-cols-2 gap-4 transition-opacity duration-200" [class.opacity-40]="plantillaMode === 'vacia'" [class.pointer-events-none]="plantillaMode === 'vacia'">
+            <div>
+              <label class="block text-sm font-semibold text-[#191c1d] mb-2">Fecha de Apertura</label>
+              <input type="date" formControlName="fechaApertura"
+                class="w-full px-3 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none bg-white text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-[#191c1d] mb-2">Fecha de Clausura</label>
+              <input type="date" formControlName="fechaClausura"
+                class="w-full px-3 py-2.5 rounded-lg border border-[#c5c6d2] focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] focus:outline-none bg-white text-sm">
+            </div>
+          </div>
+
+          <!-- Selector de modo -->
+          <div>
+            <label class="block text-sm font-semibold text-[#191c1d] mb-3">Tipo de plantilla</label>
+            <div class="space-y-3">
+              <!-- Opción: Con reuniones recurrentes -->
+              <button type="button" (click)="plantillaMode = 'recurrente'"
+                [class]="plantillaMode === 'recurrente'
+                  ? 'w-full p-4 rounded-xl border-2 border-[#00113a] bg-[#f0f2ff] text-left transition cursor-pointer'
+                  : 'w-full p-4 rounded-xl border-2 border-[#c5c6d2] bg-white hover:border-[#9aa0b8] text-left transition cursor-pointer'">
+                <div class="flex items-start gap-3">
+                  <div
+                    [class]="plantillaMode === 'recurrente'
+                    ? 'w-5 h-5 rounded-full border-2 border-[#00113a] flex items-center justify-center mt-0.5 shrink-0'
+                    : 'w-5 h-5 rounded-full border-2 border-[#c5c6d2] flex items-center justify-center mt-0.5 shrink-0'">
+                    @if (plantillaMode === 'recurrente') {
+                    <div class="w-2.5 h-2.5 rounded-full bg-[#00113a]"></div>
+                    }
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-[18px] text-[#00113a]"
+                        style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+                      <span class="text-sm font-bold text-[#00113a]">Con reuniones recurrentes</span>
+                    </div>
+                    <p class="text-xs text-[#757682] mt-1 leading-relaxed">
+                      Pre-rellena sábados y domingos. Excluye el último domingo de cada mes, Día de la Madre y del
+                      Padre.
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <!-- Opción: Plantilla vacía -->
+              <button type="button" (click)="plantillaMode = 'vacia'"
+                [class]="plantillaMode === 'vacia'
+                  ? 'w-full p-4 rounded-xl border-2 border-[#00113a] bg-[#f0f2ff] text-left transition cursor-pointer'
+                  : 'w-full p-4 rounded-xl border-2 border-[#c5c6d2] bg-white hover:border-[#9aa0b8] text-left transition cursor-pointer'">
+                <div class="flex items-start gap-3">
+                  <div
+                    [class]="plantillaMode === 'vacia'
+                    ? 'w-5 h-5 rounded-full border-2 border-[#00113a] flex items-center justify-center mt-0.5 shrink-0'
+                    : 'w-5 h-5 rounded-full border-2 border-[#c5c6d2] flex items-center justify-center mt-0.5 shrink-0'">
+                    @if (plantillaMode === 'vacia') {
+                    <div class="w-2.5 h-2.5 rounded-full bg-[#00113a]"></div>
+                    }
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-[18px] text-[#757682]"
+                        style="font-variation-settings: 'FILL' 1;">draft</span>
+                      <span class="text-sm font-bold text-[#00113a]">Plantilla vacía</span>
+                    </div>
+                    <p class="text-xs text-[#757682] mt-1 leading-relaxed">
+                      Solo los encabezados de columna. Tú rellenas las actividades manualmente.
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 border-t border-[#c5c6d2] flex justify-end gap-3 bg-[#f8f9fa] shrink-0">
+          <button type="button" (click)="closePlantillaModal()"
+            class="px-4 py-2 bg-[#f3f4f5] hover:bg-[#edeeef] text-[#444650] rounded-lg font-bold text-sm cursor-pointer transition">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="plantillaForm.invalid"
+            class="flex items-center gap-2 px-5 py-2 bg-emerald-600 text-white hover:bg-emerald-700 font-bold rounded-lg text-sm cursor-pointer disabled:opacity-50 transition">
+            <span class="material-symbols-outlined text-[18px]"
+              style="font-variation-settings: 'wght' 600;">download</span>
+            Descargar Plantilla Excel
           </button>
         </div>
       </form>
@@ -342,25 +466,29 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-semibold text-[#191c1d] mb-2">Fecha Inicio</label>
-          <div (click)="fechaInicioInput.showPicker()" class="relative flex items-center bg-white border border-[#c5c6d2] rounded-lg p-2.5 shadow-sm hover:border-[#00113a] transition cursor-pointer">
+          <div (click)="fechaInicioInput.showPicker()"
+            class="relative flex items-center bg-white border border-[#c5c6d2] rounded-lg p-2.5 shadow-sm hover:border-[#00113a] transition cursor-pointer">
             <span class="material-symbols-outlined text-[#757682] text-xl mr-2">calendar_month</span>
-            <span class="text-sm text-[#191c1d] font-medium">{{ form.get('fecha')?.value ? (form.get('fecha')?.value | date:'dd/MM/yyyy') : 'Selecciona fecha' }}</span>
+            <span class="text-sm text-[#191c1d] font-medium">{{ form.get('fecha')?.value ? (form.get('fecha')?.value |
+              date:'dd/MM/yyyy') : 'Selecciona fecha' }}</span>
             <input type="date" #fechaInicioInput formControlName="fecha"
               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
           </div>
         </div>
         <div>
           <label class="block text-sm font-semibold text-[#191c1d] mb-2">Fecha Fin (Opcional)</label>
-          <div (click)="fechaFinInput.showPicker()" class="relative flex items-center bg-white border border-[#c5c6d2] rounded-lg p-2.5 shadow-sm hover:border-[#00113a] transition cursor-pointer">
+          <div (click)="fechaFinInput.showPicker()"
+            class="relative flex items-center bg-white border border-[#c5c6d2] rounded-lg p-2.5 shadow-sm hover:border-[#00113a] transition cursor-pointer">
             <span class="material-symbols-outlined text-[#757682] text-xl mr-2">calendar_month</span>
-            <span class="text-sm text-[#191c1d] font-medium">{{ form.get('fechaFin')?.value ? (form.get('fechaFin')?.value | date:'dd/MM/yyyy') : 'Sin fecha fin' }}</span>
+            <span class="text-sm text-[#191c1d] font-medium">{{ form.get('fechaFin')?.value ?
+              (form.get('fechaFin')?.value | date:'dd/MM/yyyy') : 'Sin fecha fin' }}</span>
             <input type="date" #fechaFinInput formControlName="fechaFin" [min]="form.get('fecha')?.value"
               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
             @if (form.get('fechaFin')?.value) {
-              <button type="button" (click)="$event.stopPropagation(); form.get('fechaFin')?.setValue(null)" 
-                class="absolute right-3 text-red-500 hover:text-red-700 font-bold z-20 text-sm">
-                ×
-              </button>
+            <button type="button" (click)="$event.stopPropagation(); form.get('fechaFin')?.setValue(null)"
+              class="absolute right-3 text-red-500 hover:text-red-700 font-bold z-20 text-sm">
+              ×
+            </button>
             }
           </div>
         </div>
@@ -393,31 +521,28 @@
         <!-- Chips seleccionables -->
         <div class="flex flex-wrap gap-2 mb-3">
           @for (r of responsablesDisponibles; track r) {
-            @if (isResponsableExtra(r)) {
-            <!-- Chip personalizado: toggle + botón eliminar -->
-            <span class="inline-flex items-center gap-1 rounded-full text-xs font-bold border transition"
-              [class]="isResponsableSelected(r)
+          @if (isResponsableExtra(r)) {
+          <!-- Chip personalizado: toggle + botón eliminar -->
+          <span class="inline-flex items-center gap-1 rounded-full text-xs font-bold border transition" [class]="isResponsableSelected(r)
                 ? 'bg-[#00113a] text-white border-[#00113a]'
                 : 'bg-white text-[#444650] border-[#c5c6d2]'">
-              <button type="button" (click)="toggleResponsable(r)"
-                class="pl-3 pr-1 py-1 cursor-pointer">
-                {{ r }}
-              </button>
-              <button type="button" (click)="removeResponsableExtra(r)"
-                class="pr-2 py-1 cursor-pointer opacity-60 hover:opacity-100 transition"
-                title="Eliminar responsable">
-                ×
-              </button>
-            </span>
-            } @else {
-            <!-- Chip estándar: solo toggle -->
-            <button type="button" (click)="toggleResponsable(r)"
-              [class]="isResponsableSelected(r)
-                ? 'px-3 py-1 rounded-full text-xs font-bold cursor-pointer border transition bg-[#00113a] text-white border-[#00113a]'
-                : 'px-3 py-1 rounded-full text-xs font-bold cursor-pointer border transition bg-white text-[#444650] border-[#c5c6d2] hover:border-[#00113a] hover:text-[#00113a]'">
+            <button type="button" (click)="toggleResponsable(r)" class="pl-3 pr-1 py-1 cursor-pointer">
               {{ r }}
             </button>
-            }
+            <button type="button" (click)="removeResponsableExtra(r)"
+              class="pr-2 py-1 cursor-pointer opacity-60 hover:opacity-100 transition" title="Eliminar responsable">
+              ×
+            </button>
+          </span>
+          } @else {
+          <!-- Chip estándar: solo toggle -->
+          <button type="button" (click)="toggleResponsable(r)"
+            [class]="isResponsableSelected(r)
+                ? 'px-3 py-1 rounded-full text-xs font-bold cursor-pointer border transition bg-[#00113a] text-white border-[#00113a]'
+                : 'px-3 py-1 rounded-full text-xs font-bold cursor-pointer border transition bg-white text-[#444650] border-[#c5c6d2] hover:border-[#00113a] hover:text-[#00113a]'">
+            {{ r }}
+          </button>
+          }
           }
         </div>
         <!-- Añadir responsable personalizado -->
