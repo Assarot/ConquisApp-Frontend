@@ -11,31 +11,40 @@
     </div>
 
     @if (canImportMembers()) {
-      <div class="w-full md:w-auto flex flex-wrap gap-3">
-        <!-- Register Member Button -->
+      <div class="flex flex-row items-center gap-3 flex-wrap sm:flex-nowrap w-full sm:w-auto justify-start sm:justify-end">
+        <!-- Registrar Miembro -->
         <button
           (click)="openCreateModal()"
-          class="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#ffba27] hover:brightness-105 text-[#00113a] font-bold rounded-lg text-sm cursor-pointer shadow-md transition"
+          class="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#ffba27] hover:bg-[#ffa700] text-[#00113a] font-bold rounded-lg text-sm cursor-pointer shadow-sm transition whitespace-nowrap active:scale-95 shrink-0"
         >
           <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'wght' 600;">add_circle</span>
           Registrar Miembro
         </button>
 
-        <!-- Import CSV Button -->
+        <!-- Importar Excel -->
         <label
-          for="csv-upload"
-          class="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-[#f3f4f5] border border-[#c5c6d2] text-[#00113a] font-bold rounded-lg text-sm cursor-pointer shadow-sm transition"
+          for="excel-upload"
+          class="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-[#f3f4f5] border border-[#c5c6d2] text-[#00113a] font-bold rounded-lg text-sm cursor-pointer shadow-sm transition whitespace-nowrap active:scale-95 shrink-0"
         >
           <span class="material-symbols-outlined text-[20px]">upload_file</span>
-          Importar CSV
+          Importar Excel
         </label>
         <input
-          id="csv-upload"
+          id="excel-upload"
           type="file"
-          accept=".csv"
+          accept=".xlsx, .xls"
           (change)="onFileSelected($event)"
           class="hidden"
         />
+
+        <!-- Exportar Excel -->
+        <button
+          (click)="onExportExcel()"
+          class="flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-[#f3f4f5] border border-[#c5c6d2] text-[#00113a] font-bold rounded-lg text-sm cursor-pointer shadow-sm transition whitespace-nowrap active:scale-95 shrink-0"
+        >
+          <span class="material-symbols-outlined text-[20px]">download</span>
+          Exportar Excel
+        </button>
       </div>
     }
   </div>

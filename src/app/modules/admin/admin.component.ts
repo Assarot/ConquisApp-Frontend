@@ -44,7 +44,9 @@ export interface GrupoUsuariosClub {
   standalone: false
 })
 export class AdminComponent implements OnInit {
-  activeTab = signal<'CLUBES' | 'USUARIOS' | 'ESPECIALIDADES' | 'CLASES'>('CLUBES');
+  activeTab = signal<'CLUBES' | 'USUARIOS' | 'ESPECIALIDADES' | 'CLASES' | 'CATEGORIAS'>('CLUBES');
+  nuevaCategoriaNombre = '';
+  editandoCategoria: any = null;
   showCrearClubModal = false;
   showCrearUsuarioModal = false;
   showCrearEspecialidadModal = false;
@@ -104,6 +106,8 @@ export class AdminComponent implements OnInit {
   requisitos = signal<RequisitoBackend[]>([]);
   nuevoRequisitoDesc = '';
   nuevoRequisitoEsAvanzado = false;
+  categorias = signal<any[]>([]);
+  nuevoRequisitoCategoriaId = signal<number | null>(null);
 
   clubes = signal<ClubAdmin[]>([]);
   usuarios = signal<UsuarioAdmin[]>([]);
@@ -137,6 +141,7 @@ export class AdminComponent implements OnInit {
       else if (tab === 'usuarios') this.activeTab.set('USUARIOS');
       else if (tab === 'especialidades') this.activeTab.set('ESPECIALIDADES');
       else if (tab === 'clases') this.activeTab.set('CLASES');
+      else if (tab === 'categorias') this.activeTab.set('CATEGORIAS');
       else {
         if (this.isAdmin()) this.activeTab.set('CLUBES');
         else this.activeTab.set('USUARIOS');
@@ -148,6 +153,18 @@ export class AdminComponent implements OnInit {
     this.cargarClases();
     this.cargarUsuarios();
     this.cargarRoles();
+    this.cargarCategoriasRequisitos();
+  }
+
+  cargarCategoriasRequisitos(): void {
+    this.requisitoService.getCategorias().subscribe({
+      next: (cats) => {
+        this.categorias.set(cats);
+        if (cats.length > 0) {
+          this.nuevoRequisitoCategoriaId.set(cats[0].idCategoria);
+        }
+      }
+    });
   }
 
   usuariosGrouped = signal<GrupoUsuariosClub[]>([]);
@@ -755,6 +772,9 @@ export class AdminComponent implements OnInit {
 
     if (this.selectedClase) {
       payload.idClase = this.selectedClase.idClase;
+      if (this.nuevoRequisitoCategoriaId()) {
+        payload.idCategoria = this.nuevoRequisitoCategoriaId();
+      }
     } else if (this.selectedEspecialidad) {
       payload.idEspecialidad = this.selectedEspecialidad.idEspecialidad;
     }
@@ -836,6 +856,126 @@ export class AdminComponent implements OnInit {
             Swal.fire('Error', 'No se pudo eliminar el club.', 'error');
           }
         });
+      }
+    });
+  }
+
+  crearCategoria(): void {
+    if (!this.nuevaCategoriaNombre || this.nuevaCategoriaNombre.trim() === '') return;
+    this.requisitoService.registrarCategoria({ nombre: this.nuevaCategoriaNombre }).subscribe({
+      next: () => {
+        this.nuevaCategoriaNombre = '';
+        this.cargarCategoriasRequisitos();
+        Swal.fire('Registrada', 'La categoría ha sido registrada con éxito.', 'success');
+      },
+      error: (err) => {
+        console.error('Error creating category', err);
+        Swal.fire('Error', 'No se pudo crear la categoría.', 'error');
+      }
+    });
+  }
+
+  abrirEditarCategoria(cat: any): void {
+    this.editandoCategoria = { ...cat };
+  }
+
+  cancelarEditarCategoria(): void {
+    this.editandoCategoria = null;
+  }
+
+  guardarCategoriaEditada(): void {
+    if (!this.editandoCategoria || !this.editandoCategoria.nombre || this.editandoCategoria.nombre.trim() === '') return;
+    this.requisitoService.actualizarCategoria(this.editandoCategoria.idCategoria, { nombre: this.editandoCategoria.nombre }).subscribe({
+      next: () => {
+        this.editandoCategoria = null;
+        this.cargarCategoriasRequisitos();
+        Swal.fire('Actualizada', 'La categoría ha sido actualizada con éxito.', 'success');
+      },
+      error: (err) => {
+        console.error('Error updating category', err);
+        Swal.fire('Error', 'No se pudo actualizar la categoría.', 'error');
+      }
+    });
+  }
+
+  eliminarCategoria(id: number): void {
+    Swal.fire({
+      title: '¿Eliminar Categoría?',
+      text: 'Esta acción podría afectar a los requisitos asociados a esta categoría.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.requisitoService.eliminarCategoria(id).subscribe({
+          next: () => {
+            this.cargarCategoriasRequisitos();
+            Swal.fire('Eliminado', 'La categoría ha sido eliminada.', 'success');
+          },
+          error: (err) => {
+            console.error('Error deleting category', err);
+            Swal.fire('Error', 'No se pudo eliminar la categoría. Asegúrese de que no tenga requisitos asociados.', 'error');
+          }
+        });
+      }
+    });
+  }
+
+  descargarEspecialidadesExcel(): void {
+    Swal.fire({
+      title: 'Generando Excel...',
+      text: 'Por favor espera un momento.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    this.requisitoService.exportarEspecialidades().subscribe({
+      next: (blob) => {
+        Swal.close();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'plantilla_especialidades.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Error exporting specialties', err);
+        Swal.fire('Error', 'No se pudo exportar el archivo de especialidades.', 'error');
+      }
+    });
+  }
+
+  descargarCuadernillosExcel(): void {
+    Swal.fire({
+      title: 'Generando Excel...',
+      text: 'Por favor espera un momento.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    this.requisitoService.exportarCuadernillos().subscribe({
+      next: (blob) => {
+        Swal.close();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'plantilla_cuadernillos.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Error exporting booklets', err);
+        Swal.fire('Error', 'No se pudo exportar el archivo de cuadernillos.', 'error');
       }
     });
   }

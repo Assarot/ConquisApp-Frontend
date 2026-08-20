@@ -78,10 +78,6 @@
             class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">POA</a>
           }
           @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero() || isAdmin()) {
-          <a routerLink="/dashboard/cronograma" (click)="closeSidebar()"
-            class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Cronograma</a>
-          }
-          @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero() || isAdmin()) {
           <a routerLink="/dashboard/sesiones" (click)="closeSidebar()"
             class="py-2 px-3 text-xs text-[#444650] hover:text-[#00113a] transition-colors">Sesiones</a>
           }
@@ -180,14 +176,7 @@
       </a>
       }
 
-      <!-- Ranking (No Submenu) -->
-      @if (isLeader() || isDirectorAsociado() || isInstructor() || isConsejero() || isConquistador() || isPadre()) {
-      <a routerLink="/dashboard/ranking" (click)="closeSidebar()"
-        class="flex items-center px-4 py-3 rounded-lg text-[#444650] hover:bg-[#edeeef] transition-all group cursor-pointer">
-        <span class="material-symbols-outlined shrink-0">workspace_premium</span>
-        <span class="hide-on-collapse ml-4 text-sm font-medium">Ranking</span>
-      </a>
-      }
+
 
       <!-- Administración para Director -->
       @if (isDirector()) {

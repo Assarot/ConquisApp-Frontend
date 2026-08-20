@@ -115,6 +115,15 @@ export class AvanceAsistenciaService {
     );
   }
 
+  getAsistenciasByUnidad(idUnidad: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.asistenciasUrl}/unidad/${idUnidad}`).pipe(
+      catchError(err => {
+        console.warn('Error fetching asistencias by unidad', err);
+        return of([]);
+      })
+    );
+  }
+
   registrarAsistencias(asistencias: any[]): Observable<any[]> {
     return this.http.post<any[]>(this.asistenciasUrl, asistencias).pipe(
       catchError(err => {

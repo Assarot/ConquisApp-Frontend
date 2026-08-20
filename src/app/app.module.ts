@@ -31,7 +31,6 @@ import { UnidadesListComponent } from './modules/unidades/unidades-list/unidades
 import { ClaseDetalleComponent } from './modules/clases/clase-detalle/clase-detalle.component';
 
 // Planning
-import { CronogramaComponent } from './modules/planificacion/cronograma/cronograma.component';
 import { SesionesComponent } from './modules/planificacion/sesiones/sesiones.component';
 import { CalendarioComponent } from './modules/planificacion/calendario/calendario.component';
 
@@ -64,7 +63,6 @@ import { JwtInterceptor } from './core/interceptors/jwt.interceptor';
     MiembrosListComponent,
     UnidadesListComponent,
     ClaseDetalleComponent,
-    CronogramaComponent,
     SesionesComponent,
     CalendarioComponent,
     EspecialidadesComponent,

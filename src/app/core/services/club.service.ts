@@ -68,6 +68,7 @@ export class ClubService {
 export interface ClaseBackend {
   idClase?: string;
   nombre: string;
+  color?: string;
   idClub?: string;
   idVersionCuadernillo?: string;
   versionCuadernillo?: any;

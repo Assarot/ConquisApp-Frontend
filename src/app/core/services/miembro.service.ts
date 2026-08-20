@@ -159,7 +159,7 @@ export class MiembroService {
     );
   }
 
-  importarMiembrosCsv(file: File, idClub: string): Observable<any> {
+  importarMiembrosExcel(file: File, idClub: string): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('idClub', idClub);
@@ -167,11 +167,30 @@ export class MiembroService {
     return this.http.post<any>(`${this.miembrosUrl}/importar`, formData, { responseType: 'text' as 'json' }).pipe(
       catchError(err => {
         if (err.status === 0) {
-          console.warn('MiembroService.importarMiembrosCsv failed (offline), simulating locally', err);
+          console.warn('MiembroService.importarMiembrosExcel failed (offline), simulating locally', err);
           return of({
             success: true,
             message: 'Importación masiva completada con éxito. (Simulado)'
           });
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  exportarExcel(idClub: string): Observable<Blob> {
+    return this.http.get(`${this.miembrosUrl}/club/${idClub}/exportar-excel`, {
+      responseType: 'blob'
+    }).pipe(
+      catchError(err => {
+        if (err.status === 0) {
+          console.warn('MiembroService.exportarExcel failed (offline), generating mock CSV blob', err);
+          const header = 'Nombre,Apellido,Rol / Función,Clase,Unidad,Ficha Salud,Seguro,Adhesión Padres,Estado,Pendientes\n';
+          const rows = this.mockMiembros
+            .map(m => `"${m.nombre || ''}","${m.apellido || ''}","${m.funcion || ''}","${m.nombreClase || ''}","${m.nombreUnidad || ''}","${m.estadoFichaSalud || ''}","${m.estadoSeguro || ''}","${m.estadoAdhesionPadres || ''}","${m.estado || ''}",${m.pendientes || 0}`)
+            .join('\n');
+          const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+          return of(blob);
         }
         return throwError(() => err);
       })

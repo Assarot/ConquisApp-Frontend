@@ -69,9 +69,11 @@
             <th class="py-3.5 px-4 text-center">Pos</th>
             <th class="py-3.5 px-4">Unidad</th>
             <th class="py-3.5 px-4 text-center">Asistencia</th>
-            <th class="py-3.5 px-4 text-center">Uniforme</th>
-            <th class="py-3.5 px-4 text-center">Cuotas</th>
-            <th class="py-3.5 px-4 text-center">Especialidades</th>
+            <th class="py-3.5 px-4 text-center">Pañoleta</th>
+            <th class="py-3.5 px-4 text-center">Biblia</th>
+            <th class="py-3.5 px-4 text-center">Agua</th>
+            <th class="py-3.5 px-4 text-center">Materiales</th>
+            <th class="py-3.5 px-4 text-center">Cuota</th>
             <th class="py-3.5 px-4 text-right">Total Acumulado</th>
           </tr>
         </thead>
@@ -82,13 +84,15 @@
               <td class="py-3.5 px-4 font-bold text-[#00113a]">
                 <div class="flex items-center gap-2">
                   <span class="w-3 h-3 rounded-full" [style.backgroundColor]="pos.color"></span>
-                  <span>Unidad {{ pos.unidad }}</span>
+                  <span>{{ pos.unidad }}</span>
                 </div>
               </td>
               <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosAsistencia }}</td>
-              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosUniforme }}</td>
-              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosCuotas }}</td>
-              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosEspecialidades }}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosPanoleta }}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosBiblia }}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosAgua }}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosMateriales }}</td>
+              <td class="py-3.5 px-4 text-center font-semibold text-[#191c1d]">{{ pos.puntosCuota }}</td>
               <td class="py-3.5 px-4 text-right font-black text-[#00113a]">{{ pos.puntaje }} pts</td>
             </tr>
           }

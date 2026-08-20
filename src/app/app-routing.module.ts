@@ -8,7 +8,6 @@ import { PoaComponent } from './modules/dashboard/poa/poa.component';
 import { MiembrosListComponent } from './modules/miembros/miembros-list/miembros-list.component';
 import { UnidadesListComponent } from './modules/unidades/unidades-list/unidades-list.component';
 import { ClaseDetalleComponent } from './modules/clases/clase-detalle/clase-detalle.component';
-import { CronogramaComponent } from './modules/planificacion/cronograma/cronograma.component';
 import { SesionesComponent } from './modules/planificacion/sesiones/sesiones.component';
 import { CalendarioComponent } from './modules/planificacion/calendario/calendario.component';
 import { EspecialidadesComponent } from './modules/especialidades/especialidades.component';
@@ -31,7 +30,6 @@ const routes: Routes = [
     children: [
       { path: '', component: DashboardHomeComponent, pathMatch: 'full' },
       { path: 'poa', component: PoaComponent },
-      { path: 'cronograma', component: CronogramaComponent },
       { path: 'sesiones', component: SesionesComponent },
       { path: 'calendario', component: CalendarioComponent },
       { path: 'miembros', component: MiembrosListComponent },

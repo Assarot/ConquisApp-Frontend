@@ -110,7 +110,7 @@
     </div>
 
     <!-- Bento Grid Stats -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Total Miembros -->
       <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
         <div class="flex justify-between items-start">
@@ -136,6 +136,27 @@
         <div>
           <h2 class="text-4xl font-bold text-[#00113a]">{{ stats().unidadesActivas }}</h2>
           <span class="text-[#444650] text-xs">Unidades registradas en el club</span>
+        </div>
+      </div>
+
+      <!-- Unidad Líder del Ranking -->
+      <div class="bg-white p-6 rounded-xl border border-[#c5c6d2] shadow-sm flex flex-col justify-between h-40 hover:-translate-y-0.5 transition-transform duration-200">
+        <div class="flex justify-between items-start">
+          <span class="text-[#444650] text-xs font-semibold uppercase tracking-wider">Unidad Líder</span>
+          <div class="bg-[#ffba27]/10 text-[#ffa700] p-2 rounded-lg">
+            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold text-[#00113a] truncate max-w-full">
+            {{ unidadLider()?.nombre || 'Ninguna' }}
+          </h2>
+          <span class="text-[#444650] text-xs font-semibold flex items-center gap-1.5 mt-1">
+            <span class="bg-[#ffba27]/20 text-[#00113a] px-2 py-0.5 rounded font-black text-[10px]">
+              {{ unidadLider()?.puntaje || 0 }} pts
+            </span>
+            <span>Récord de Club</span>
+          </span>
         </div>
       </div>
 

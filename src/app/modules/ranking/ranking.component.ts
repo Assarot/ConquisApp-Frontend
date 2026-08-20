@@ -10,9 +10,11 @@ export interface PosicionRanking {
   consejero: string;
   puntaje: number;
   puntosAsistencia: number;
-  puntosUniforme: number;
-  puntosCuotas: number;
-  puntosEspecialidades: number;
+  puntosPanoleta: number;
+  puntosBiblia: number;
+  puntosAgua: number;
+  puntosMateriales: number;
+  puntosCuota: number;
   tendencia: 'UP' | 'DOWN' | 'EQUAL';
 }
 
@@ -43,21 +45,34 @@ export class RankingComponent implements OnInit {
       next: (data) => {
         this.isLoading.set(false);
         if (data && data.length > 0) {
+          const sortedData = [...data].sort((a, b) => b.puntaje - a.puntaje);
           const colores = ['#ffba27', '#00113a', '#b7102a', '#2e7d32'];
           const iconos = ['star', 'flight', 'local_fire_department', 'pets'];
-          const mapped: PosicionRanking[] = data.map((r, i) => ({
-            posicion: i + 1,
-            unidad: r.nombreUnidad || `Unidad ${i + 1}`,
-            color: colores[i % colores.length],
-            icono: iconos[i % iconos.length],
-            consejero: 'Consejero',
-            puntaje: r.puntaje,
-            puntosAsistencia: Math.round(r.puntaje * 0.27),
-            puntosUniforme: Math.round(r.puntaje * 0.27),
-            puntosCuotas: Math.round(r.puntaje * 0.22),
-            puntosEspecialidades: Math.round(r.puntaje * 0.24),
-            tendencia: 'EQUAL' as const
-          }));
+          const mapped: PosicionRanking[] = sortedData.map((r, i) => {
+            const total = r.puntaje;
+            const puntosAsistencia = Math.round(total * 0.20);
+            const puntosPanoleta = Math.round(total * 0.16);
+            const puntosBiblia = Math.round(total * 0.16);
+            const puntosAgua = Math.round(total * 0.16);
+            const puntosMateriales = Math.round(total * 0.16);
+            const puntosCuota = total - (puntosAsistencia + puntosPanoleta + puntosBiblia + puntosAgua + puntosMateriales);
+
+            return {
+              posicion: i + 1,
+              unidad: r.nombreUnidad || `Unidad ${i + 1}`,
+              color: colores[i % colores.length],
+              icono: iconos[i % iconos.length],
+              consejero: 'Consejero',
+              puntaje: total,
+              puntosAsistencia,
+              puntosPanoleta,
+              puntosBiblia,
+              puntosAgua,
+              puntosMateriales,
+              puntosCuota,
+              tendencia: 'EQUAL' as const
+            };
+          });
           this.ranking.set(mapped);
         } else {
           this.cargarFallback();
@@ -80,9 +95,11 @@ export class RankingComponent implements OnInit {
         consejero: 'Lucía Fernández',
         puntaje: 3620,
         puntosAsistencia: 960,
-        puntosUniforme: 980,
-        puntosCuotas: 800,
-        puntosEspecialidades: 880,
+        puntosPanoleta: 680,
+        puntosBiblia: 680,
+        puntosAgua: 650,
+        puntosMateriales: 650,
+        puntosCuota: 650,
         tendencia: 'UP'
       },
       {
@@ -93,9 +110,11 @@ export class RankingComponent implements OnInit {
         consejero: 'Marcos Ruiz',
         puntaje: 3410,
         puntosAsistencia: 900,
-        puntosUniforme: 910,
-        puntosCuotas: 780,
-        puntosEspecialidades: 820,
+        puntosPanoleta: 610,
+        puntosBiblia: 610,
+        puntosAgua: 630,
+        puntosMateriales: 630,
+        puntosCuota: 630,
         tendencia: 'EQUAL'
       },
       {
@@ -106,9 +125,11 @@ export class RankingComponent implements OnInit {
         consejero: 'Ana Torres',
         puntaje: 3120,
         puntosAsistencia: 820,
-        puntosUniforme: 840,
-        puntosCuotas: 720,
-        puntosEspecialidades: 740,
+        puntosPanoleta: 560,
+        puntosBiblia: 560,
+        puntosAgua: 560,
+        puntosMateriales: 560,
+        puntosCuota: 560,
         tendencia: 'DOWN'
       },
       {
@@ -119,9 +140,11 @@ export class RankingComponent implements OnInit {
         consejero: 'Pedro Castro',
         puntaje: 2890,
         puntosAsistencia: 760,
-        puntosUniforme: 780,
-        puntosCuotas: 680,
-        puntosEspecialidades: 670,
+        puntosPanoleta: 520,
+        puntosBiblia: 520,
+        puntosAgua: 520,
+        puntosMateriales: 520,
+        puntosCuota: 520,
         tendencia: 'UP'
       }
     ]);
