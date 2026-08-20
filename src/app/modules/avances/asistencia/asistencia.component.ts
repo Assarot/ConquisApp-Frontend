@@ -98,8 +98,8 @@ export class AsistenciaComponent implements OnInit {
                 next: (asistencias) => {
                   const map: Record<string, any> = {};
                   asistencias.forEach(a => {
-                    const userId = a.usuario?.idUsuario || a.usuario?.id || a.idUsuario;
-                    if (userId) map[String(userId)] = a;
+                    const memberId = a.miembro?.idMiembro || a.idMiembro;
+                    if (memberId) map[String(memberId)] = a;
                   });
 
                   const list: RegistroAsistencia[] = classMembers.map(m => {
@@ -156,13 +156,36 @@ export class AsistenciaComponent implements OnInit {
 
   setEstado(idMiembro: string, nuevoEstado: 'PRESENTE' | 'AUSENTE' | 'JUSTIFICADO'): void {
     this.registros.update(list =>
-      list.map(r => r.idMiembro === idMiembro ? { ...r, estado: nuevoEstado } : r)
+      list.map(r => {
+        if (r.idMiembro === idMiembro) {
+          if (nuevoEstado === 'AUSENTE' || nuevoEstado === 'JUSTIFICADO') {
+            return {
+              ...r,
+              estado: nuevoEstado,
+              panoleta: false,
+              biblia: false,
+              agua: false,
+              materiales: false
+            };
+          }
+          return { ...r, estado: nuevoEstado };
+        }
+        return r;
+      })
     );
   }
 
   toggleCheck(idMiembro: string, field: 'panoleta' | 'biblia' | 'agua' | 'materiales'): void {
     this.registros.update(list =>
-      list.map(r => r.idMiembro === idMiembro ? { ...r, [field]: !r[field] } : r)
+      list.map(r => {
+        if (r.idMiembro === idMiembro) {
+          if (r.estado !== 'PRESENTE') {
+            return r;
+          }
+          return { ...r, [field]: !r[field] };
+        }
+        return r;
+      })
     );
   }
 
@@ -205,7 +228,7 @@ export class AsistenciaComponent implements OnInit {
     const payload = this.registros().map(r => ({
       idAsistencia: r.idAsistencia || null,
       sesion: { idSesion: idSesion },
-      usuario: { idUsuario: r.idMiembro },
+      miembro: { idMiembro: r.idMiembro },
       estado: r.estado,
       panoleta: r.panoleta,
       biblia: r.biblia,

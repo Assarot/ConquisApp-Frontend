@@ -26,28 +26,38 @@
       </button>
     }
     @if (activeTab() === 'ESPECIALIDADES' && isAdmin()) {
-      <div class="flex items-center gap-2">
-        <label class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+      <div class="flex flex-wrap sm:flex-row items-center gap-2 justify-end w-full md:w-auto">
+        <button (click)="descargarEspecialidadesExcel()"
+                class="flex items-center gap-2 bg-white border border-[#c5c6d2] hover:bg-[#f8f9fa] text-[#00113a] px-4 py-2.5 rounded-lg font-bold shadow-sm transition cursor-pointer text-sm shrink-0">
+          <span class="material-symbols-outlined text-[18px]">download</span>
+          Exportar Excel
+        </button>
+        <label class="flex items-center gap-2 bg-[#16a34a] hover:brightness-105 text-white px-4 py-2.5 rounded-lg font-bold shadow-sm transition cursor-pointer text-sm shrink-0">
           <span class="material-symbols-outlined text-[18px]">upload_file</span>
           Importar Excel
           <input type="file" (change)="importarEspecialidades($event)" accept=".xlsx, .xls" class="hidden" />
         </label>
         <button (click)="showCrearEspecialidadModal = true"
-                class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+                class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-sm transition cursor-pointer text-sm shrink-0">
           <span class="material-symbols-outlined text-[18px]">military_tech</span>
           Registrar Especialidad
         </button>
       </div>
     }
     @if (activeTab() === 'CLASES' && isAdmin()) {
-      <div class="flex items-center gap-2">
-        <label class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+      <div class="flex flex-wrap sm:flex-row items-center gap-2 justify-end w-full md:w-auto">
+        <button (click)="descargarCuadernillosExcel()"
+                class="flex items-center gap-2 bg-white border border-[#c5c6d2] hover:bg-[#f8f9fa] text-[#00113a] px-4 py-2.5 rounded-lg font-bold shadow-sm transition cursor-pointer text-sm shrink-0">
+          <span class="material-symbols-outlined text-[18px]">download</span>
+          Exportar Requisitos Excel
+        </button>
+        <label class="flex items-center gap-2 bg-[#16a34a] hover:brightness-105 text-white px-4 py-2.5 rounded-lg font-bold shadow-sm transition cursor-pointer text-sm shrink-0">
           <span class="material-symbols-outlined text-[18px]">upload_file</span>
           Importar Requisitos Excel
           <input type="file" (change)="importarCuadernillos($event)" accept=".xlsx, .xls" class="hidden" />
         </label>
         <button (click)="showCrearClaseModal = true"
-                class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm">
+                class="flex items-center gap-2 bg-[#00113a] hover:bg-[#002366] text-white px-4 py-2.5 rounded-lg font-bold shadow-sm transition cursor-pointer text-sm shrink-0">
           <span class="material-symbols-outlined text-[18px]">auto_stories</span>
           Registrar Clase
         </button>
@@ -95,6 +105,15 @@
               [class.text-[#757682]]="activeTab() !== 'CLASES'">
         <span class="material-symbols-outlined text-[18px]">auto_stories</span>
         Clases del Sistema
+      </button>
+      <button (click)="activeTab.set('CATEGORIAS')"
+              class="px-5 py-2.5 text-xs font-bold transition flex items-center gap-2 border-b-2 cursor-pointer"
+              [class.border-[#00113a]]="activeTab() === 'CATEGORIAS'"
+              [class.text-[#00113a]]="activeTab() === 'CATEGORIAS'"
+              [class.border-transparent]="activeTab() !== 'CATEGORIAS'"
+              [class.text-[#757682]]="activeTab() !== 'CATEGORIAS'">
+        <span class="material-symbols-outlined text-[18px]">category</span>
+        Categorías de Requisitos
       </button>
     }
   </div>
@@ -337,6 +356,66 @@
                   <button (click)="eliminarClase(clase.idClase!)" class="text-red-600 hover:text-red-900 cursor-pointer p-1" title="Eliminar Clase">
                     <span class="material-symbols-outlined text-[18px]">delete</span>
                   </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Tab 6: Categorías de Requisitos -->
+  @if (activeTab() === 'CATEGORIAS') {
+    <div class="bg-white border border-[#c5c6d2] rounded-xl p-6 shadow-sm space-y-6 max-w-3xl animate-in fade-in duration-200">
+      <div class="flex flex-col sm:flex-row items-end gap-3 bg-[#f8f9fa] p-4 rounded-xl border border-[#c5c6d2]">
+        <div class="flex-grow w-full">
+          <label class="block text-xs font-bold text-[#00113a] uppercase mb-1">Nombre de la Categoría</label>
+          <input [(ngModel)]="nuevaCategoriaNombre" name="catNombre" type="text"
+                 class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white font-semibold"
+                 placeholder="Ej. VIII. Especialidades Adicionales..." />
+        </div>
+        <button (click)="crearCategoria()"
+                class="px-5 py-2.5 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow cursor-pointer transition w-full sm:w-auto shrink-0 font-bold">
+          Agregar Categoría
+        </button>
+      </div>
+
+      <div class="rounded-xl border border-[#c5c6d2] overflow-hidden">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#f8f9fa] border-b border-[#c5c6d2] text-[#757682] text-xs font-bold uppercase tracking-wider">
+              <th class="py-2.5 px-4">Categoría del Cuadernillo</th>
+              <th class="py-2.5 px-4 text-center w-36">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#c5c6d2] text-xs">
+            @for (cat of categorias(); track cat.idCategoria) {
+              <tr class="hover:bg-[#f8f9fa] transition">
+                <td class="py-3.5 px-4 font-semibold text-[#191c1d]">
+                  @if (editandoCategoria?.idCategoria === cat.idCategoria) {
+                    <input [(ngModel)]="editandoCategoria.nombre" type="text"
+                           class="w-full max-w-md px-2.5 py-1 border border-[#c5c6d2] rounded focus:border-[#00113a] outline-none text-xs font-semibold bg-white" />
+                  } @else {
+                    {{ cat.nombre }}
+                  }
+                </td>
+                <td class="py-3.5 px-4 text-center space-x-1.5 font-bold">
+                  @if (editandoCategoria?.idCategoria === cat.idCategoria) {
+                    <button (click)="guardarCategoriaEditada()" class="text-green-600 hover:text-green-900 cursor-pointer font-bold px-2 py-1 bg-green-50 border border-green-200 rounded text-[10px]">
+                      Guardar
+                    </button>
+                    <button (click)="cancelarEditarCategoria()" class="text-[#757682] hover:text-[#00113a] cursor-pointer font-bold px-2 py-1 bg-[#f8f9fa] border border-[#c5c6d2] rounded text-[10px]">
+                      Cancelar
+                    </button>
+                  } @else {
+                    <button (click)="abrirEditarCategoria(cat)" class="text-blue-600 hover:text-blue-900 cursor-pointer p-1" title="Editar Categoría">
+                      <span class="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                    <button (click)="eliminarCategoria(cat.idCategoria)" class="text-red-600 hover:text-red-900 cursor-pointer p-1" title="Eliminar Categoría">
+                      <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  }
                 </td>
               </tr>
             }
@@ -812,23 +891,38 @@
         <!-- Add Requirement Form -->
         <div class="bg-[#f8f9fa] border border-[#c5c6d2] p-4 rounded-xl mt-4 shrink-0">
           <h4 class="text-xs font-bold text-[#00113a] uppercase mb-2">Agregar Nuevo Requisito</h4>
-          <div class="flex flex-col sm:flex-row gap-3 items-end">
-            <div class="flex-1 w-full">
+          <div class="flex flex-col gap-3">
+            <div class="w-full">
+              <label class="block text-[10px] font-bold text-[#757682] uppercase mb-1">Descripción del Requisito</label>
               <input [(ngModel)]="nuevoRequisitoDesc" name="reqDesc" type="text"
                      class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white"
                      placeholder="Ej. Realizar una exposición de 5 minutos..." />
             </div>
-            @if (selectedClase) {
-              <div class="flex items-center gap-2 pb-2.5">
-                <input [(ngModel)]="nuevoRequisitoEsAvanzado" name="reqEsAvanzado" type="checkbox" id="modalEsAvanzado"
-                       class="w-4 h-4 text-[#00113a] border-[#c5c6d2] rounded-sm focus:ring-[#00113a]" />
-                <label for="modalEsAvanzado" class="text-xs font-bold text-[#191c1d] select-none cursor-pointer">Es Avanzado</label>
-              </div>
-            }
-            <button (click)="agregarRequisito()"
-                    class="px-5 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow cursor-pointer w-full sm:w-auto shrink-0">
-              Agregar
-            </button>
+            
+            <div class="flex flex-col sm:flex-row gap-3 items-end">
+              @if (selectedClase) {
+                <div class="flex-grow w-full">
+                  <label class="block text-[10px] font-bold text-[#757682] uppercase mb-1">Categoría del Requisito</label>
+                  <select [ngModel]="nuevoRequisitoCategoriaId()" (ngModelChange)="nuevoRequisitoCategoriaId.set($event)"
+                          class="w-full px-3 py-2 border border-[#c5c6d2] rounded-lg text-sm focus:border-[#00113a] focus:ring-1 focus:ring-[#00113a] outline-none bg-white font-semibold">
+                    @for (cat of categorias(); track cat.idCategoria) {
+                      <option [value]="cat.idCategoria">{{ cat.nombre }}</option>
+                    }
+                  </select>
+                </div>
+                
+                <div class="flex items-center gap-2 pb-2.5 shrink-0">
+                  <input [(ngModel)]="nuevoRequisitoEsAvanzado" name="reqEsAvanzado" type="checkbox" id="modalEsAvanzado"
+                         class="w-4 h-4 text-[#00113a] border-[#c5c6d2] rounded-sm focus:ring-[#00113a]" />
+                  <label for="modalEsAvanzado" class="text-xs font-bold text-[#191c1d] select-none cursor-pointer">Es Avanzado</label>
+                </div>
+              }
+              
+              <button (click)="agregarRequisito()"
+                      class="px-6 py-2 text-sm font-bold text-white bg-[#00113a] hover:bg-[#002366] rounded-lg shadow cursor-pointer w-full sm:w-auto shrink-0 ml-auto">
+                Agregar Requisito
+              </button>
+            </div>
           </div>
         </div>
 
@@ -840,6 +934,7 @@
                 <tr class="bg-[#f8f9fa] border-b border-[#c5c6d2] text-[#757682] text-xs font-bold uppercase tracking-wider">
                   <th class="py-2.5 px-4">Descripción del Requisito</th>
                   @if (selectedClase) {
+                    <th class="py-2.5 px-4">Categoría</th>
                     <th class="py-2.5 px-4 text-center w-24">Tipo</th>
                   }
                   <th class="py-2.5 px-4 text-center w-20">Acción</th>
@@ -850,6 +945,11 @@
                   <tr class="hover:bg-[#f8f9fa] transition">
                     <td class="py-3 px-4 font-medium text-[#191c1d] whitespace-pre-wrap">{{ req.descripcion }}</td>
                     @if (selectedClase) {
+                      <td class="py-3 px-4">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#00113a]/10 text-[#00113a] uppercase">
+                          {{ req.categoria?.nombre || 'Generales' }}
+                        </span>
+                      </td>
                       <td class="py-3 px-4 text-center">
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold"
                               [class.bg-purple-100]="req.esAvanzado" [class.text-purple-800]="req.esAvanzado"

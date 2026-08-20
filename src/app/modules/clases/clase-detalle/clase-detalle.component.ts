@@ -43,9 +43,36 @@ export class ClaseDetalleComponent implements OnInit {
   // Computed counts for cuadernillo tab
   get requisitosRegulares() { return this.requisitos().filter(r => !r.esAvanzado); }
   get requisitosAvanzados() { return this.requisitos().filter(r => r.esAvanzado); }
+  
+  get regularGroupedByCategory() {
+    const groups: { [key: string]: RequisitoBackend[] } = {};
+    this.requisitosRegulares.forEach(r => {
+      const catName = r.categoria?.nombre || 'I. Generales';
+      if (!groups[catName]) groups[catName] = [];
+      groups[catName].push(r);
+    });
+    // Sort keys logically or alphabetical. Standard divisions list them in order I, II, III...
+    return Object.keys(groups).sort().map(key => ({ category: key, requirements: groups[key] }));
+  }
+
+  get avanzadoGroupedByCategory() {
+    const groups: { [key: string]: RequisitoBackend[] } = {};
+    this.requisitosAvanzados.forEach(r => {
+      const catName = r.categoria?.nombre || 'I. Generales';
+      if (!groups[catName]) groups[catName] = [];
+      groups[catName].push(r);
+    });
+    return Object.keys(groups).sort().map(key => ({ category: key, requirements: groups[key] }));
+  }
+
   get selectedClaseNombre() {
     const selected = this.clasesList().find(c => c.idClase === this.selectedClaseId());
     return selected ? selected.nombre : '';
+  }
+
+  get selectedClaseColor() {
+    const selected = this.clasesList().find(c => c.idClase === this.selectedClaseId());
+    return selected?.color || '#00113a';
   }
 
   constructor(

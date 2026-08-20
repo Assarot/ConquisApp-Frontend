@@ -30,6 +30,7 @@ export class DashboardHomeComponent implements OnInit {
   });
 
   proximaActividad = signal<ActividadPoa | null>(null);
+  unidadLider = signal<{ nombre: string; puntaje: number; color: string; icono: string } | null>(null);
 
   adminStats = signal({
     totalClubes: 0,
@@ -140,8 +141,55 @@ export class DashboardHomeComponent implements OnInit {
     this.unidadService.getUnidades().subscribe({
       next: (unidades) => {
         this.stats.update(s => ({ ...s, unidadesActivas: unidades.length }));
+
+        // Load ranking and compute top unit
+        this.rankingService.getRankingByClub(String(idClub)).subscribe({
+          next: (data) => {
+            if (data && data.length > 0) {
+              const sorted = [...data].sort((a, b) => b.puntaje - a.puntaje);
+              const top = sorted[0];
+              const unit = unidades.find(u => String(u.nombre) === String(top.nombreUnidad) || String(u.idUnidad) === String(top.idUnidad));
+              this.unidadLider.set({
+                nombre: top.nombreUnidad || 'Unidad',
+                puntaje: top.puntaje,
+                color: unit?.color || 'primary',
+                icono: unit?.icono || 'star'
+              });
+            } else {
+              if (unidades && unidades.length > 0) {
+                const sorted = [...unidades].sort((a, b) => (b.puntos || 0) - (a.puntos || 0));
+                const top = sorted[0];
+                this.unidadLider.set({
+                  nombre: top.nombre,
+                  puntaje: top.puntos || 0,
+                  color: top.color || 'primary',
+                  icono: top.icono || 'star'
+                });
+              } else {
+                this.unidadLider.set(null);
+              }
+            }
+          },
+          error: () => {
+            if (unidades && unidades.length > 0) {
+              const sorted = [...unidades].sort((a, b) => (b.puntos || 0) - (a.puntos || 0));
+              const top = sorted[0];
+              this.unidadLider.set({
+                nombre: top.nombre,
+                puntaje: top.puntos || 0,
+                color: top.color || 'primary',
+                icono: top.icono || 'star'
+              });
+            } else {
+              this.unidadLider.set(null);
+            }
+          }
+        });
       },
-      error: () => this.stats.update(s => ({ ...s, unidadesActivas: 4 }))
+      error: () => {
+        this.stats.update(s => ({ ...s, unidadesActivas: 4 }));
+        this.unidadLider.set(null);
+      }
     });
 
     this.rankingService.getIndicadoresByClub(String(idClub)).subscribe({

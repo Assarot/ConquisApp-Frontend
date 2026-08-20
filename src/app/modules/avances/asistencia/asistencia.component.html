@@ -121,7 +121,8 @@
                 <!-- Pañoleta Toggle -->
                 <td class="py-3.5 px-4 text-center">
                   <button (click)="toggleCheck(reg.idMiembro, 'panoleta')"
-                          class="p-1 rounded cursor-pointer"
+                          [disabled]="reg.estado !== 'PRESENTE'"
+                          class="p-1 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           [class.text-emerald-600]="reg.panoleta"
                           [class.text-gray-300]="!reg.panoleta">
                     <span class="material-symbols-outlined text-[20px]">
@@ -133,7 +134,8 @@
                 <!-- Biblia Toggle -->
                 <td class="py-3.5 px-4 text-center">
                   <button (click)="toggleCheck(reg.idMiembro, 'biblia')"
-                          class="p-1 rounded cursor-pointer"
+                          [disabled]="reg.estado !== 'PRESENTE'"
+                          class="p-1 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           [class.text-emerald-600]="reg.biblia"
                           [class.text-gray-300]="!reg.biblia">
                     <span class="material-symbols-outlined text-[20px]">
@@ -145,7 +147,8 @@
                 <!-- Agua Toggle -->
                 <td class="py-3.5 px-4 text-center">
                   <button (click)="toggleCheck(reg.idMiembro, 'agua')"
-                          class="p-1 rounded cursor-pointer"
+                          [disabled]="reg.estado !== 'PRESENTE'"
+                          class="p-1 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           [class.text-emerald-600]="reg.agua"
                           [class.text-gray-300]="!reg.agua">
                     <span class="material-symbols-outlined text-[20px]">
@@ -157,7 +160,8 @@
                 <!-- Materiales Toggle -->
                 <td class="py-3.5 px-4 text-center">
                   <button (click)="toggleCheck(reg.idMiembro, 'materiales')"
-                          class="p-1 rounded cursor-pointer"
+                          [disabled]="reg.estado !== 'PRESENTE'"
+                          class="p-1 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           [class.text-emerald-600]="reg.materiales"
                           [class.text-gray-300]="!reg.materiales">
                     <span class="material-symbols-outlined text-[20px]">

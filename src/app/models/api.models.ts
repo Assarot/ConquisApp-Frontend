@@ -8,6 +8,7 @@ export interface Unidad {
   icono?: string;
   color?: string;
   descripcion?: string;
+  imagen?: string;
 }
 
 export interface Clase {

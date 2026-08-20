@@ -325,10 +325,10 @@ export class MiembrosListComponent implements OnInit {
     const file: File = event.target.files[0];
     if (!file) return;
 
-    if (!file.name.endsWith('.csv')) {
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
       Swal.fire({
         title: 'Archivo Inválido',
-        text: 'Por favor, selecciona únicamente un archivo con extensión .csv',
+        text: 'Por favor, selecciona únicamente un archivo con extensión .xlsx o .xls',
         icon: 'error',
         background: '#111827',
         color: '#f3f4f6',
@@ -340,11 +340,11 @@ export class MiembrosListComponent implements OnInit {
     const clubId = this.currentUser()?.idClub?.toString() || '1';
     this.isLoading = true;
 
-    this.miembroService.importarMiembrosCsv(file, clubId).subscribe({
+    this.miembroService.importarMiembrosExcel(file, clubId).subscribe({
       next: () => {
         Swal.fire({
           title: 'Importación Exitosa',
-          text: 'Padrón actualizado con éxito.',
+          text: 'Padrón de miembros actualizado con éxito.',
           icon: 'success',
           background: '#111827',
           color: '#f3f4f6',
@@ -356,7 +356,44 @@ export class MiembrosListComponent implements OnInit {
         this.isLoading = false;
         Swal.fire({
           title: 'Error de Importación',
-          text: 'Ocurrió un problema al procesar el archivo CSV.',
+          text: 'Ocurrió un problema al procesar el archivo Excel. Verifica el formato de las columnas.',
+          icon: 'error',
+          background: '#111827',
+          color: '#f3f4f6',
+          confirmButtonColor: '#eab308'
+        });
+        console.error(err);
+      }
+    });
+  }
+
+  onExportExcel(): void {
+    const clubId = this.currentUser()?.idClub?.toString() || '1';
+    this.isLoading = true;
+    this.miembroService.exportarExcel(clubId).subscribe({
+      next: (blob) => {
+        this.isLoading = false;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const extension = blob.type.includes('csv') ? 'csv' : 'xlsx';
+        a.download = `Miembros-Club-${clubId}.${extension}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        Swal.fire({
+          title: 'Exportación Exitosa',
+          text: 'Archivo Excel generado correctamente.',
+          icon: 'success',
+          background: '#111827',
+          color: '#f3f4f6',
+          confirmButtonColor: '#10b981'
+        });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        Swal.fire({
+          title: 'Error al exportar',
+          text: 'No se pudo generar el archivo Excel.',
           icon: 'error',
           background: '#111827',
           color: '#f3f4f6',
